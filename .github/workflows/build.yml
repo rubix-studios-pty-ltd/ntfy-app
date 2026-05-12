@@ -82,7 +82,7 @@ jobs:
         with:
           tagName: ${{ steps.version.outputs.version }}
           releaseName: "Ntfy App ${{ steps.version.outputs.version }}"
-          releaseBody: "See the [changelog](https://github.com/rubix-studios-pty-ltd/ntfy-app/CHANGELOG.md) for details."
+          releaseBody: "See the [changelog](https://github.com/rubix-studios-pty-ltd/ntfy-app/blob/main/CHANGELOG.md) for details."
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
