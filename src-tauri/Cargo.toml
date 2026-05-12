@@ -1,0 +1,25 @@
+[package]
+name = "ntfy-app"
+version = "0.0.3"
+description = "Desktop client for ntfy.sh and self-hosted ntfy instances on Windows, Linux, and macOS. Built with Rust, Tauri, and Next.js."
+authors = ["rubixvi"]
+license = "MIT"
+repository = ""
+edition = "2024"
+rust-version = "1.93.1"
+
+[lib]
+name = "ntfy_desktop_lib"
+path = "src/lib.rs"
+crate-type = ["staticlib", "cdylib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+url = "2"
+tauri = { version = "2.11.1", features = ["tray-icon"] }
+auto-launch = "0.5"
+tauri-plugin-notification = "2"

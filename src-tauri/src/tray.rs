@@ -1,0 +1,142 @@
+use tauri::{
+  Manager,
+  menu::{ CheckMenuItem, Menu, MenuItem, PredefinedMenuItem },
+  tray::{ MouseButton, TrayIconBuilder, TrayIconEvent },
+};
+
+use crate::autostart::toggle_autostart;
+
+pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
+  let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+
+  let autostart_enabled = crate::autostart::is_autostart_enabled();
+
+  let autostart = CheckMenuItem::with_id(
+    app,
+    "autostart",
+    "Start on Boot",
+    true,
+    autostart_enabled,
+    None::<&str>
+  )?;
+
+  let reset_instance = MenuItem::with_id(
+    app,
+    "reset_instance",
+    "Reset Instance",
+    true,
+    None::<&str>
+  )?;
+
+  let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+
+  let menu = Menu::new(app)?;
+  menu.append(&show)?;
+  menu.append(&PredefinedMenuItem::separator(app)?)?;
+  menu.append(&autostart)?;
+  menu.append(&reset_instance)?;
+  menu.append(&PredefinedMenuItem::separator(app)?)?;
+  menu.append(&quit)?;
+
+  let icon = app.default_window_icon().cloned();
+
+  let _tray = TrayIconBuilder::new()
+    .icon(icon.unwrap())
+    .menu(&menu)
+    .on_menu_event(|app, event| {
+      match event.id.as_ref() {
+        "show" => {
+          if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+          }
+        }
+        "autostart" => {
+          if let Err(error) = toggle_autostart() {
+            eprintln!("Failed to toggle autostart: {error}");
+          } else if let Some(item) = app.menu().and_then(|m| m.get("autostart")) {
+            if let Some(check_item) = item.as_check_menuitem() {
+              let enabled = crate::autostart::is_autostart_enabled();
+
+              let _ = check_item.set_checked(enabled);
+            }
+          }
+        }
+        "reset_instance" => {
+          if let Err(error) = crate::config::clear_instance_url(app.app_handle()) {
+            eprintln!("Failed to reset instance URL: {error}");
+          }
+
+          if let Some(window) = app.get_webview_window("main") {
+            let _ = window.eval(
+              r#"
+              localStorage.clear();
+              sessionStorage.clear();
+
+              if ('caches' in window) {
+                caches.keys().then(keys => {
+                  keys.forEach(key => caches.delete(key));
+                });
+              }
+
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                  registrations.forEach(registration => registration.unregister());
+                });
+              }
+
+              document.cookie.split(";").forEach(cookie => {
+                document.cookie = cookie
+                  .replace(/^ +/, "")
+                  .replace(
+                    /=.*/,
+                    "=;expires=" + new Date().toUTCString() + ";path=/"
+                  );
+              });
+            "#
+            );
+
+            let app_url = app
+              .config()
+              .build.dev_url.as_ref()
+              .map(|u| u.to_string())
+              .unwrap_or_else(|| "app://localhost/".to_string());
+
+            let _ = window.eval(&format!("window.location.replace('{}');", app_url));
+
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+          }
+        }
+        "quit" => {
+          std::process::exit(0);
+        }
+
+        _ => {}
+      }
+    })
+    .on_tray_icon_event(|tray, event| {
+      if let TrayIconEvent::DoubleClick { button: MouseButton::Left, .. } = event {
+        if let Some(window) = tray.app_handle().get_webview_window("main") {
+          let is_visible = window.is_visible().unwrap_or(false);
+
+          let is_minimized = window.is_minimized().unwrap_or(false);
+
+          let visible = is_visible && !is_minimized;
+
+          if visible {
+            let _ = window.hide();
+          } else {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+          }
+        }
+      }
+    })
+    .build(app)?;
+
+  Ok(())
+}

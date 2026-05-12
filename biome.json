@@ -1,0 +1,126 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!node_modules", "!dist", "!build", "!out"]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100,
+    "attributePosition": "auto",
+    "bracketSameLine": false,
+    "bracketSpacing": true,
+    "expand": "auto",
+    "useEditorconfig": true,
+    "includes": [
+      "**",
+      "!./node_modules",
+      "!./.pnp",
+      "!**/.pnp.*",
+      "!**/.pnpm-debug.log",
+      "!**/pnpm-lock.yaml",
+      "!./.next/",
+      "!./out/",
+      "!./build",
+      "!./dist",
+      "!**/.DS_Store",
+      "!**/*.pem",
+      "!**/.env",
+      "!**/.tmp",
+      "!**/.git",
+      "!**/.hg",
+      "!**/.pnp.*",
+      "!**/.svn",
+      "!**/.yarn/**",
+      "!**/build",
+      "!**/dist/**",
+      "!**/node_modules",
+      "!**/temp"
+    ]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      },
+      "style": {
+        "useImportType": {
+          "level": "on",
+          "options": {
+            "style": "inlineType"
+          }
+        }
+      }
+    },
+    "includes": [
+      "**",
+      "!**/.temp",
+      "!**/.*",
+      "!**/.git",
+      "!**/.hg",
+      "!**/.pnp.*",
+      "!**/.svn",
+      "!**/playwright.config.ts",
+      "!**/*.spec.ts",
+      "!**/*.test.ts",
+      "!**/tsconfig.tsbuildinfo",
+      "!**/README.md",
+      "!**/dist/",
+      "!**/.yarn/",
+      "!**/build/",
+      "!**/node_modules/",
+      "!**/temp/",
+      "!**/*.cjs"
+    ]
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "es5",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "always",
+      "bracketSameLine": false,
+      "quoteStyle": "single",
+      "attributePosition": "auto",
+      "bracketSpacing": true
+    }
+  },
+  "html": {
+    "formatter": {
+      "indentScriptAndStyle": false,
+      "selfCloseVoidElements": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              [":NODE:", ":BUN:", ":PACKAGE:", "react", "react/**", "react-*", "react-*/**"],
+              ":BLANK_LINE:",
+              ["**", "!**/*.css", "!**/*.scss"],
+              ":BLANK_LINE:",
+              ["**/*.css", "**/*.scss"]
+            ]
+          }
+        }
+      }
+    }
+  }
+}

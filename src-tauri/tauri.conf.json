@@ -1,0 +1,52 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Ntfy App",
+  "version": "0.0.3",
+  "identifier": "com.rubixstudios.ntfy.app",
+  "build": {
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm run dev:ui",
+    "beforeBuildCommand": "pnpm run build:ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "Ntfy",
+        "label": "main",
+        "width": 400,
+        "height": 500,
+        "minWidth": 400,
+        "minHeight": 500,
+        "skipTaskbar": true,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "visible": false,
+        "center": true,
+        "backgroundColor": "#07100d"
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "macOS": {
+      "signingIdentity": null
+    },
+    "icon": [
+      "../assets/ntfy.ico", 
+      "../assets/ntfy.icns", 
+      "../assets/ntfy.png",
+      "../assets/ntfy-16x16.png",
+      "../assets/ntfy-32x32.png",
+      "../assets/ntfy-64x64.png",
+      "../assets/ntfy-128x128.png",
+      "../assets/ntfy-256x256.png"
+    ]
+  }
+}
