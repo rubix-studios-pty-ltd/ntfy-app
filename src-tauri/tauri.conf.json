@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Ntfy App",
-  "version": "0.0.3",
-  "identifier": "com.rubixstudios.ntfy.app",
+  "version": "0.0.2",
+  "identifier": "com.rubixstudios.ntfy",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:5173",
@@ -35,6 +35,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "Rubix Studios Pty. Ltd.",
     "windows": {
       "nsis": {
         "installMode": "both",
