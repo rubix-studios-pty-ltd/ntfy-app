@@ -5,6 +5,8 @@ A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted n
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-0.0.3-green)
 
+![Ntfy App](docs/screenshots/windows.webp)
+
 ## Features
 
 - **Cross-platform**: Works on Windows, Linux, and macOS (Intel & Apple Silicon)
