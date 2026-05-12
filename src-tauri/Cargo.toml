@@ -8,11 +8,6 @@ repository = ""
 edition = "2024"
 rust-version = "1.93.1"
 
-[lib]
-name = "ntfy_desktop_lib"
-path = "src/lib.rs"
-crate-type = ["staticlib", "cdylib"]
-
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 

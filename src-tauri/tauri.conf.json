@@ -35,6 +35,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "compression": "lzma"
+      }
+    },
     "macOS": {
       "signingIdentity": null
     },
