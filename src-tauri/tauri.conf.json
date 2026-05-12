@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Ntfy App",
-  "version": "0.0.3",
+  "version": "0.0.0",
   "identifier": "com.rubixstudios.ntfy.app",
   "build": {
     "frontendDist": "../out",
