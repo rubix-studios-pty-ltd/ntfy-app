@@ -16,6 +16,14 @@ A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted n
 - **Modern UI**: Built with Next.js, React, and Tailwind CSS
 - **Tray Integration**: System tray as a default for unobtrusive notifications
 
+## macOS
+
+macOS may block unsigned applications on first launch. Open Terminal and run the following command once before opening the app:
+
+```
+xattr -cr "/Applications/Ntfy App.app"
+```
+
 ## Prerequisites
 
 - **Node.js** 24.x or 25.x
@@ -60,7 +68,7 @@ For macOS, also install additional targets:
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 ```
 
-### Running in Development
+### Running Development
 
 Start the development server:
 ```bash
