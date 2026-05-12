@@ -1,35 +1,5 @@
-mod autostart;
-mod commands;
-mod config;
-mod listener;
-mod overrides;
-mod tray;
-mod window;
-
-use commands::{ get_url, set_url };
-use overrides::handle_page_load;
-use tray::setup_tray;
-use window::setup_window_events;
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-  let app = tauri::Builder
-    ::default()
-    .plugin(tauri_plugin_notification::init())
-    .invoke_handler(tauri::generate_handler![get_url, set_url])
-    .on_window_event(|window, event| {
-      setup_window_events(window, event);
-    })
-    .setup(|app| {
-      listener::listener(&app.handle());
-      setup_tray(app)?;
-
-      Ok(())
-    })
-    .on_page_load(|window, payload| {
-      handle_page_load(window, payload.url());
-    })
-    .build(tauri::generate_context!())
-    .expect("Error while building application");
-
-  app.run(|_app_handle, _event| {});
+  ntfy_app::run();
 }

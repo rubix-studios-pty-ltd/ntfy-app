@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 concurrency:
   group: release-${{ github.ref }}
@@ -33,11 +33,15 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
-          version: "11.0.8"
+          version: "11.1.0"
 
       - name: Setup Node
         uses: actions/setup-node@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -77,7 +81,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ steps.version.outputs.version }}
-          releaseName: "Ntfy ${{ steps.version.outputs.version }}"
+          releaseName: "Ntfy App ${{ steps.version.outputs.version }}"
           releaseBody: "See the [changelog](https://github.com/rubix-studios-pty-ltd/ntfy-app/CHANGELOG.md) for details."
           releaseDraft: true
           prerelease: false

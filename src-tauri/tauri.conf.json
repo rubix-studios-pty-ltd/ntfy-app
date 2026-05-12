@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Ntfy App",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "identifier": "com.rubixstudios.ntfy.app",
   "build": {
     "frontendDist": "../out",
@@ -35,12 +35,18 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "windows": {
+      "nsis": {
+        "installMode": "both",
+        "compression": "lzma"
+      }
+    },
     "macOS": {
       "signingIdentity": null
     },
     "icon": [
-      "../assets/ntfy.ico", 
-      "../assets/ntfy.icns", 
+      "../assets/ntfy.ico",
+      "../assets/ntfy.icns",
       "../assets/ntfy.png",
       "../assets/ntfy-16x16.png",
       "../assets/ntfy-32x32.png",
