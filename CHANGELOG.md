@@ -10,12 +10,11 @@
 
 ### Fixed
 
-- update autostart menu item label to "Run On Startup"
+- update autostart menu item label to "Auto Start"
 - reorder dependencies in Cargo.toml for clarity
 - remove duplicate description in Cargo.toml
 - update default app URL in tray setup for proper navigation
 - update style ID in page load handler and simplify browsing data cleanup
-- update URL handling in tray setup for cross-platform compatibility (#11)
 - add tauri-plugin-process dependency
 
 ## [0.0.4] - 2026-05-13
