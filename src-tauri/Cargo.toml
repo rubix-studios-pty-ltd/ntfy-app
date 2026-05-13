@@ -18,3 +18,6 @@ url = "2"
 tauri = { version = "2.11.1", features = ["tray-icon"] }
 auto-launch = "0.5"
 tauri-plugin-notification = "2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"

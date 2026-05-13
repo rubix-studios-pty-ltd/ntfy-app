@@ -54,5 +54,13 @@
       "../assets/ntfy-128x128.png",
       "../assets/ntfy-256x256.png"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVBRTEzNjEwMTVDRkY4NDQKUldSRStNOFZFRGJoV3RkMnNyRkw3QmlCdzBranFwaFZjR2JiNisxSVR0OFRaOHhzamxRc09NRXYK",
+      "endpoints": [
+        "https://github.com/rubix-studios-pty-ltd/ntfy-app/releases/latest/download/latest.json"
+      ]
+    }
   }
 }
