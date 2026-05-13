@@ -106,40 +106,14 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 }
 
                 if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.eval(
-                        r#"
-                          localStorage.clear();
-                          sessionStorage.clear();
-
-                          if ('caches' in window) {
-                            caches.keys().then(keys => {
-                              keys.forEach(key => caches.delete(key));
-                            });
-                          }
-
-                          if ('serviceWorker' in navigator) {
-                            navigator.serviceWorker.getRegistrations().then(registrations => {
-                              registrations.forEach(registration => registration.unregister());
-                            });
-                          }
-
-                          document.cookie.split(";").forEach(cookie => {
-                            document.cookie = cookie
-                              .replace(/^ +/, "")
-                              .replace(
-                                /=.*/,
-                                "=;expires=" + new Date().toUTCString() + ";path=/"
-                              );
-                          });
-                        "#,
-                    );
+                    let _ = window.clear_all_browsing_data();
 
                     let app_url = app
                         .config()
                         .build
                         .dev_url
                         .as_ref()
-                        .map(|u| u.to_string())
+                        .map(|url| url.to_string())
                         .unwrap_or_else(|| "tauri://localhost/".to_string());
 
                     let _ = window.navigate(Url::parse(&app_url).unwrap());
