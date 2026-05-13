@@ -7,7 +7,7 @@ pub fn handle_page_load(window: &Webview, url: &Url) {
       r#"
       (() => {
         try {
-          const styleId = 'ntfy-desktop-cleanup-style';
+          const styleId = 'ntfy-style';
 
           if (!document.getElementById(styleId)) {
             const style = document.createElement('style');
