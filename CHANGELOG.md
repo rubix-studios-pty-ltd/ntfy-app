@@ -1,5 +1,6 @@
 
 
+
 ## [0.0.5] - 2026-05-13
 
 ### Added
@@ -11,11 +12,8 @@
 - update autostart menu item label to "Run On Startup"
 - reorder dependencies in Cargo.toml for clarity
 - remove duplicate description in Cargo.toml
-- remove unused localhost plugin and update default URL for navigation
-- update default app URL in tray setup for proper navigation
 - update style ID in page load handler and simplify browsing data cleanup
-- revert version number to 0.0.4 in package.json and Cargo.toml
-- revert version number to 0.0.4 in package.json, Cargo.toml, and Cargo.lock
+- update URL handling in tray setup for cross-platform compatibility (#11)
 
 ## [0.0.4] - 2026-05-13
 
