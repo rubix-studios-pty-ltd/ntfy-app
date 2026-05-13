@@ -4,10 +4,6 @@
 
 ## [0.0.5] - 2026-05-13
 
-### Added
-
-- add new dependencies and update configuration for localhost plugin
-
 ### Fixed
 
 - update autostart menu item label to "Auto Start"
