@@ -24,6 +24,24 @@ pub fn handle_page_load(window: &Webview, url: &Url) {
                 el.textContent = 'Notifications';
               }
             });
+
+            elements.forEach((el) => {
+              if (el.textContent === 'Publish notification') {
+                el.textContent = 'Publish';
+              }
+            });
+
+            elements.forEach((el) => {
+              if (el.textContent === 'Subscribe to topic') {
+                el.textContent = 'Subscribe';
+              }
+            });
+
+            elements.forEach((el) => {
+              if (el.textContent.trim() === 'Documentation') {
+                el.closest('.MuiListItemButton-root')?.style.setProperty('display', 'none', 'important');
+              }
+            });
           };
 
           fixText();
