@@ -12,7 +12,10 @@ use tray::setup_tray;
 use window::setup_window_events;
 
 pub fn run() {
+    let port: u16 = 1430;
+
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_localhost::Builder::new(port).build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
         .invoke_handler(tauri::generate_handler![get_url, set_url])

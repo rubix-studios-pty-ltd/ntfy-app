@@ -2,6 +2,7 @@ use tauri::{
     Manager,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    Url,
 };
 use tauri_plugin_updater::UpdaterExt;
 
@@ -12,18 +13,13 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let autostart_enabled = crate::autostart::is_autostart_enabled();
 
-    let check_updates = MenuItem::with_id(
-        app,
-        "check_updates",
-        "Check Updates",
-        true,
-        None::<&str>
-    )?;
+    let check_updates =
+        MenuItem::with_id(app, "check_updates", "Check Updates", true, None::<&str>)?;
 
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
-        "Run On Startup",
+        "Auto Start",
         true,
         autostart_enabled,
         None::<&str>,
@@ -68,44 +64,41 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 }
             }
             "check_updates" => {
-              let handle = app.app_handle().clone();
+                let handle = app.app_handle().clone();
 
-              tauri::async_runtime::spawn(async move {
-                let updater = match handle.updater() {
-                  Ok(updater) => updater,
-                  Err(error) => {
-                    eprintln!("Failed to initialize updater: {error}");
-                    return;
-                  }
-                };
+                tauri::async_runtime::spawn(async move {
+                    let updater = match handle.updater() {
+                        Ok(updater) => updater,
+                        Err(error) => {
+                            eprintln!("Failed to initialize updater: {error}");
+                            return;
+                        }
+                    };
 
-                match updater.check().await {
-                  Ok(Some(update)) => {
-                    println!("Update available: {}", update.version);
+                    match updater.check().await {
+                        Ok(Some(update)) => {
+                            println!("Update available: {}", update.version);
 
-                    if let Err(error) = update
-                      .download_and_install(
-                        |_chunk_length, _content_length| {},
-                        || {},
-                      )
-                      .await
-                    {
-                      eprintln!("Failed to install update: {error}");
-                      return;
+                            if let Err(error) = update
+                                .download_and_install(|_chunk_length, _content_length| {}, || {})
+                                .await
+                            {
+                                eprintln!("Failed to install update: {error}");
+                                return;
+                            }
+
+                            handle.restart();
+                        }
+
+                        Ok(None) => {
+                            println!("No updates available");
+                        }
+
+                        Err(error) => {
+                            eprintln!("Failed to check for updates: {error}");
+                        }
                     }
-
-                    handle.restart();
-                  }
-
-                  Ok(None) => {
-                    println!("No updates available");
-                  }
-
-                  Err(error) => {
-                    eprintln!("Failed to check for updates: {error}");
-                  }
-                }
-              });
+                });
             }
             "reset_instance" => {
                 if let Err(error) = crate::config::clear_instance_url(app.app_handle()) {
@@ -147,9 +140,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                         .dev_url
                         .as_ref()
                         .map(|u| u.to_string())
-                        .unwrap_or_else(|| "app://localhost/".to_string());
+                        .unwrap_or_else(|| "http://localhost:1430".to_string());
 
-                    let _ = window.eval(&format!("window.location.replace('{}');", app_url));
+                    let _ = window.navigate(Url::parse(&app_url).unwrap());
 
                     let _ = window.show();
                     let _ = window.unminimize();
