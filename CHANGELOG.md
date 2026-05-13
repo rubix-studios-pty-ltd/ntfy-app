@@ -2,6 +2,18 @@
 
 
 
+
+## [0.0.4] - 2026-05-13
+
+### Added
+
+- add updater plugin and implement update check in tray menu
+
+### Fixed
+
+- update changelog link in release body to point to the main branch
+- update autostart menu item label to "Boot On Startup"
+
 ## [0.0.3] - 2026-05-12
 
 ### Fixed
