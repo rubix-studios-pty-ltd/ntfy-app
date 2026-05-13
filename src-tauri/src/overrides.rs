@@ -2,8 +2,8 @@ use tauri::Webview;
 use url::Url;
 
 pub fn handle_page_load(window: &Webview, url: &Url) {
-  if url.as_str().contains("ntfy") {
-    let _ = window.eval(
+    if url.as_str().contains("ntfy") {
+        let _ = window.eval(
       r#"
       (() => {
         try {
@@ -96,5 +96,5 @@ pub fn handle_page_load(window: &Webview, url: &Url) {
       })();
       "#
     );
-  }
+    }
 }
