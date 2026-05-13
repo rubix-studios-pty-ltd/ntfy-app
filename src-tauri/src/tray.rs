@@ -140,7 +140,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                         .dev_url
                         .as_ref()
                         .map(|u| u.to_string())
-                        .unwrap_or_else(|| "http://localhost:1430".to_string());
+                        .unwrap_or_else(|| "tauri://localhost".to_string());
 
                     let _ = window.navigate(Url::parse(&app_url).unwrap());
 
