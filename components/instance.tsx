@@ -43,7 +43,7 @@ export function Instance() {
           value={instance || ''}
           placeholder="https://ntfy.sh"
           required
-          onChange={(event) => setInstance(event.target.value)}
+          onChange={(event) => setInstance(event.target.value.trim())}
         />
 
         <Button
