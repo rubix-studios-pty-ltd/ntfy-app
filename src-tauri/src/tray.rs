@@ -23,7 +23,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
-        "Boot On Startup",
+        "Run On Startup",
         true,
         autostart_enabled,
         None::<&str>,
