@@ -2,7 +2,7 @@ use tauri::{
     Manager,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    Url,
+    WebviewUrl,
 };
 use tauri_plugin_updater::UpdaterExt;
 
@@ -108,15 +108,12 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.clear_all_browsing_data();
 
-                    let app_url = app
-                        .config()
-                        .build
-                        .dev_url
-                        .as_ref()
-                        .map(|url| url.to_string())
-                        .unwrap_or_else(|| "tauri://localhost/".to_string());
+                    #[cfg(target_os = "windows")]
+                    let _ = window.eval("window.location.replace('https://tauri.localhost/index.html')");
+                    
+                    #[cfg(not(target_os = "windows"))]
+                    let _ = window.eval("window.location.replace('tauri://localhost/index.html')");
 
-                    let _ = window.navigate(Url::parse(&app_url).unwrap());
                     let _ = window.show();
                     let _ = window.unminimize();
                     let _ = window.set_focus();
