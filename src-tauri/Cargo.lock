@@ -2179,7 +2179,7 @@ dependencies = [
 
 [[package]]
 name = "ntfy-app"
-version = "0.0.5"
+version = "0.0.4"
 dependencies = [
  "auto-launch",
  "serde",
