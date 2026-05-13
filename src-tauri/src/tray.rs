@@ -2,8 +2,8 @@ use tauri::{
     Manager,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    WebviewUrl,
 };
+
 use tauri_plugin_updater::UpdaterExt;
 
 use crate::autostart::toggle_autostart;
@@ -107,17 +107,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.clear_all_browsing_data();
-
-                    #[cfg(target_os = "windows")]
-                    let _ = window.eval("window.location.replace('https://tauri.localhost/index.html')");
-                    
-                    #[cfg(not(target_os = "windows"))]
-                    let _ = window.eval("window.location.replace('tauri://localhost/index.html')");
-
-                    let _ = window.show();
-                    let _ = window.unminimize();
-                    let _ = window.set_focus();
                 }
+
+                app.restart();
             }
             "quit" => {
                 std::process::exit(0);

@@ -13,8 +13,9 @@ use window::setup_window_events;
 
 pub fn run() {
     let app = tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![get_url, set_url])
         .on_window_event(|window, event| {
             setup_window_events(window, event);

@@ -1,7 +1,7 @@
 {
   "name": "ntfy-app",
   "title": "Ntfy App",
-  "version": "0.0.5",
+  "version": "0.0.4",
   "description": "Desktop client for ntfy.sh and self-hosted ntfy instances on Windows, Linux, and macOS. Built with Rust, Tauri, and Next.js.",
   "license": "MIT",
   "private": true,
@@ -56,6 +56,7 @@
     "pnpm": ">=10"
   },
   "dependencies": {
+    "@tauri-apps/plugin-process": "~2.3.1",
     "@tauri-apps/plugin-updater": "~2.10.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
