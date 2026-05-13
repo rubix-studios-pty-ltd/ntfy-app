@@ -4,6 +4,16 @@
 
 
 
+
+## [0.0.5] - 2026-05-13
+
+### Fixed
+
+- remove unused localhost plugin and update default URL for navigation
+- update default app URL in tray setup for proper navigation
+- update style ID in page load handler and simplify browsing data cleanup
+- revert version number to 0.0.4 in package.json and Cargo.toml
+
 ## [0.0.5] - 2026-05-13
 
 ### Added
