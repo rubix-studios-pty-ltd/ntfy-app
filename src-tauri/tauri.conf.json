@@ -11,9 +11,6 @@
   },
   "app": {
     "withGlobalTauri": true,
-    "security": {
-      "csp": null
-    },
     "windows": [
       {
         "title": "Ntfy",
@@ -30,7 +27,10 @@
         "center": true,
         "backgroundColor": "#07100d"
       }
-    ]
+    ],
+    "security": {
+      "csp": null
+    }
   },
   "bundle": {
     "active": true,
