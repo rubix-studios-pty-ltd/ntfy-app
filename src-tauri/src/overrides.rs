@@ -16,6 +16,35 @@ pub fn handle_page_load(window: &Webview, url: &Url) {
             document.head.appendChild(style);
           }
 
+          if (!window.__NTFY_EXTERNAL_LINKS__) {
+            window.__NTFY_EXTERNAL_LINKS__ = true;
+
+            document.addEventListener(
+              'click',
+              async (e) => {
+                const link = e.target?.closest?.('a[href]');
+
+                if (!link) return;
+                const url = new URL(link.href);
+
+                if (url.host === window.location.host) return;
+                e.preventDefault();
+
+                try {
+                  await window.__TAURI_INTERNALS__.invoke(
+                    'plugin:opener|open_url',
+                    {
+                      url: url.href,
+                    }
+                  );
+                } catch (error) {
+                  console.error('Failed to open external link', error);
+                }
+              },
+              true
+            );
+          }
+
           const fixText = () => {
             const elements = document.querySelectorAll('.MuiTypography-root');
 
