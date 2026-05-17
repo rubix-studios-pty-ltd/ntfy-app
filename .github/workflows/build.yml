@@ -36,7 +36,7 @@ jobs:
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
-          version: "11.1.0"
+          version: "11.1.2"
 
       - name: Setup Node
         uses: actions/setup-node@v4

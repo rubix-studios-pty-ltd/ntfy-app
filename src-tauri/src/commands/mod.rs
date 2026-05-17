@@ -1,3 +1,3 @@
-pub mod config;
+pub mod settings;
 
-pub use config::{get_url, set_url};
+pub use settings::{get_url, set_url};
