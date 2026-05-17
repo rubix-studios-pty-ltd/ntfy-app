@@ -1,6 +1,26 @@
 
 
 
+
+## [0.0.6] - 2026-05-17
+
+### Added
+
+- open external url to default browser.
+- add tauri-plugin-opener for external URL handling
+
+### Fixed
+
+- update notification text and hide documentation link
+- trim whitespace from instance URL input
+- update package dependencies and tauri configuration
+- update winnow dependency to version 1.0.3
+
+### Changed
+
+- reorganize URL configuration commands into settings module
+- remove unused dark theme variables and clean up CSS
+
 ## [0.0.5] - 2026-05-13
 
 ### Fixed
