@@ -2,7 +2,7 @@
 
 A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted ntfy instances. Built with [Rust](https://www.rust-lang.org/), [Tauri](https://tauri.app/), and [Next.js](https://nextjs.org/).
 
-Automatic updates are disabled to reduce background polling and external requests to GitHub. Update checking and installation are user controlled through the system tray.
+Automatic updates are disabled by default to reduce background activity, external requests to GitHub, and unnecessary resource usage. Update checking and installation are user controlled through the system tray.
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-0.0.8-green)
