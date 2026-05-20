@@ -4,6 +4,13 @@
 
 
 
+
+## [0.0.8] - 2026-05-20
+
+### Changed
+
+- simplify autostart methods and improve tray event handling
+
 ## [0.0.7] - 2026-05-20
 
 Maintenance release.
