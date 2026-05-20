@@ -3,6 +3,11 @@
 
 
 
+
+## [0.0.7] - 2026-05-20
+
+Maintenance release.
+
 ## [0.0.7] - 2026-05-20
 
 Maintenance release.
