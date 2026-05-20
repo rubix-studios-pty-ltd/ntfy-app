@@ -55,12 +55,12 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             "autostart" => {
                 if let Err(error) = toggle_autostart() {
                     eprintln!("Failed to toggle autostart: {error}");
-                } else if let Some(item) = app.menu().and_then(|m| m.get("autostart")) {
-                    if let Some(check_item) = item.as_check_menuitem() {
-                        let enabled = crate::autostart::is_autostart_enabled();
+                } else if let Some(item) = app.menu().and_then(|m| m.get("autostart"))
+                    && let Some(check_item) = item.as_check_menuitem()
+                {
+                    let enabled = crate::autostart::is_autostart_enabled();
 
-                        let _ = check_item.set_checked(enabled);
-                    }
+                    let _ = check_item.set_checked(enabled);
                 }
             }
             "check_updates" => {
@@ -122,21 +122,20 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 button: MouseButton::Left,
                 ..
             } = event
+                && let Some(window) = tray.app_handle().get_webview_window("main")
             {
-                if let Some(window) = tray.app_handle().get_webview_window("main") {
-                    let is_visible = window.is_visible().unwrap_or(false);
+                let is_visible = window.is_visible().unwrap_or(false);
 
-                    let is_minimized = window.is_minimized().unwrap_or(false);
+                let is_minimized = window.is_minimized().unwrap_or(false);
 
-                    let visible = is_visible && !is_minimized;
+                let visible = is_visible && !is_minimized;
 
-                    if visible {
-                        let _ = window.hide();
-                    } else {
-                        let _ = window.show();
-                        let _ = window.unminimize();
-                        let _ = window.set_focus();
-                    }
+                if visible {
+                    let _ = window.hide();
+                } else {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
                 }
             }
         })

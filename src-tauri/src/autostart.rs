@@ -18,15 +18,11 @@ pub fn is_autostart_enabled() -> bool {
 }
 
 pub fn enable_autostart() -> io::Result<()> {
-    autolaunch()
-        .enable()
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    autolaunch().enable().map_err(io::Error::other)
 }
 
 pub fn disable_autostart() -> io::Result<()> {
-    autolaunch()
-        .disable()
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    autolaunch().disable().map_err(io::Error::other)
 }
 
 pub fn toggle_autostart() -> io::Result<bool> {

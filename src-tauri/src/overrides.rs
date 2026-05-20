@@ -1,147 +1,181 @@
 use tauri::Webview;
 use url::Url;
 
-pub fn handle_page_load(window: &Webview, url: &Url) {
-    if url.as_str().contains("ntfy") {
-        let _ = window.eval(
-      r#"
-      (() => {
-        try {
-          const styleId = 'ntfy-style';
+pub fn handle_page_load(window: &Webview, _url: &Url) {
+    let _ = window.eval(
+        r#"
+        (() => {
+          try {
+            const styleId = 'ntfy-style';
 
-          if (!document.getElementById(styleId)) {
-            const style = document.createElement('style');
-            style.id = styleId;
-            style.textContent = ".MuiAlert-root, .MuiListSubheader-root { display: none !important; }";
-            document.head.appendChild(style);
-          }
+            if (!document.getElementById(styleId)) {
+              const style = document.createElement('style');
 
-          if (!window.__NTFY_EXTERNAL_LINKS__) {
-            window.__NTFY_EXTERNAL_LINKS__ = true;
+              style.id = styleId;
+              style.textContent = `
+                .MuiAlert-root,
+                .MuiListSubheader-root {
+                  display: none !important;
+                }
+              `;
 
-            document.addEventListener(
-              'click',
-              async (e) => {
-                const link = e.target?.closest?.('a[href]');
+              document.head.appendChild(style);
+            }
 
-                if (!link) return;
-                const url = new URL(link.href);
+            if (!window.__NTFY_EXTERNAL_LINKS__) {
+              window.__NTFY_EXTERNAL_LINKS__ = true;
 
-                if (url.host === window.location.host) return;
-                e.preventDefault();
+              document.addEventListener(
+                'click',
+                async (e) => {
+                  const link = e.target?.closest?.('a[href]');
 
-                try {
-                  await window.__TAURI_INTERNALS__.invoke(
-                    'plugin:opener|open_url',
-                    {
-                      url: url.href,
+                  if (!link) return;
+
+                  try {
+                    const url = new URL(link.href);
+
+                    if (url.host === window.location.host) {
+                      return;
                     }
-                  );
-                } catch (error) {
-                  console.error('Failed to open external link', error);
-                }
-              },
-              true
-            );
-          }
 
-          const fixText = () => {
-            const elements = document.querySelectorAll('.MuiTypography-root');
+                    e.preventDefault();
 
-            elements.forEach((el) => {
-              if (el.textContent === 'All notifications') {
-                el.textContent = 'Notifications';
-              }
-            });
-
-            elements.forEach((el) => {
-              if (el.textContent === 'Publish notification') {
-                el.textContent = 'Publish';
-              }
-            });
-
-            elements.forEach((el) => {
-              if (el.textContent === 'Subscribe to topic') {
-                el.textContent = 'Subscribe';
-              }
-            });
-
-            elements.forEach((el) => {
-              if (el.textContent.trim() === 'Documentation') {
-                el.closest('.MuiListItemButton-root')?.style.setProperty('display', 'none', 'important');
-              }
-            });
-          };
-
-          fixText();
-          setTimeout(fixText, 500);
-          setTimeout(fixText, 1500);
-        } catch (error) {
-          console.error('ntfy cleanup failed', error);
-        }
-
-        try {
-          if (window.__TAURI__ && !window.__TAURI__.__ntfyHooked) {
-            window.__TAURI__.__ntfyHooked = true;
-            const originalLog = console.log;
-
-            const seen = new Set();
-            console.log = function (...args) {
-              try {
-                const message = args.join(' ');
-
-                if (
-                  message.includes('[Connection') &&
-                  message.includes('Message received from server:')
-                ) {
-                  const jsonStart = message.indexOf('{');
-
-                  if (jsonStart !== -1) {
-                    const jsonString = message.slice(jsonStart);
-
-                    try {
-                      const data = JSON.parse(jsonString);
-
-                      if (
-                        data.event === 'message' &&
-                        typeof data.message === 'string' &&
-                        !data.message.startsWith('{')
-                      ) {
-                        const key = `${data.id}-${data.time}-${data.topic}`;
-
-                        if (seen.has(key)) return;
-
-                        seen.add(key);
-
-                        if (seen.size > 500) {
-                          seen.clear();
-                        }
-
-                        const clean = (msg) =>
-                          msg
-                            ?.replace(/\n\n+/g, '\n')
-                            .replace(/â¯/g, ' ')
-                            .trim();
-
-                        window.__TAURI__.event.emit('ntfy_notification', {
-                          title: data.title || data.topic || 'ntfy',
-                          body: clean(data.message),
-                        });
+                    await window.__TAURI_INTERNALS__.invoke(
+                      'plugin:opener|open_url',
+                      {
+                        url: url.href,
                       }
-                    } catch (e) {}
+                    );
+                  } catch (error) {
+                    console.error('Failed to open external link', error);
                   }
+                },
+                true
+              );
+            }
+
+            const fixText = () => {
+              const elements = document.querySelectorAll('.MuiTypography-root');
+
+              elements.forEach((el) => {
+                const text = el.textContent?.trim();
+
+                if (text === 'All notifications') {
+                  el.textContent = 'Notifications';
                 }
-              } catch {
-                // Ignore any errors in the interception logic
-              }
-              originalLog.apply(console, args);
+
+                if (text === 'Publish notification') {
+                  el.textContent = 'Publish';
+                }
+
+                if (text === 'Subscribe to topic') {
+                  el.textContent = 'Subscribe';
+                }
+
+                if (text === 'Documentation') {
+                  el.closest('.MuiListItemButton-root')
+                    ?.style.setProperty('display', 'none', 'important');
+                }
+              });
             };
+
+            fixText();
+
+            setTimeout(fixText, 500);
+            setTimeout(fixText, 1500);
+            setTimeout(fixText, 3000);
+
+            if (!window.__NTFY_PATCH__) {
+              window.__NTFY_PATCH__ = true;
+
+              window.__NTFY_SEEN__ ??= new Set();
+
+              const seen = window.__NTFY_SEEN__;
+
+              const emitNotification = (data) => {
+                try {
+                  if (
+                    !data ||
+                    data.event !== 'message' ||
+                    typeof data.message !== 'string'
+                  ) {
+                    return;
+                  }
+
+                  if (data.message.startsWith('{')) {
+                    return;
+                  }
+
+                  const key = `${data.id}-${data.time}-${data.topic}`;
+
+                  if (seen.has(key)) {
+                    return;
+                  }
+
+                  seen.add(key);
+
+                  if (seen.size > 500) {
+                    seen.clear();
+                  }
+
+                  const clean = (msg) =>
+                    msg
+                      ?.replace(/\n\n+/g, '\n')
+                      .replace(/â¯/g, ' ')
+                      .trim();
+
+                  window.__TAURI__.event.emit('ntfy_notification', {
+                    title: data.title || data.topic || 'ntfy',
+                    body: clean(data.message),
+                  });
+                } catch (error) {
+                  console.error('Failed to emit ntfy notification', error);
+                }
+              };
+
+              if (window.EventSource) {
+                const OriginalEventSource = window.EventSource;
+
+                window.EventSource = class extends OriginalEventSource {
+                  constructor(url, config) {
+                    super(url, config);
+
+                    this.addEventListener('message', (event) => {
+                      try {
+                        const data = JSON.parse(event.data);
+
+                        emitNotification(data);
+                      } catch {}
+                    });
+                  }
+                };
+              }
+
+              if (window.WebSocket) {
+                const OriginalWebSocket = window.WebSocket;
+
+                window.WebSocket = class extends OriginalWebSocket {
+                  constructor(url, protocols) {
+                    super(url, protocols);
+
+                    this.addEventListener('message', (event) => {
+                      try {
+                        const data = JSON.parse(event.data);
+
+                        emitNotification(data);
+                      } catch {}
+                    });
+                  }
+                };
+              }
+
+              console.log('ntfy notification hooks attached');
+            }
+          } catch (error) {
+            console.error('ntfy cleanup failed', error);
           }
-        } catch (error) {
-          console.error('ntfy notification interception failed', error);
-        }
-      })();
-      "#
+        })();
+        "#,
     );
-    }
 }

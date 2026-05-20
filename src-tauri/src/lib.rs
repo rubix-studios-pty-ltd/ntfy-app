@@ -22,7 +22,7 @@ pub fn run() {
             setup_window_events(window, event);
         })
         .setup(|app| {
-            listener::listener(&app.handle());
+            listener::listener(app.handle());
             setup_tray(app)?;
 
             Ok(())
