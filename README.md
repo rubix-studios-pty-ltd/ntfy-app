@@ -5,7 +5,7 @@ A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted n
 Automatic updates are disabled to reduce background polling and external requests to GitHub. Update checking and installation are user controlled through the system tray.
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-0.0.7-green)
+![Version](https://img.shields.io/badge/version-0.0.8-green)
 
 ![Ntfy App](docs/screenshots/windows.webp)
 
