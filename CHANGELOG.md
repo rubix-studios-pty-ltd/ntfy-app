@@ -9,7 +9,12 @@
 
 ### Changed
 
-- simplify autostart methods and improve tray event handling
+- Event listeners are no longer tied to intercepted console log output.
+- Notification handling now hooks directly into native browser WebSocket and EventSource APIs for improved reliability and compatibility.
+- Removed domain restrictions that previously limited listeners to websites containing ntfy in the hostname.
+- Notification interception now works across all supported webviews and services.
+- Improved runtime stability by removing console monkey patching logic.
+- Reduced dependency on frontend implementation details from third-party services.
 
 ## [0.0.7] - 2026-05-20
 
