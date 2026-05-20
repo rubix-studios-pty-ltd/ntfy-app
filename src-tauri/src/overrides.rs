@@ -1,7 +1,6 @@
 use tauri::Webview;
-use url::Url;
 
-pub fn handle_page_load(window: &Webview, _url: &Url) {
+pub fn handle_page_load(window: &Webview) {
     let _ = window.eval(
         r#"
         (() => {
