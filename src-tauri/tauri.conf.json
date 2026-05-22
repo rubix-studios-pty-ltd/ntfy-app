@@ -36,7 +36,7 @@
     "active": true,
     "createUpdaterArtifacts": true,
     "targets": "all",
-    "publisher": "Rubix Studios Pty. Ltd.",
+    "publisher": "Rubix Studios",
     "windows": {
       "nsis": {
         "installMode": "both",

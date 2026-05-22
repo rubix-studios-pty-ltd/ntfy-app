@@ -66,5 +66,5 @@ We continuously monitor our codebase for security issues through:
 
 For any security-related questions, contact:
 
-Rubix Studios Pty. Ltd.  
+Rubix Studios  
 Website: [https://rubixstudios.com.au](https://rubixstudios.com.au)
