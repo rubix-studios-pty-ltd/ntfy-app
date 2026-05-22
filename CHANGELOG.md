@@ -5,6 +5,14 @@
 
 
 
+
+## [0.0.9] - 2026-05-22
+
+### Fixed
+
+- update publisher name in tauri configuration
+- update version reference in security policy and remove best practices section
+
 ## [0.0.8] - 2026-05-20
 
 ### Changed
