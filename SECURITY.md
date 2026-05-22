@@ -21,7 +21,7 @@ Please include the following details in your report:
 - Steps to reproduce the issue
 - Potential impact of the vulnerability
 - Any possible mitigations
-- Version of PayloadCMS + Dub Plugin affected
+- Version of Ntfy App affected
 
 ## Response Process
 
@@ -35,17 +35,6 @@ Please include the following details in your report:
 - Security patches are given the highest priority
 - Updates will be released as soon as possible after a vulnerability is confirmed
 - If a critical vulnerability is found, we will release a patch version immediately
-
-## Best Practices
-
-When using PayloadCMS + Dub Plugin in production:
-
-1. Keep all dependencies up to date
-2. Use secure environment variables for sensitive data
-3. Regularly backup your database
-4. Monitor your application logs for suspicious activity
-5. Follow security best practices for Next.js and MongoDB deployments
-6. Implement proper authentication and authorization
 
 ## Security Monitoring
 
@@ -66,5 +55,5 @@ We continuously monitor our codebase for security issues through:
 
 For any security-related questions, contact:
 
-Rubix Studios Pty. Ltd.  
+Rubix Studios  
 Website: [https://rubixstudios.com.au](https://rubixstudios.com.au)

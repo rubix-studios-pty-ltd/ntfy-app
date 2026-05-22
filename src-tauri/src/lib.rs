@@ -27,8 +27,8 @@ pub fn run() {
 
             Ok(())
         })
-        .on_page_load(|window, payload| {
-            handle_page_load(window, payload.url());
+        .on_page_load(|window, _payload| {
+            handle_page_load(window);
         })
         .build(tauri::generate_context!())
         .expect("Error while building application");
