@@ -4,12 +4,12 @@ mod config;
 mod listener;
 mod overrides;
 mod tray;
-mod window;
+mod windows;
 
 use commands::{get_url, set_url};
 use overrides::handle_page_load;
 use tray::setup_tray;
-use window::setup_window_events;
+use windows::main::setup_window_events;
 
 pub fn run() {
     let app = tauri::Builder::default()

@@ -7,9 +7,12 @@ use tauri::{
 use tauri_plugin_updater::UpdaterExt;
 
 use crate::autostart::toggle_autostart;
+use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+
+    let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
 
     let autostart_enabled = crate::autostart::is_autostart_enabled();
 
@@ -32,6 +35,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let menu = Menu::new(app)?;
     menu.append(&show)?;
+    menu.append(&webhook)?;
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&autostart)?;
     menu.append(&check_updates)?;
@@ -51,6 +55,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                     let _ = window.unminimize();
                     let _ = window.set_focus();
                 }
+            }
+            "webhook" => {
+                open_webhook_window(app.app_handle());
             }
             "autostart" => {
                 if let Err(error) = toggle_autostart() {
