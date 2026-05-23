@@ -6,6 +6,18 @@
 
 
 
+
+## [0.0.10] - 2026-05-23
+
+### Added
+
+- add webhook functionality with UI components and window management
+
+### Fixed
+
+- update windows screenshot
+- adjust formatting and import statements in Webhook and Textarea components
+
 ## [0.0.9] - 2026-05-22
 
 ### Fixed
