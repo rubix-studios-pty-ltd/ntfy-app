@@ -7,6 +7,13 @@
 
 
 
+
+## [0.0.11] - 2026-05-23
+
+### Fixed
+
+- ensure webhook window is unminimized before showing
+
 ## [0.0.10] - 2026-05-23
 
 ### Added
