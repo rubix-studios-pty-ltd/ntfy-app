@@ -10,7 +10,7 @@ use crate::autostart::toggle_autostart;
 use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let show = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+    let show = MenuItem::with_id(app, "open", "Open Ntfy", true, None::<&str>)?;
 
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
 
@@ -39,6 +39,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&autostart)?;
     menu.append(&check_updates)?;
+    menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&reset_instance)?;
     menu.append(&PredefinedMenuItem::separator(app)?)?;
     menu.append(&quit)?;
@@ -49,7 +50,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         .icon(icon.unwrap())
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
-            "show" => {
+            "open" => {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.unminimize();
