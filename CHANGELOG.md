@@ -8,6 +8,13 @@
 
 
 
+
+## [0.0.12] - 2026-05-24
+
+### Fixed
+
+- update menu item ID from "show" to "open" for consistency
+
 ## [0.0.11] - 2026-05-23
 
 ### Fixed
