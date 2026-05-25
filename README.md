@@ -7,7 +7,8 @@ Automatic updates are disabled by default to reduce background activity, externa
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 ![Version](https://img.shields.io/badge/version-0.0.8-green)
 
-![Ntfy App](docs/screenshots/windows.webp)
+![Ntfy App](docs/screenshots/ntfy-app-instance.webp)
+![Ntfy Webhook](docs/screenshots/ntfy-app-webhook.webp)
 
 ## Features
 

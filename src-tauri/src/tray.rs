@@ -109,7 +109,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 });
             }
             "reset_instance" => {
-                if let Err(error) = crate::config::clear_instance_url(app.app_handle()) {
+                if let Err(error) = crate::config::clear_instance(app.app_handle()) {
                     eprintln!("Failed to reset instance URL: {error}");
                 }
 

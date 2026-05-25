@@ -45,7 +45,7 @@ pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<
     fs::write(&config_path, json).map_err(|e| e.to_string())
 }
 
-pub fn clear_instance_url(app_handle: &tauri::AppHandle) -> Result<(), String> {
+pub fn clear_instance(app_handle: &tauri::AppHandle) -> Result<(), String> {
     let mut config = load_config(app_handle);
     config.instance_url = None;
     save_config(app_handle, &config)
