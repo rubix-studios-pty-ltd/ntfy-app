@@ -10,7 +10,7 @@ use crate::autostart::toggle_autostart;
 use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let show = MenuItem::with_id(app, "open", "Open Ntfy", true, None::<&str>)?;
+    let show = MenuItem::with_id(app, "open", "Open ntfy", true, None::<&str>)?;
 
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
 
