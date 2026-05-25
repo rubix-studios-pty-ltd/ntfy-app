@@ -9,6 +9,15 @@
 
 
 
+
+## [0.0.13] - 2026-05-25
+
+### Fixed
+
+- correct capitalization of "ntfy" in tray menu item
+- add asset name patterns for macOS, Linux, and Windows builds
+- update pnpm package manager version to 11.3.0
+
 ## [0.0.12] - 2026-05-24
 
 ### Fixed
