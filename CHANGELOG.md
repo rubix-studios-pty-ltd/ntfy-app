@@ -10,6 +10,16 @@
 
 
 
+
+## [0.0.14] - 2026-05-25
+
+### Fixed
+
+- update asset name pattern key in build workflow
+- rename clear_instance_url to clear_instance for consistency
+- update ntfy app instance screenshot
+- update window label check in setup_window_events function
+
 ## [0.0.13] - 2026-05-25
 
 ### Fixed
