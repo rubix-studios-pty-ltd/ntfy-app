@@ -50,7 +50,7 @@
     "typecheck": "tsc --noEmit",
     "update": "pnpm self-update && pnpm update --latest --interactive --recursive && pnpm install && pnpm prune && pnpm dedupe"
   },
-  "packageManager": "pnpm@11.2.2",
+  "packageManager": "pnpm@11.3.0",
   "engines": {
     "node": "24.x || 25.x",
     "pnpm": ">=10"
