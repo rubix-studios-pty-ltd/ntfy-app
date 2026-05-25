@@ -19,12 +19,16 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
+            assetNamePattern: 'Ntfy-macOS-Apple-Silicon[ext]'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
+            assetNamePattern: 'Ntfy-macOS-Intel[ext]'
           - platform: 'ubuntu-22.04'
             args: ''
+            assetNamePattern: 'Ntfy-Linux-x64[ext]'
           - platform: 'windows-latest'
             args: ''
+            assetNamePattern: 'Ntfy-Windows-x64-Setup[ext]'
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -86,3 +90,4 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+          releaseAssetNamePattern: ${{ matrix.assetNamePattern }}
