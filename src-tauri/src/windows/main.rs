@@ -1,7 +1,7 @@
 use tauri::WindowEvent;
 
 pub fn setup_window_events(window: &tauri::Window, event: &WindowEvent) {
-    if window.label() != "main" {
+    if window.label() == "webhook" {
         return;
     }
 
