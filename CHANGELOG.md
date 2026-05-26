@@ -11,6 +11,17 @@
 
 
 
+
+## [0.0.15] - 2026-05-26
+
+### Added
+
+- enhance webhook page layout and improve input handling
+
+### Fixed
+
+- update tray menu items for consistency and clarity
+
 ## [0.0.14] - 2026-05-25
 
 ### Fixed
