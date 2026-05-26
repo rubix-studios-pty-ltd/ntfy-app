@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 import { normalizeUrl } from '@/utils/normalizeUrl'
 
-export async function readUrl() {
+export const readUrl = async () => {
   try {
     const stored = await invoke<string | null>('get_url')
 

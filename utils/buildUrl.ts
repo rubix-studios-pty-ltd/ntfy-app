@@ -1,6 +1,6 @@
 import { type WebhookInput, type WebhookResult } from '@/types/webhook'
 
-export function buildUrl({ instance, topic, token }: WebhookInput): WebhookResult {
+export const buildUrl = ({ instance, topic, token }: WebhookInput): WebhookResult => {
   const cleanInstance = instance?.trim().replace(/\/+$/, '')
   const cleanTopic = topic.trim()
   const cleanToken = token?.trim()

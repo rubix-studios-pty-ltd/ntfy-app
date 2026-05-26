@@ -1,4 +1,4 @@
-export function normalizeUrl(value: string | null) {
+export const normalizeUrl = (value: string | null) => {
   if (!value) return null
   const trimmed = value.trim()
   if (trimmed.length === 0) {

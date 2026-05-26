@@ -1,7 +1,7 @@
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
-pub fn open_webhook_window(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window("webhook") {
+pub fn open_automation_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("automation") {
         let _ = window.unminimize();
         let _ = window.show();
         let _ = window.set_focus();
@@ -9,10 +9,10 @@ pub fn open_webhook_window(app: &AppHandle) {
         return;
     }
 
-    match WebviewWindowBuilder::new(app, "webhook", WebviewUrl::App("/webhook".into()))
+    match WebviewWindowBuilder::new(app, "automation", WebviewUrl::App("/automation".into()))
         .title("Ntfy")
-        .inner_size(400.0, 530.0)
-        .min_inner_size(400.0, 530.0)
+        .inner_size(800.0, 800.0)
+        .min_inner_size(800.0, 800.0)
         .resizable(true)
         .fullscreen(false)
         .decorations(true)
@@ -25,7 +25,7 @@ pub fn open_webhook_window(app: &AppHandle) {
             let _ = window.set_focus();
         }
         Err(error) => {
-            eprintln!("Failed to create webhook window: {error}");
+            eprintln!("Failed to create automation window: {error}");
         }
     }
 }

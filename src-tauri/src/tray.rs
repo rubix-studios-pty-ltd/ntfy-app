@@ -6,15 +6,20 @@ use tauri::{
 
 use tauri_plugin_updater::UpdaterExt;
 
+use crate::config::clear_instance;
+use crate::autostart::is_autostart_enabled;
 use crate::autostart::toggle_autostart;
+use crate::windows::automation::open_automation_window;
 use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, "open", "Open ntfy", true, None::<&str>)?;
 
+    let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
+
     let webhook = MenuItem::with_id(app, "webhook", "Webhook builder", true, None::<&str>)?;
 
-    let autostart_enabled = crate::autostart::is_autostart_enabled();
+    let autostart_enabled = is_autostart_enabled();
 
     let autostart = CheckMenuItem::with_id(
         app,
@@ -38,7 +43,13 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
 
-    let tools_menu = Submenu::with_id_and_items(app, "tools", "Tools", true, &[&webhook])?;
+    let tools_menu = Submenu::with_id_and_items(
+        app, 
+        "tools", 
+        "Tools", 
+        true, 
+        &[&automation, &webhook],
+    )?;
 
     let settings_menu = Submenu::with_id_and_items(
         app,
@@ -78,6 +89,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                     let _ = window.set_focus();
                 }
             }
+            "automation" => {
+                open_automation_window(app.app_handle());
+            }
             "webhook" => {
                 open_webhook_window(app.app_handle());
             }
@@ -87,7 +101,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 } else if let Some(item) = app.menu().and_then(|m| m.get("autostart"))
                     && let Some(check_item) = item.as_check_menuitem()
                 {
-                    let enabled = crate::autostart::is_autostart_enabled();
+                    let enabled = is_autostart_enabled();
 
                     let _ = check_item.set_checked(enabled);
                 }
@@ -130,7 +144,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 });
             }
             "reset_instance" => {
-                if let Err(error) = crate::config::clear_instance(app.app_handle()) {
+                if let Err(error) = clear_instance(app.app_handle()) {
                     eprintln!("Failed to reset instance URL: {error}");
                 }
 

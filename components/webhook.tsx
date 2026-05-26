@@ -25,7 +25,7 @@ export function Webhook() {
     })()
   }, [])
 
-  function handleBuildUrl() {
+  const handleBuildUrl = () => {
     const webhook = buildUrl({
       instance,
       topic,
@@ -40,13 +40,13 @@ export function Webhook() {
     setResult(webhook.url)
   }
 
-  function handleClear() {
+  const handleClear = () => {
     setToken('')
     setTopic('')
     setResult('')
   }
 
-  async function copyWebhook() {
+  const handleCopy = async () => {
     if (!result) {
       return
     }
@@ -65,7 +65,7 @@ export function Webhook() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <div className="flex flex-col gap-2">
         <Label className="font-bold text-slate-200">Instance</Label>
 
@@ -123,7 +123,7 @@ export function Webhook() {
               size="sm"
               variant="ghost"
               className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
-              onClick={copyWebhook}
+              onClick={handleCopy}
             >
               {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
             </Button>
@@ -137,6 +137,6 @@ export function Webhook() {
           />
         </div>
       )}
-    </div>
+    </>
   )
 }

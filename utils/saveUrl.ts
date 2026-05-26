@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 import { normalizeUrl } from '@/utils/normalizeUrl'
 
-export async function saveUrl(instanceUrl: string) {
+export const saveUrl = async (instanceUrl: string) => {
   try {
     const normalized = normalizeUrl(instanceUrl)
     if (!normalized) return
