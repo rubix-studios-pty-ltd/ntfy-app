@@ -1,6 +1,6 @@
 use tauri::{
     Manager,
-    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
+    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
 };
 
@@ -10,44 +10,65 @@ use crate::autostart::toggle_autostart;
 use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let show = MenuItem::with_id(app, "open", "Open ntfy", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Open ntfy", true, None::<&str>)?;
 
-    let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
+    let webhook = MenuItem::with_id(app, "webhook", "Webhook builder", true, None::<&str>)?;
 
     let autostart_enabled = crate::autostart::is_autostart_enabled();
-
-    let check_updates =
-        MenuItem::with_id(app, "check_updates", "Check Updates", true, None::<&str>)?;
 
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
-        "Auto Start",
+        "Launch on startup",
         true,
         autostart_enabled,
         None::<&str>,
     )?;
 
     let reset_instance =
-        MenuItem::with_id(app, "reset_instance", "Reset Instance", true, None::<&str>)?;
+        MenuItem::with_id(app, "reset_instance", "Reset instance", true, None::<&str>)?;
 
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let check_updates = MenuItem::with_id(
+        app,
+        "check_updates",
+        "Check for updates",
+        true,
+        None::<&str>,
+    )?;
 
-    let menu = Menu::new(app)?;
-    menu.append(&show)?;
-    menu.append(&webhook)?;
-    menu.append(&PredefinedMenuItem::separator(app)?)?;
-    menu.append(&autostart)?;
-    menu.append(&check_updates)?;
-    menu.append(&PredefinedMenuItem::separator(app)?)?;
-    menu.append(&reset_instance)?;
-    menu.append(&PredefinedMenuItem::separator(app)?)?;
-    menu.append(&quit)?;
+    let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
+
+    let tools_menu = Submenu::with_id_and_items(app, "tools", "Tools", true, &[&webhook])?;
+
+    let settings_menu = Submenu::with_id_and_items(
+        app,
+        "settings",
+        "Settings",
+        true,
+        &[&autostart, &reset_instance],
+    )?;
+
+    let separator_1 = PredefinedMenuItem::separator(app)?;
+    let separator_2 = PredefinedMenuItem::separator(app)?;
+
+    let menu = Menu::with_items(
+        app,
+        &[
+            &open,
+            &separator_1,
+            &tools_menu,
+            &settings_menu,
+            &separator_2,
+            &check_updates,
+            &exit,
+        ],
+    )?;
 
     let icon = app.default_window_icon().cloned();
 
     let _tray = TrayIconBuilder::new()
         .icon(icon.unwrap())
+        .tooltip("Ntfy")
         .menu(&menu)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
@@ -119,7 +140,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
                 app.restart();
             }
-            "quit" => {
+            "exit" => {
                 std::process::exit(0);
             }
 
