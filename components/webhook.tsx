@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { buildUrl } from '@/utils/buildUrl'
 import { readUrl } from '@/utils/readUrl'
 
 export function Webhook() {
@@ -24,29 +25,22 @@ export function Webhook() {
     })()
   }, [])
 
-  function buildUrl() {
-    if (!instance) {
-      setResult('Missing instance URL')
+  function handleBuildUrl() {
+    const webhook = buildUrl({
+      instance,
+      topic,
+      token,
+    })
+
+    if (!webhook.success) {
+      setResult(webhook.error)
       return
     }
 
-    if (!topic) {
-      setResult('Please enter a topic')
-      return
-    }
-
-    const cleanUrl = instance.replace(/\/+$/, '')
-    let url = `${cleanUrl}/${encodeURIComponent(topic)}`
-
-    if (token) {
-      const authParam = btoa(`Bearer ${token}`).replace(/=+$/, '')
-      url += `?auth=${encodeURIComponent(authParam)}`
-    }
-
-    setResult(url)
+    setResult(webhook.url)
   }
 
-  function clear() {
+  function handleClear() {
     setToken('')
     setTopic('')
     setResult('')
@@ -107,14 +101,14 @@ export function Webhook() {
       <div className="flex gap-2">
         <Button
           className="flex-1 cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
-          onClick={buildUrl}
+          onClick={handleBuildUrl}
         >
           Build URL
         </Button>
 
         <Button
           className="cursor-pointer rounded-lg bg-linear-to-br from-zinc-800 to-zinc-900 font-semibold text-slate-50"
-          onClick={clear}
+          onClick={handleClear}
         >
           Clear
         </Button>
@@ -123,7 +117,7 @@ export function Webhook() {
       {result && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <Label className="font-bold text-slate-200">Webhook</Label>
+            <Label className="font-bold text-slate-200">Url</Label>
 
             <Button
               size="sm"
