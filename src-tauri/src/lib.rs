@@ -1,15 +1,17 @@
 mod autostart;
 mod commands;
 mod config;
+mod db;
 mod listener;
 mod overrides;
 mod tray;
 mod windows;
 
-use commands::{get_url, set_url};
 use overrides::handle_page_load;
 use tray::setup_tray;
 use windows::main::setup_window_events;
+
+use tauri::Manager;
 
 pub fn run() {
     let app = tauri::Builder::default()
@@ -17,11 +19,14 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![get_url, set_url])
+        .invoke_handler(commands::handler())
         .on_window_event(|window, event| {
             setup_window_events(window, event);
         })
         .setup(|app| {
+            let db_state = db::init(app.handle())?;
+            app.manage(db_state);
+
             listener::listener(app.handle());
             setup_tray(app)?;
 

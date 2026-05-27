@@ -25,7 +25,7 @@ import { actionLabels } from '@/utils/actionType'
 interface ModalProps {
   rule: Rules | null
   setRule: (rule: Rules | null) => void
-  onSave: () => void
+  onSave: () => void | Promise<void>
 }
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
@@ -56,7 +56,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
           <DialogHeader>
             <DialogTitle className="sr-only">Rule</DialogTitle>
             <DialogDescription className="sr-only">
-              Configure the notification trigger and desktop action.
+              Configure triggers and actions.
             </DialogDescription>
           </DialogHeader>
 
@@ -191,7 +191,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label className="font-semibold text-slate-200">Directory</Label>
+              <Label className="font-semibold  text-slate-200">Directory</Label>
               <Input
                 className="border border-white/10 bg-white/5 text-slate-50"
                 value={rule.workingDirectory}
@@ -212,7 +212,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
               onClick={onSave}
             >
-              Save Rule
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

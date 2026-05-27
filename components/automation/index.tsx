@@ -1,13 +1,21 @@
 'use client'
 
 import { PencilIcon, PlayIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Modal } from '@/components/automation/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import {
+  createRule,
+  deleteRule,
+  listRules,
+  testRule,
+  toggleRule,
+  updateRule,
+} from '@/lib/tauri/automation'
 import { type Rules, ruleSchema } from '@/types/automation'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
@@ -19,7 +27,18 @@ export function Automation() {
   const [search, setSearch] = useState('')
   const [editingRule, setEditingRule] = useState<Rules | null>(null)
 
-  const blankRule = baseStatus()
+  useEffect(() => {
+    const loadRules = async () => {
+      try {
+        const storedRules = await listRules()
+        setRules(storedRules)
+      } catch {
+        toast.error('Failed to load rules')
+      }
+    }
+
+    void loadRules()
+  }, [])
 
   const searchFilter = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -35,15 +54,15 @@ export function Automation() {
     })
   }, [rules, search])
 
-  const addRule = () => {
-    setEditingRule(blankRule)
+  const handleAddRule = () => {
+    setEditingRule(baseStatus())
   }
 
-  const editRule = (rule: Rules) => {
+  const handleEditRule = (rule: Rules) => {
     setEditingRule(rule)
   }
 
-  const saveRule = () => {
+  const saveRule = async () => {
     if (!editingRule) {
       return
     }
@@ -57,59 +76,83 @@ export function Automation() {
       return
     }
 
-    setRules((current) => {
-      const exists = current.some((rule) => rule.id === parsed.data.id)
+    const exists = rules.some((rule) => rule.id === parsed.data.id)
 
-      if (!exists) {
-        return [parsed.data, ...current]
-      }
+    try {
+      const savedRule = exists ? await updateRule(parsed.data) : await createRule(parsed.data)
 
-      return current.map((rule) => {
-        if (rule.id !== parsed.data.id) {
-          return rule
+      setRules((current) => {
+        const ruleExists = current.some((rule) => rule.id === savedRule.id)
+
+        if (!ruleExists) {
+          return [savedRule, ...current]
         }
 
-        return parsed.data
-      })
-    })
+        return current.map((rule) => {
+          if (rule.id !== savedRule.id) {
+            return rule
+          }
 
-    setEditingRule(null)
-    toast.success('Rule saved')
+          return savedRule
+        })
+      })
+
+      setEditingRule(null)
+      toast.success('Success')
+    } catch (error) {
+      console.error('Failed:', error)
+      toast.error('Save failed')
+    }
   }
 
-  const deleteRule = (ruleId: string) => {
-    setRules((current) => current.filter((rule) => rule.id !== ruleId))
+  const handleDeleteRule = async (ruleId: string) => {
+    try {
+      await deleteRule(ruleId)
+      setRules((current) => current.filter((rule) => rule.id !== ruleId))
+    } catch (error) {
+      console.error('Failed:', error)
+      toast.error('Delete failed')
+    }
   }
 
-  const toggleRule = (ruleId: string) => {
-    setRules((current) => {
-      return current.map((rule) => {
-        if (rule.id !== ruleId) {
-          return rule
-        }
+  const handleToggleRule = async (ruleId: string) => {
+    try {
+      const savedRule = await toggleRule(ruleId)
 
-        return {
-          ...rule,
-          active: !rule.active,
-        }
+      setRules((current) => {
+        return current.map((rule) => {
+          if (rule.id !== savedRule.id) {
+            return rule
+          }
+
+          return savedRule
+        })
       })
-    })
+    } catch (error) {
+      console.error('Failed:', error)
+      toast.error('Update failed')
+    }
   }
 
-  const testRule = (ruleId: string) => {
-    setRules((current) => {
-      return current.map((rule) => {
-        if (rule.id !== ruleId) {
-          return rule
-        }
+  const handleTestRule = async (ruleId: string) => {
+    try {
+      const savedRule = await testRule(ruleId)
 
-        return {
-          ...rule,
-          lastRun: new Date().toISOString(),
-          status: 'success',
-        }
+      setRules((current) => {
+        return current.map((rule) => {
+          if (rule.id !== savedRule.id) {
+            return rule
+          }
+
+          return savedRule
+        })
       })
-    })
+
+      toast.success('Success')
+    } catch (error) {
+      console.error('Failed:', error)
+      toast.error('Failed')
+    }
   }
 
   return (
@@ -128,7 +171,7 @@ export function Automation() {
 
         <Button
           className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
-          onClick={addRule}
+          onClick={handleAddRule}
         >
           <PlusIcon className="size-4" />
           Add Rule
@@ -151,7 +194,7 @@ export function Automation() {
           >
             <Switch
               checked={rule.active}
-              onCheckedChange={() => toggleRule(rule.id)}
+              onCheckedChange={() => handleToggleRule(rule.id)}
               className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-400/40 data-[state=checked]:bg-emerald-500/20 data-[state=unchecked]:border-white/10 data-[state=unchecked]:bg-white/5 [&>span]:bg-slate-500 data-[state=checked]:[&>span]:bg-emerald-300"
             />
 
@@ -181,7 +224,7 @@ export function Automation() {
                 size="xs"
                 variant="ghost"
                 className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
-                onClick={() => testRule(rule.id)}
+                onClick={() => handleTestRule(rule.id)}
               >
                 <PlayIcon className="size-3.5" />
               </Button>
@@ -190,7 +233,7 @@ export function Automation() {
                 size="xs"
                 variant="ghost"
                 className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
-                onClick={() => editRule(rule)}
+                onClick={() => handleEditRule(rule)}
               >
                 <PencilIcon className="size-3.5" />
               </Button>
@@ -199,7 +242,7 @@ export function Automation() {
                 size="xs"
                 variant="ghost"
                 className="cursor-pointer text-red-300 hover:bg-red-500/10 hover:text-red-200"
-                onClick={() => deleteRule(rule.id)}
+                onClick={() => handleDeleteRule(rule.id)}
               >
                 <TrashIcon className="size-3.5" />
               </Button>

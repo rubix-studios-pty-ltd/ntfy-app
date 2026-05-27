@@ -16,14 +16,14 @@ export const ruleSchema = z.object({
   id: z.string().min(1),
   active: z.boolean(),
 
-  name: z.string().trim().min(1, 'Rule name is required'),
+  name: z.string().trim().min(1, 'Name is required'),
   topic: z.string().trim().min(1, 'Topic is required'),
 
   matchType: matchTypeSchema,
-  matchValue: z.string().trim().min(1, 'Match value is required'),
+  matchValue: z.string().trim().min(1, 'Match is required'),
 
   actionType: actionTypeSchema,
-  actionValue: z.string().trim().min(1, 'Action value is required'),
+  actionValue: z.string().trim().min(1, 'Action is required'),
 
   arguments: optionalText,
   workingDirectory: optionalText,

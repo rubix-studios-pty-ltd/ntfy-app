@@ -3,7 +3,8 @@ export function formatDate(value?: string | Date) {
     return 'Never'
   }
 
-  const date = value instanceof Date ? value : new Date(value)
+  const date =
+    value instanceof Date ? value : /^\d+$/.test(value) ? new Date(Number(value)) : new Date(value)
 
   if (Number.isNaN(date.getTime())) {
     return 'Never'

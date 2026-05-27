@@ -1,3 +1,16 @@
+pub mod automation;
 pub mod settings;
 
-pub use settings::{get_url, set_url};
+pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
+    tauri::generate_handler![
+        settings::get_url,
+        settings::set_url,
+        automation::list_rules,
+        automation::create_rule,
+        automation::update_rule,
+        automation::delete_rule,
+        automation::toggle_rule,
+        automation::test_rule,
+        automation::rule_logs,
+    ]
+}

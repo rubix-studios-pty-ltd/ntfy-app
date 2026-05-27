@@ -6,9 +6,9 @@ use tauri::{
 
 use tauri_plugin_updater::UpdaterExt;
 
-use crate::config::clear_instance;
 use crate::autostart::is_autostart_enabled;
 use crate::autostart::toggle_autostart;
+use crate::config::clear_instance;
 use crate::windows::automation::open_automation_window;
 use crate::windows::webhook::open_webhook_window;
 
@@ -43,13 +43,8 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
 
-    let tools_menu = Submenu::with_id_and_items(
-        app, 
-        "tools", 
-        "Tools", 
-        true, 
-        &[&automation, &webhook],
-    )?;
+    let tools_menu =
+        Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook])?;
 
     let settings_menu = Submenu::with_id_and_items(
         app,
