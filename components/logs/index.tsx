@@ -1,6 +1,5 @@
 'use client'
 
-import { RefreshCcwIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -17,11 +16,8 @@ type LogRow = LogsType & {
 
 export function Logs() {
   const [logs, setLogs] = useState<LogRow[]>([])
-  const [spinKey, setSpinKey] = useState(0)
 
-  const loadLogs = useCallback(async () => {
-    setSpinKey((value) => value + 1)
-
+  const loadLogs = useCallback(async ({ notify = false }: { notify?: boolean } = {}) => {
     try {
       const rules = await listRules()
 
@@ -39,8 +35,13 @@ export function Logs() {
       const mergedLogs = results.flat().sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
 
       setLogs(mergedLogs)
-    } catch (error) {
-      toast.error('Failed to load logs')
+      if (notify) {
+        toast.success('Refreshed')
+      }
+    } catch {
+      if (notify) {
+        toast.error('Failed to load logs')
+      }
     }
   }, [])
 
@@ -53,10 +54,9 @@ export function Logs() {
       <div className="flex flex-col w-full items-end">
         <Button
           type="button"
-          onClick={() => void loadLogs()}
-          className="flex-1 cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
+          onClick={() => void loadLogs({ notify: true })}
+          className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 text-slate-50 font-semibold"
         >
-          <RefreshCcwIcon key={spinKey} className="mr-2 size-4 animate-[spin_500ms_linear_1]" />
           Refresh
         </Button>
       </div>

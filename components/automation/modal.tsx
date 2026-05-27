@@ -202,14 +202,14 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
 
           <DialogFooter className="gap-2">
             <Button
-              className="cursor-pointer rounded-lg bg-linear-to-br from-zinc-800 to-zinc-900 font-semibold text-slate-50"
+              className="cursor-pointer rounded-lg bg-linear-to-br from-zinc-800 to-zinc-900 text-slate-50 font-semibold"
               onClick={() => setRule(null)}
             >
               Cancel
             </Button>
 
             <Button
-              className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
+              className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 text-slate-50 font-semibold"
               onClick={onSave}
             >
               Save
