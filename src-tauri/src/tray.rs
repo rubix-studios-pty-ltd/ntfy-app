@@ -17,26 +17,26 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
 
-    let webhook = MenuItem::with_id(app, "webhook", "Webhook builder", true, None::<&str>)?;
+    let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
 
     let autostart_enabled = is_autostart_enabled();
 
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
-        "Launch on startup",
+        "Startup",
         true,
         autostart_enabled,
         None::<&str>,
     )?;
 
     let reset_instance =
-        MenuItem::with_id(app, "reset_instance", "Reset instance", true, None::<&str>)?;
+        MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
 
     let check_updates = MenuItem::with_id(
         app,
         "check_updates",
-        "Check for updates",
+        "Update",
         true,
         None::<&str>,
     )?;
