@@ -79,7 +79,7 @@ export function Logs() {
               key={log.id}
               className="grid grid-cols-[80px_1.4fr_1fr_80px] gap-2 border-b border-white/5 p-3 last:border-b-0"
             >
-              <span className="text-slate-400 text-sm">{formatDate(log.createdAt)}</span>
+              <span className="text-slate-400 text-xs">{formatDate(log.createdAt)}</span>
 
               <div className="flex flex-col gap-0.5 text-xs">
                 <span className="truncate text-xs text-slate-200">{log.ruleName}</span>

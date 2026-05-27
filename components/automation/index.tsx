@@ -1,6 +1,6 @@
 'use client'
 
-import { PencilIcon, PlayIcon, PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
+import { PencilIcon, PlayIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -163,7 +163,7 @@ export function Automation() {
 
           <Input
             className="border border-white/10 bg-white/5 pl-9 text-slate-50 text-sm xs:text-sm"
-            placeholder="Search rules..."
+            placeholder="Search..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -173,8 +173,7 @@ export function Automation() {
           className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
           onClick={handleAddRule}
         >
-          <PlusIcon className="size-4" />
-          Add Rule
+          Add
         </Button>
       </div>
 
