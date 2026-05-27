@@ -19,19 +19,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { type ActionType, type MatchType, type Rules } from '@/types/automation'
+import { type ActionType, type MatchType, type RulesType } from '@/types/automation'
 import { actionLabels } from '@/utils/actionType'
 
 interface ModalProps {
-  rule: Rules | null
-  setRule: (rule: Rules | null) => void
+  rule: RulesType | null
+  setRule: (rule: RulesType | null) => void
   onSave: () => void | Promise<void>
 }
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
   const open = Boolean(rule)
 
-  const updateRule = (updates: Partial<Rules>) => {
+  const updateRule = (updates: Partial<RulesType>) => {
     if (!rule) {
       return
     }
@@ -119,7 +119,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             <div className="grid gap-2">
               <Label className="font-semibold text-slate-200">Value</Label>
               <Textarea
-                className="area-scrollbar h-24 resize-none overflow-y-auto border border-white/10 bg-white/5 text-slate-50"
+                className="scrollbar h-24 resize-none overflow-y-auto border border-white/10 bg-white/5 text-slate-50"
                 rows={4}
                 value={rule.matchValue}
                 onChange={(event) => updateRule({ matchValue: event.target.value })}

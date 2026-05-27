@@ -1,17 +1,17 @@
 import { invoke } from '@tauri-apps/api/core'
 
-import { type Rules } from '@/types/automation'
+import { type LogsType, type RulesType } from '@/types/automation'
 
 export function listRules() {
-  return invoke<Rules[]>('list_rules')
+  return invoke<RulesType[]>('list_rules')
 }
 
-export function createRule(rule: Rules) {
-  return invoke<Rules>('create_rule', { rule })
+export function createRule(rule: RulesType) {
+  return invoke<RulesType>('create_rule', { rule })
 }
 
-export function updateRule(rule: Rules) {
-  return invoke<Rules>('update_rule', { rule })
+export function updateRule(rule: RulesType) {
+  return invoke<RulesType>('update_rule', { rule })
 }
 
 export function deleteRule(ruleId: string) {
@@ -19,13 +19,13 @@ export function deleteRule(ruleId: string) {
 }
 
 export function toggleRule(ruleId: string) {
-  return invoke<Rules>('toggle_rule', { ruleId })
+  return invoke<RulesType>('toggle_rule', { ruleId })
 }
 
 export function testRule(ruleId: string) {
-  return invoke<Rules>('test_rule', { ruleId })
+  return invoke<RulesType>('test_rule', { ruleId })
 }
 
 export function ruleLogs(ruleId: string) {
-  return invoke('rule_logs', { ruleId })
+  return invoke<LogsType[]>('rule_logs', { ruleId })
 }

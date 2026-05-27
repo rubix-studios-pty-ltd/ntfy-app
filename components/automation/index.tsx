@@ -16,16 +16,16 @@ import {
   toggleRule,
   updateRule,
 } from '@/lib/tauri/automation'
-import { type Rules, ruleSchema } from '@/types/automation'
+import { type RulesType, ruleSchema } from '@/types/automation'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
 import { matchType } from '@/utils/matchType'
 import { baseStatus, status, statusStyle } from '@/utils/status'
 
 export function Automation() {
-  const [rules, setRules] = useState<Rules[]>([])
+  const [rules, setRules] = useState<RulesType[]>([])
   const [search, setSearch] = useState('')
-  const [editingRule, setEditingRule] = useState<Rules | null>(null)
+  const [editingRule, setEditingRule] = useState<RulesType | null>(null)
 
   useEffect(() => {
     const loadRules = async () => {
@@ -58,7 +58,7 @@ export function Automation() {
     setEditingRule(baseStatus())
   }
 
-  const handleEditRule = (rule: Rules) => {
+  const handleEditRule = (rule: RulesType) => {
     setEditingRule(rule)
   }
 
@@ -179,7 +179,7 @@ export function Automation() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-white/10 bg-white/3">
-        <div className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] border-b border-white/10 bg-white/4 p-3 text-xs font-semibold text-slate-400">
+        <div className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] gap-2 border-b border-white/10 bg-white/4 p-3 text-xs font-semibold text-slate-400">
           <span>Active</span>
           <span>Name</span>
           <span>Trigger</span>
@@ -203,7 +203,7 @@ export function Automation() {
 
             <div className="flex flex-col gap-0.5 text-xs">
               <span className="text-slate-200">Topic: {rule.topic || 'Any'}</span>
-              <div className="area-scrollbar text-slate-500 h-4 overflow-hidden overflow-y-auto truncate">
+              <div className="scrollbar text-slate-500 h-4 overflow-hidden overflow-y-auto truncate">
                 {rule.matchValue
                   .split(/\r?\n/)
                   .map((value) => value.trim())

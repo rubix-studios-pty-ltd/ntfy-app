@@ -10,6 +10,7 @@ use crate::autostart::is_autostart_enabled;
 use crate::autostart::toggle_autostart;
 use crate::config::clear_instance;
 use crate::windows::automation::open_automation_window;
+use crate::windows::logs::open_logs_window;
 use crate::windows::webhook::open_webhook_window;
 
 pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
@@ -18,6 +19,14 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
 
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
+
+    let logs = MenuItem::with_id(
+        app,
+        "logs",
+        "Logs",
+        true,
+        None::<&str>,
+    )?;
 
     let autostart_enabled = is_autostart_enabled();
 
@@ -64,6 +73,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             &separator_1,
             &tools_menu,
             &settings_menu,
+            &logs,
             &separator_2,
             &check_updates,
             &exit,
@@ -100,6 +110,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
                     let _ = check_item.set_checked(enabled);
                 }
+            }
+            "logs" => {
+                open_logs_window(app.app_handle());
             }
             "check_updates" => {
                 let handle = app.app_handle().clone();

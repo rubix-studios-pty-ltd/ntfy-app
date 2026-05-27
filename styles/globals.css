@@ -55,24 +55,24 @@
   }
 }
 
-.area-scrollbar {
+.scrollbar {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
 }
 
-.area-scrollbar::-webkit-scrollbar {
+.scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
-.area-scrollbar::-webkit-scrollbar-track {
+.scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.area-scrollbar::-webkit-scrollbar-thumb {
+.scrollbar::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.35);
   border-radius: 999px;
 }
 
-.area-scrollbar::-webkit-scrollbar-thumb:hover {
+.scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.55);
 }
