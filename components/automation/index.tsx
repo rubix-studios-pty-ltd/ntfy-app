@@ -185,6 +185,7 @@ export function Automation() {
           <span>Trigger</span>
           <span>Action</span>
           <span>Status</span>
+          <span aria-hidden="true" />
         </div>
 
         {searchFilter.map((rule) => (
