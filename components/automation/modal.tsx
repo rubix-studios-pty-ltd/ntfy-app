@@ -185,7 +185,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <Label className="font-semibold text-slate-200">Arguments</Label>
               <Input
                 className="border border-white/10 bg-white/5 text-slate-50"
-                value={rule.arguments}
+                value={rule.arguments ?? ''}
                 onChange={(event) => updateRule({ arguments: event.target.value })}
               />
             </div>
@@ -194,7 +194,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <Label className="font-semibold  text-slate-200">Directory</Label>
               <Input
                 className="border border-white/10 bg-white/5 text-slate-50"
-                value={rule.workingDirectory}
+                value={rule.workingDirectory ?? ''}
                 onChange={(event) => updateRule({ workingDirectory: event.target.value })}
               />
             </div>
