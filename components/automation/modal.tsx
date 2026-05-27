@@ -119,8 +119,8 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             <div className="grid gap-2">
               <Label className="font-semibold text-slate-200">Value</Label>
               <Textarea
-                className="resize-none border border-white/10 bg-white/5 text-slate-50"
-                rows={3}
+                className="area-scrollbar h-24 resize-none overflow-y-auto border border-white/10 bg-white/5 text-slate-50"
+                rows={4}
                 value={rule.matchValue}
                 onChange={(event) => updateRule({ matchValue: event.target.value })}
               />

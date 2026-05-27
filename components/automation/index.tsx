@@ -179,7 +179,7 @@ export function Automation() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-white/10 bg-white/3">
-        <div className="grid grid-cols-[60px_1.2fr_1.2fr_1.2fr_80px_80px] border-b border-white/10 bg-white/4 p-3 text-xs font-semibold text-slate-400">
+        <div className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] border-b border-white/10 bg-white/4 p-3 text-xs font-semibold text-slate-400">
           <span>Active</span>
           <span>Name</span>
           <span>Trigger</span>
@@ -190,7 +190,7 @@ export function Automation() {
         {searchFilter.map((rule) => (
           <div
             key={rule.id}
-            className="grid grid-cols-[60px_1.2fr_1.2fr_1.2fr_80px_80px] items-center border-b border-white/5 p-3 last:border-b-0"
+            className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] gap-2 items-center border-b border-white/5 p-3 last:border-b-0"
           >
             <Switch
               checked={rule.active}
@@ -198,13 +198,21 @@ export function Automation() {
               className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-400/40 data-[state=checked]:bg-emerald-500/20 data-[state=unchecked]:border-white/10 data-[state=unchecked]:bg-white/5 [&>span]:bg-slate-500 data-[state=checked]:[&>span]:bg-emerald-300"
             />
 
-            <span className="text-slate-100 text-sm">{rule.name}</span>
+            <span className="text-slate-100 text-sm truncate">{rule.name}</span>
 
             <div className="flex flex-col gap-0.5 text-xs">
               <span className="text-slate-200">Topic: {rule.topic || 'Any'}</span>
-              <span className="text-slate-500">
-                {matchType(rule.matchType)} "{rule.matchValue}"
-              </span>
+              <div className="area-scrollbar text-slate-500 h-4 overflow-hidden overflow-y-auto truncate">
+                {rule.matchValue
+                  .split(/\r?\n/)
+                  .map((value) => value.trim())
+                  .filter((value) => value.length > 0)
+                  .map((value, index) => (
+                    <span key={`${rule.id}-match-${index}`} className="block">
+                      {matchType(rule.matchType)} "{value}"
+                    </span>
+                  ))}
+              </div>
             </div>
 
             <div className="flex flex-col gap-0.5 text-xs">
