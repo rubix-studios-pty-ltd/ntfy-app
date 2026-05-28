@@ -1,6 +1,6 @@
 use super::super::{FieldKind, ModuleField};
 
-const SET_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
+const SET_VOLUME: &[ModuleField] = &[ModuleField {
     key: "volume",
     kind: FieldKind::Number,
     min: Some(0.0),
@@ -9,7 +9,7 @@ const SET_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
     options: &[],
 }];
 
-const INCREASE_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
+const INCREASE_VOLUME: &[ModuleField] = &[ModuleField {
     key: "amount",
     kind: FieldKind::Number,
     min: Some(1.0),
@@ -18,7 +18,7 @@ const INCREASE_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
     options: &[],
 }];
 
-const DECREASE_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
+const DECREASE_VOLUME: &[ModuleField] = &[ModuleField {
     key: "amount",
     kind: FieldKind::Number,
     min: Some(1.0),
@@ -27,14 +27,14 @@ const DECREASE_VOLUME_FIELDS: &[ModuleField] = &[ModuleField {
     options: &[],
 }];
 
-const MUTE_TOGGLE_FIELDS: &[ModuleField] = &[];
+const TOGGLE_MUTE: &[ModuleField] = &[];
 
 pub(super) fn fields(module_id: &str) -> Option<&'static [ModuleField]> {
     match module_id {
-        "volSet" => Some(SET_VOLUME_FIELDS),
-        "volInc" => Some(INCREASE_VOLUME_FIELDS),
-        "volDown" => Some(DECREASE_VOLUME_FIELDS),
-        "volMute" => Some(MUTE_TOGGLE_FIELDS),
+        "setVolume" => Some(SET_VOLUME),
+        "increaseVolume" => Some(INCREASE_VOLUME),
+        "decreaseVolume" => Some(DECREASE_VOLUME),
+        "toggleMute" => Some(TOGGLE_MUTE),
         _ => None,
     }
 }

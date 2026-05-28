@@ -20,7 +20,7 @@ import {
 import { type RulesType, ruleSchema } from '@/schema/automation'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
-import { getAction } from '@/utils/getAction'
+import { formatAction, getAction } from '@/utils/getAction'
 import { matchType } from '@/utils/matchType'
 import { baseStatus, status, statusStyle } from '@/utils/status'
 
@@ -227,7 +227,7 @@ export function Automation() {
 
               <div className="flex flex-col gap-0.5 text-sm">
                 <span className="font-semibold">{actionType(rule.actionType)}</span>
-                <span className="block min-w-0 truncate">{getAction(rule)}</span>
+                <span className="block min-w-0 truncate">{formatAction(rule)}</span>
               </div>
 
               <div className="flex flex-col gap-0.5 text-sm">

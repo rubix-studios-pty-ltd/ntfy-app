@@ -15,6 +15,7 @@ import { listLogs } from '@/lib/tauri/automation'
 import { type LogsList } from '@/types/logs'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
+import { formatId } from '@/utils/getAction'
 import { getPages } from '@/utils/getPages'
 import { status, statusStyle } from '@/utils/status'
 
@@ -131,7 +132,7 @@ export function Logs() {
               <div className="flex flex-col gap-0.5 text-sm">
                 <span className="truncate font-semibold">{actionType(log.actionType)}</span>
                 {log.actionValue && <span className="truncate">{log.actionValue}</span>}
-                {log.moduleId && <span className="truncate">{log.moduleId}</span>}
+                {log.moduleId && <span className="truncate">{formatId(log.moduleId)}</span>}
               </div>
 
               <div className="text-sm font-semibold">

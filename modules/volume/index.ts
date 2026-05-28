@@ -2,7 +2,7 @@ import { type Module } from '@/modules/types'
 
 export const volumeModule = [
   {
-    id: 'volSet',
+    id: 'setVolume',
     label: 'Set volume',
     description: 'Set the system volume to a specific level.',
     defaultConfig: {
@@ -21,7 +21,7 @@ export const volumeModule = [
     ],
   },
   {
-    id: 'volInc',
+    id: 'increaseVolume',
     label: 'Increase volume',
     description: 'Increase the system volume by a set amount.',
     defaultConfig: {
@@ -40,7 +40,7 @@ export const volumeModule = [
     ],
   },
   {
-    id: 'volDown',
+    id: 'decreaseVolume',
     label: 'Decrease volume',
     description: 'Decrease the system volume by a set amount.',
     defaultConfig: {
@@ -59,7 +59,7 @@ export const volumeModule = [
     ],
   },
   {
-    id: 'volMute',
+    id: 'toggleMute',
     label: 'Toggle mute',
     description: 'Toggle system mute on or off.',
     defaultConfig: {},

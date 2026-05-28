@@ -10,6 +10,12 @@ import {
 import { useTheme } from 'next-themes'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
+const toastStyle = {
+  background: 'rgb(2 6 23)',
+  color: 'rgb(248 250 252)',
+  border: '1px solid rgba(255, 255, 255, 0.10)',
+} satisfies React.CSSProperties
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme()
 
@@ -25,8 +31,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       toastOptions={{
+        style: toastStyle,
         classNames: {
-          toast: 'border border-white/10 bg-slate-950 text-slate-50 shadow-2xl',
+          toast: 'border shadow-2xl',
           title: 'text-sm font-semibold text-slate-50',
           description: 'text-sm text-slate-400',
           actionButton: 'bg-teal-600 text-slate-50 hover:bg-teal-500',
