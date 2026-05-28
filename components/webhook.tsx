@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { readUrl } from '@/lib/tauri/readUrl'
 import { buildUrl } from '@/utils/buildUrl'
-import { readUrl } from '@/utils/readUrl'
 
 export function Webhook() {
   const [instance, setInstance] = useState<string | null>(null)
