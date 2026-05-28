@@ -102,22 +102,22 @@ fn validate_number(
         return Err(format!("{module_id}.{} must be finite", field.key));
     }
 
-    if let Some(min) = field.min && number < min {
+    if let Some(min) = field.min
+        && number < min
+    {
         return Err(format!("{module_id}.{} must be at least {min}", field.key));
     }
 
-    if let Some(max) = field.max && number > max {
+    if let Some(max) = field.max
+        && number > max
+    {
         return Err(format!("{module_id}.{} must be at most {max}", field.key));
     }
 
     Ok(())
 }
 
-fn validate_boolean(
-    module_id: &str,
-    field: &ModuleField,
-    value: &Value,
-) -> Result<(), String> {
+fn validate_boolean(module_id: &str, field: &ModuleField, value: &Value) -> Result<(), String> {
     match value {
         Value::Bool(_) => Ok(()),
         Value::String(text) if text == "true" || text == "false" => Ok(()),
@@ -135,9 +135,7 @@ fn validate_text(
         return Err(format!("{module_id}.{} must be text", field.key));
     };
 
-    if text.contains("$value")
-        && (!field.allow_variables || matches!(mode, Validation::Execute))
-    {
+    if text.contains("$value") && (!field.allow_variables || matches!(mode, Validation::Execute)) {
         return Err(format!(
             "{module_id}.{} contains an invalid variable",
             field.key

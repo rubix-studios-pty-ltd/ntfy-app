@@ -24,30 +24,24 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
         return Err("Invalid action type".to_string());
     }
 
-    if let Some(status) = rule.status.as_deref() && !STATUSES.contains(&status) {
+    if let Some(status) = rule.status.as_deref()
+        && !STATUSES.contains(&status)
+    {
         return Err("Invalid status".to_string());
     }
 
     match rule.action_type.as_str() {
-    "runProgram" => {
-        let program = required_option("program", &rule.action_value)?;
+        "runProgram" => {
+            let program = required_option("program", &rule.action_value)?;
 
-        validate_program(
-            "Program",
-            program,
-            rule.working_directory.as_deref(),
-        )?;
-    }
+            validate_program("Program", program, rule.working_directory.as_deref())?;
+        }
 
-    "runScript" => {
-        let script = required_option("script", &rule.action_value)?;
+        "runScript" => {
+            let script = required_option("script", &rule.action_value)?;
 
-        validate_script(
-            "Script",
-            script,
-            rule.working_directory.as_deref(),
-        )?;
-    }
+            validate_script("Script", script, rule.working_directory.as_deref())?;
+        }
 
         "openUrl" => {
             let url = required_option("url", &rule.action_value)?;

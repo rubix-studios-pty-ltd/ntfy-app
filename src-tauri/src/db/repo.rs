@@ -4,7 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 use super::models::{
-    ActionConfig, LogsAutomation, AutomationRule, AutomationInput, LogsInput, LogsList,
+    ActionConfig, AutomationInput, AutomationRule, LogsAutomation, LogsInput, LogsList,
 };
 
 fn now_ms() -> String {
@@ -351,11 +351,9 @@ pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, 
             |row| row.get::<_, u32>(0),
         ),
 
-        None => connection.query_row(
-            "SELECT COUNT(*) FROM automation_logs",
-            [],
-            |row| row.get::<_, u32>(0),
-        ),
+        None => connection.query_row("SELECT COUNT(*) FROM automation_logs", [], |row| {
+            row.get::<_, u32>(0)
+        }),
     }
     .map_err(|error| error.to_string())?;
 
