@@ -98,7 +98,14 @@ export function Logs() {
                 <span className="truncate text-xs text-slate-200">
                   {actionType(log.actionType)}
                 </span>
-                <span className="mt-1 truncate text-xs text-slate-500">{log.actionValue}</span>
+                {log.actionValue && (
+                  <span className="mt-1 truncate text-xs text-slate-500">{log.actionValue}</span>
+                )}
+                {log.moduleId && (
+                  <span className="mt-1 truncate text-xs text-slate-500">
+                    Module: {log.moduleId}
+                  </span>
+                )}
               </div>
 
               <div className="text-xs">

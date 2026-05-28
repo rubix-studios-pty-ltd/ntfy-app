@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { getDefault, moduleMap, moduleOptions } from '@/modules'
 import { type ActionType, type MatchType, type RulesType } from '@/types/automation'
 import { actionLabels } from '@/utils/actionType'
+import { getBase } from '@/utils/getBase'
+import { getConfig, parseConfig } from '@/utils/getConfig'
 
 interface ModalProps {
   rule: RulesType | null
@@ -30,6 +33,7 @@ interface ModalProps {
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
   const open = Boolean(rule)
+  const runAction = rule?.actionType === 'runProgram' || rule?.actionType === 'runScript'
 
   const updateRule = (updates: Partial<RulesType>) => {
     if (!rule) {
@@ -39,6 +43,55 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
     setRule({
       ...rule,
       ...updates,
+    } as RulesType)
+  }
+
+  const updateAction = (actionType: ActionType) => {
+    if (!rule) {
+      return
+    }
+
+    const baseRule = getBase(rule)
+
+    if (actionType === 'module') {
+      setRule({
+        ...baseRule,
+        actionType,
+        moduleId: '',
+        actionConfig: {},
+      })
+
+      return
+    }
+
+    if (actionType === 'runProgram') {
+      setRule({
+        ...baseRule,
+        actionType,
+        actionValue: '',
+        arguments: undefined,
+        workingDirectory: undefined,
+      })
+
+      return
+    }
+
+    if (actionType === 'runScript') {
+      setRule({
+        ...baseRule,
+        actionType,
+        actionValue: '',
+        arguments: undefined,
+        workingDirectory: undefined,
+      })
+
+      return
+    }
+
+    setRule({
+      ...baseRule,
+      actionType,
+      actionValue: '',
     })
   }
 
@@ -131,11 +184,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                 <Label className="font-semibold text-slate-200">Action</Label>
                 <Select
                   value={rule.actionType}
-                  onValueChange={(value) =>
-                    updateRule({
-                      actionType: value as ActionType,
-                    })
-                  }
+                  onValueChange={(value) => updateAction(value as ActionType)}
                 >
                   <SelectTrigger className="w-full border border-white/10 bg-white/5 text-slate-50">
                     <SelectValue />
@@ -165,6 +214,13 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                     >
                       Open URL
                     </SelectItem>
+
+                    <SelectItem
+                      value="module"
+                      className="cursor-pointer focus:bg-white/10 focus:text-slate-50"
+                    >
+                      Module
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -173,31 +229,131 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                 <Label className="font-semibold text-slate-200">
                   {actionLabels[rule.actionType]}
                 </Label>
-                <Input
-                  className="border border-white/10 bg-white/5 text-slate-50"
-                  value={rule.actionValue}
-                  onChange={(event) => updateRule({ actionValue: event.target.value })}
-                />
+
+                {rule.actionType === 'module' ? (
+                  <Select
+                    value={rule.moduleId}
+                    onValueChange={(value) =>
+                      updateRule({
+                        moduleId: value,
+                        actionConfig: getDefault(value),
+                      } as Partial<RulesType>)
+                    }
+                  >
+                    <SelectTrigger className="w-full border border-white/10 bg-white/5 text-slate-50">
+                      <SelectValue placeholder="Select module" />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      position="popper"
+                      className="border border-white/10 bg-zinc-950 text-slate-50"
+                    >
+                      {moduleOptions.map((module) => (
+                        <SelectItem
+                          key={module.id}
+                          value={module.id}
+                          className="cursor-pointer focus:bg-white/10 focus:text-slate-50"
+                        >
+                          {module.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    className="border border-white/10 bg-white/5 text-slate-50"
+                    value={rule.actionValue}
+                    onChange={(event) => updateRule({ actionValue: event.target.value })}
+                  />
+                )}
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label className="font-semibold text-slate-200">Arguments</Label>
-              <Input
-                className="border border-white/10 bg-white/5 text-slate-50"
-                value={rule.arguments ?? ''}
-                onChange={(event) => updateRule({ arguments: event.target.value })}
-              />
-            </div>
+            {runAction && (
+              <>
+                <div className="grid gap-2">
+                  <Label className="font-semibold text-slate-200">Arguments</Label>
+                  <Input
+                    className="border border-white/10 bg-white/5 text-slate-50"
+                    value={rule.arguments ?? ''}
+                    onChange={(event) => updateRule({ arguments: event.target.value })}
+                  />
+                </div>
 
-            <div className="grid gap-2">
-              <Label className="font-semibold  text-slate-200">Directory</Label>
-              <Input
-                className="border border-white/10 bg-white/5 text-slate-50"
-                value={rule.workingDirectory ?? ''}
-                onChange={(event) => updateRule({ workingDirectory: event.target.value })}
-              />
-            </div>
+                <div className="grid gap-2">
+                  <Label className="font-semibold text-slate-200">Directory</Label>
+                  <Input
+                    className="border border-white/10 bg-white/5 text-slate-50"
+                    value={rule.workingDirectory ?? ''}
+                    onChange={(event) => updateRule({ workingDirectory: event.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {rule.actionType === 'module' && moduleMap[rule.moduleId]?.fields?.length ? (
+              <div className="grid gap-3 rounded-lg border border-white/10 bg-white/3 p-3">
+                <div className="grid gap-1">
+                  <Label className="font-semibold text-slate-200">Module settings</Label>
+
+                  {moduleMap[rule.moduleId]?.description && (
+                    <p className="text-xs text-slate-500">{moduleMap[rule.moduleId].description}</p>
+                  )}
+                </div>
+
+                {moduleMap[rule.moduleId].fields?.map((field) => {
+                  const value = rule.actionConfig?.[field.key]
+
+                  if (field.type === 'number') {
+                    return (
+                      <div key={field.key} className="grid gap-2">
+                        <Label className="font-semibold text-slate-200">{field.label}</Label>
+
+                        <Input
+                          type={
+                            field.type === 'number' && !field.allowVariables ? 'number' : 'text'
+                          }
+                          inputMode={field.type === 'number' ? 'numeric' : undefined}
+                          min={field.allowVariables ? undefined : field.min}
+                          max={field.allowVariables ? undefined : field.max}
+                          placeholder={field.placeholder}
+                          className="border border-white/10 bg-white/5 text-slate-50"
+                          value={getConfig(value)}
+                          onChange={(event) =>
+                            updateRule({
+                              actionConfig: {
+                                ...(rule.actionConfig ?? {}),
+                                [field.key]: parseConfig(field, event.target.value),
+                              },
+                            } as Partial<RulesType>)
+                          }
+                        />
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <div key={field.key} className="grid gap-2">
+                      <Label className="font-semibold text-slate-200">{field.label}</Label>
+
+                      <Input
+                        placeholder={field.placeholder}
+                        className="border border-white/10 bg-white/5 text-slate-50"
+                        value={typeof value === 'string' ? value : ''}
+                        onChange={(event) =>
+                          updateRule({
+                            actionConfig: {
+                              ...(rule.actionConfig ?? {}),
+                              [field.key]: event.target.value,
+                            },
+                          } as Partial<RulesType>)
+                        }
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
           </div>
 
           <DialogFooter className="gap-2">

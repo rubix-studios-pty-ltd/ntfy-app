@@ -19,6 +19,7 @@ import {
 import { type RulesType, ruleSchema } from '@/types/automation'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
+import { getAction } from '@/utils/getAction'
 import { matchType } from '@/utils/matchType'
 import { baseStatus, status, statusStyle } from '@/utils/status'
 
@@ -48,7 +49,7 @@ export function Automation() {
     }
 
     return rules.filter((rule) => {
-      return [rule.name, rule.topic, rule.matchValue, rule.actionValue].some((value) =>
+      return [rule.name, rule.topic, rule.matchValue, getAction(rule)].some((value) =>
         value.toLowerCase().includes(query)
       )
     })
@@ -217,7 +218,7 @@ export function Automation() {
 
             <div className="flex flex-col gap-0.5 text-xs">
               <span className="text-slate-200">{actionType(rule.actionType)}</span>
-              <span className="max-w-55 truncate text-slate-500">{rule.actionValue}</span>
+              <span className="max-w-55 truncate text-slate-500">{getAction(rule)}</span>
             </div>
 
             <div className="flex flex-col gap-0.5 text-xs">

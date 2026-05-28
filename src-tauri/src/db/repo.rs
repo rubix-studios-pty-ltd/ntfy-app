@@ -1,14 +1,35 @@
+use rusqlite::types::Type;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
-use super::models::{AutomationLog, AutomationRule, AutomationRuleInput};
+use super::models::{ActionConfig, AutomationLog, AutomationRule, AutomationRuleInput};
 
 fn now_millis() -> String {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_millis().to_string())
         .unwrap_or_else(|_| "0".to_string())
+}
+
+fn config_from_row(row: &Row<'_>) -> rusqlite::Result<Option<ActionConfig>> {
+    let action_config: Option<String> = row.get("action_config")?;
+
+    match action_config {
+        Some(value) => serde_json::from_str::<ActionConfig>(&value)
+            .map(Some)
+            .map_err(|error| {
+                rusqlite::Error::FromSqlConversionFailure(0, Type::Text, Box::new(error))
+            }),
+        None => Ok(None),
+    }
+}
+
+fn config_to_json(action_config: Option<ActionConfig>) -> Result<Option<String>, String> {
+    action_config
+        .map(|config| serde_json::to_string(&config))
+        .transpose()
+        .map_err(|error| error.to_string())
 }
 
 fn rule_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
@@ -21,6 +42,8 @@ fn rule_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
         match_value: row.get("match_value")?,
         action_type: row.get("action_type")?,
         action_value: row.get("action_value")?,
+        module_id: row.get("module_id")?,
+        action_config: config_from_row(row)?,
         arguments: row.get("arguments")?,
         working_directory: row.get("working_directory")?,
         created_at: row.get("created_at")?,
@@ -39,6 +62,7 @@ fn log_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationLog> {
         message: row.get("message")?,
         action_type: row.get("action_type")?,
         action_value: row.get("action_value")?,
+        module_id: row.get("module_id")?,
         status: row.get("status")?,
         error: row.get("error")?,
         created_at: row.get("created_at")?,
@@ -49,24 +73,26 @@ fn fetch_rule_by_id(connection: &Connection, id: &str) -> Result<AutomationRule,
     connection
         .query_row(
             r#"
-			SELECT
-			  id,
-			  active,
-			  name,
-			  topic,
-			  match_type,
-			  match_value,
-			  action_type,
-			  action_value,
-			  arguments,
-			  working_directory,
-			  created_at,
-			  updated_at,
-			  last_run_at,
-			  status
-			FROM automation_rules
-			WHERE id = ?1
-			"#,
+            SELECT
+              id,
+              active,
+              name,
+              topic,
+              match_type,
+              match_value,
+              action_type,
+              action_value,
+              module_id,
+              action_config,
+              arguments,
+              working_directory,
+              created_at,
+              updated_at,
+              last_run_at,
+              status
+            FROM automation_rules
+            WHERE id = ?1
+            "#,
             params![id],
             rule_from_row,
         )
@@ -79,24 +105,26 @@ pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String
     let mut statement = connection
         .prepare(
             r#"
-			SELECT
-			  id,
-			  active,
-			  name,
-			  topic,
-			  match_type,
-			  match_value,
-			  action_type,
-			  action_value,
-			  arguments,
-			  working_directory,
-			  created_at,
-			  updated_at,
-			  last_run_at,
-			  status
-			FROM automation_rules
-			ORDER BY created_at DESC
-			"#,
+            SELECT
+              id,
+              active,
+              name,
+              topic,
+              match_type,
+              match_value,
+              action_type,
+              action_value,
+              module_id,
+              action_config,
+              arguments,
+              working_directory,
+              created_at,
+              updated_at,
+              last_run_at,
+              status
+            FROM automation_rules
+            ORDER BY created_at DESC
+            "#,
         )
         .map_err(|error| error.to_string())?;
 
@@ -113,27 +141,30 @@ pub fn create_rule(
 ) -> Result<AutomationRule, String> {
     let now = now_millis();
     let status = rule.status.clone().or_else(|| Some("never".to_string()));
+    let action_config = config_to_json(rule.action_config)?;
 
     connection
         .execute(
             r#"
-			INSERT INTO automation_rules (
-			  id,
-			  active,
-			  name,
-			  topic,
-			  match_type,
-			  match_value,
-			  action_type,
-			  action_value,
-			  arguments,
-			  working_directory,
-			  created_at,
-			  updated_at,
-			  last_run_at,
-			  status
-			) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
-			"#,
+            INSERT INTO automation_rules (
+              id,
+              active,
+              name,
+              topic,
+              match_type,
+              match_value,
+              action_type,
+              action_value,
+              module_id,
+              action_config,
+              arguments,
+              working_directory,
+              created_at,
+              updated_at,
+              last_run_at,
+              status
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+            "#,
             params![
                 rule.id,
                 i64::from(rule.active),
@@ -143,6 +174,8 @@ pub fn create_rule(
                 rule.match_value,
                 rule.action_type,
                 rule.action_value,
+                rule.module_id,
+                action_config,
                 rule.arguments,
                 rule.working_directory,
                 now,
@@ -162,25 +195,28 @@ pub fn update_rule(
 ) -> Result<AutomationRule, String> {
     let now = now_millis();
     let existing = fetch_rule_by_id(connection, &rule.id)?;
+    let action_config = config_to_json(rule.action_config)?;
 
     connection
         .execute(
             r#"
-			UPDATE automation_rules
-			SET active = ?2,
-				name = ?3,
-				topic = ?4,
-				match_type = ?5,
-				match_value = ?6,
-				action_type = ?7,
-				action_value = ?8,
-				arguments = ?9,
-				working_directory = ?10,
-				updated_at = ?11,
-				last_run_at = ?12,
-				status = ?13
-			WHERE id = ?1
-			"#,
+            UPDATE automation_rules
+            SET active = ?2,
+                name = ?3,
+                topic = ?4,
+                match_type = ?5,
+                match_value = ?6,
+                action_type = ?7,
+                action_value = ?8,
+                module_id = ?9,
+                action_config = ?10,
+                arguments = ?11,
+                working_directory = ?12,
+                updated_at = ?13,
+                last_run_at = ?14,
+                status = ?15
+            WHERE id = ?1
+            "#,
             params![
                 rule.id,
                 i64::from(rule.active),
@@ -190,6 +226,8 @@ pub fn update_rule(
                 rule.match_value,
                 rule.action_type,
                 rule.action_value,
+                rule.module_id,
+                action_config,
                 rule.arguments,
                 rule.working_directory,
                 now,
@@ -212,6 +250,7 @@ pub fn delete_rule(connection: &Connection, id: &str) -> Result<(), String> {
 
 pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
     let current = fetch_rule_by_id(connection, id)?;
+
     let updated = AutomationRuleInput {
         id: current.id.clone(),
         active: !current.active,
@@ -221,6 +260,8 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
         match_value: current.match_value,
         action_type: current.action_type,
         action_value: current.action_value,
+        module_id: current.module_id,
+        action_config: current.action_config,
         arguments: current.arguments,
         working_directory: current.working_directory,
         last_run: current.last_run,
@@ -238,19 +279,20 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
     connection
         .execute(
             r#"
-			INSERT INTO automation_logs (
-			  id,
-			  rule_id,
-			  topic,
-			  title,
-			  message,
-			  action_type,
-			  action_value,
-			  status,
-			  error,
-			  created_at
-			) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
-			"#,
+            INSERT INTO automation_logs (
+              id,
+              rule_id,
+              topic,
+              title,
+              message,
+              action_type,
+              action_value,
+              module_id,
+              status,
+              error,
+              created_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+            "#,
             params![
                 log_id,
                 current.id,
@@ -259,6 +301,7 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
                 Some("Rule executed successfully".to_string()),
                 current.action_type,
                 current.action_value,
+                current.module_id,
                 "success",
                 Option::<String>::None,
                 now.clone(),
@@ -269,12 +312,12 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
     connection
         .execute(
             r#"
-			UPDATE automation_rules
-			SET last_run_at = ?2,
-				status = ?3,
-				updated_at = ?4
-			WHERE id = ?1
-			"#,
+            UPDATE automation_rules
+            SET last_run_at = ?2,
+                status = ?3,
+                updated_at = ?4
+            WHERE id = ?1
+            "#,
             params![id, now.clone(), "success", now],
         )
         .map_err(|error| error.to_string())?;
@@ -286,21 +329,22 @@ pub fn rule_logs(connection: &Connection, id: &str) -> Result<Vec<AutomationLog>
     let mut statement = connection
         .prepare(
             r#"
-			SELECT
-			  id,
-			  rule_id,
-			  topic,
-			  title,
-			  message,
-			  action_type,
-			  action_value,
-			  status,
-			  error,
-			  created_at
-			FROM automation_logs
-			WHERE rule_id = ?1
-			ORDER BY created_at DESC
-			"#,
+            SELECT
+              id,
+              rule_id,
+              topic,
+              title,
+              message,
+              action_type,
+              action_value,
+              module_id,
+              status,
+              error,
+              created_at
+            FROM automation_logs
+            WHERE rule_id = ?1
+            ORDER BY created_at DESC
+            "#,
         )
         .map_err(|error| error.to_string())?;
 

@@ -4,7 +4,7 @@ use crate::db::{DbState, models::AutomationRuleInput, repo};
 pub async fn list_rules(
     state: tauri::State<'_, DbState>,
 ) -> Result<Vec<crate::db::models::AutomationRule>, String> {
-    crate::db::run(state, |conn| repo::list_rules(conn)).await
+    crate::db::run(state, repo::list_rules).await
 }
 
 #[tauri::command]

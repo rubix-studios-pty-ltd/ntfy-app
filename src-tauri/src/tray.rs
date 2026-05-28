@@ -20,13 +20,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
 
-    let logs = MenuItem::with_id(
-        app,
-        "logs",
-        "Logs",
-        true,
-        None::<&str>,
-    )?;
+    let logs = MenuItem::with_id(app, "logs", "Logs", true, None::<&str>)?;
 
     let autostart_enabled = is_autostart_enabled();
 
@@ -39,16 +33,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         None::<&str>,
     )?;
 
-    let reset_instance =
-        MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
+    let reset_instance = MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
 
-    let check_updates = MenuItem::with_id(
-        app,
-        "check_updates",
-        "Update",
-        true,
-        None::<&str>,
-    )?;
+    let check_updates = MenuItem::with_id(app, "check_updates", "Update", true, None::<&str>)?;
 
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
 

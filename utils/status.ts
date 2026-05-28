@@ -1,6 +1,6 @@
-import { type Rules, type StatusType } from '@/types/automation'
+import { type RulesType, type StatusType } from '@/types/automation'
 
-export const baseStatus = (): Rules => {
+export const baseStatus = (): RulesType => {
   return {
     id: crypto.randomUUID(),
     active: true,
@@ -10,8 +10,8 @@ export const baseStatus = (): Rules => {
     matchValue: '',
     actionType: 'runProgram',
     actionValue: '',
-    arguments: '',
-    workingDirectory: '',
+    arguments: undefined,
+    workingDirectory: undefined,
     status: 'never',
   }
 }
