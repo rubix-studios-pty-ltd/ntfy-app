@@ -57,11 +57,11 @@
 
 .scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.45) transparent;
 }
 
 .scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .scrollbar::-webkit-scrollbar-track {
@@ -69,10 +69,9 @@
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.35);
   border-radius: 999px;
 }
 
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.55);
+.scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }

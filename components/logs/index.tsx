@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -32,14 +32,20 @@ const logInitial: LogsList = {
 export function Logs() {
   const [logs, setLogs] = useState<LogsList>(logInitial)
 
-  const loadLogs = useCallback(
-    async ({ page = logs.page, notify = false }: { page?: number; notify?: boolean } = {}) => {
-      try {
-        const result = await listLogs({
-          page,
-          pageSize,
-        })
+  const pageRef = useRef(1)
 
+  const loadLogs = useCallback(
+    async ({
+      page = pageRef.current,
+      notify = false,
+    }: {
+      page?: number
+      notify?: boolean
+    } = {}) => {
+      try {
+        const result = await listLogs({ page, pageSize })
+
+        pageRef.current = result.page
         setLogs(result)
 
         if (notify) {
@@ -51,7 +57,7 @@ export function Logs() {
         }
       }
     },
-    [logs.page]
+    []
   )
 
   useEffect(() => {
