@@ -50,7 +50,7 @@ export function Automation() {
 
     return rules.filter((rule) => {
       return [rule.name, rule.topic, rule.matchValue, getAction(rule)].some((value) =>
-        value.toLowerCase().includes(query)
+        String(value ?? '').toLowerCase().includes(query),
       )
     })
   }, [rules, search])
