@@ -47,7 +47,7 @@ pub fn handle_page_load(window: &Webview) {
                       }
                     );
                   } catch (error) {
-                    console.error('Failed to open external link', error);
+                    console.error('ntfy: Failed to open external link', error);
                   }
                 },
                 true
@@ -129,27 +129,9 @@ pub fn handle_page_load(window: &Webview) {
                     body: clean(data.message),
                   });
                 } catch (error) {
-                  console.error('Failed to emit ntfy notification', error);
+                  console.error('ntfy: Failed to emit notification', error);
                 }
               };
-
-              if (window.EventSource) {
-                const OriginalEventSource = window.EventSource;
-
-                window.EventSource = class extends OriginalEventSource {
-                  constructor(url, config) {
-                    super(url, config);
-
-                    this.addEventListener('message', (event) => {
-                      try {
-                        const data = JSON.parse(event.data);
-
-                        emitNotification(data);
-                      } catch {}
-                    });
-                  }
-                };
-              }
 
               if (window.WebSocket) {
                 const OriginalWebSocket = window.WebSocket;
@@ -159,6 +141,10 @@ pub fn handle_page_load(window: &Webview) {
                     super(url, protocols);
 
                     this.addEventListener('message', (event) => {
+                      if (typeof event.data !== 'string') {
+                        return;
+                      }
+
                       try {
                         const data = JSON.parse(event.data);
 
@@ -169,10 +155,10 @@ pub fn handle_page_load(window: &Webview) {
                 };
               }
 
-              console.log('ntfy notification hooks attached');
+              console.log('ntfy: Listeners attached');
             }
           } catch (error) {
-            console.error('ntfy cleanup failed', error);
+            console.error('ntfy: Failed to attach listeners', error);
           }
         })();
         "#,
