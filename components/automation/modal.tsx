@@ -33,7 +33,7 @@ interface ModalProps {
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
   const open = Boolean(rule)
-  const runAction = rule?.actionType === 'runProgram' || rule?.actionType === 'runScript'
+  const runAction = rule?.actionType === 'runProgram'
 
   const updateRule = (updates: Partial<RulesType>) => {
     if (!rule) {
@@ -65,18 +65,6 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
     }
 
     if (actionType === 'runProgram') {
-      setRule({
-        ...baseRule,
-        actionType,
-        actionValue: '',
-        arguments: undefined,
-        workingDirectory: undefined,
-      })
-
-      return
-    }
-
-    if (actionType === 'runScript') {
       setRule({
         ...baseRule,
         actionType,
@@ -199,13 +187,6 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
                     >
                       Run program
-                    </SelectItem>
-
-                    <SelectItem
-                      value="runScript"
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                    >
-                      Run script
                     </SelectItem>
 
                     <SelectItem

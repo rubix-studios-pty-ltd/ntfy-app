@@ -4,7 +4,7 @@ use crate::db::models::AutomationInput;
 use std::path::{Path, PathBuf};
 use url::Url;
 
-const ACTION_TYPES: &[&str] = &["runProgram", "runScript", "openUrl", "module"];
+const ACTION_TYPES: &[&str] = &["runProgram", "openUrl", "module"];
 const MATCH_TYPES: &[&str] = &["equals", "contains", "startsWith"];
 const STATUSES: &[&str] = &["success", "failed", "never"];
 
@@ -35,12 +35,6 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
             let program = required_option("program", &rule.action_value)?;
 
             validate_program("Program", program, rule.working_directory.as_deref())?;
-        }
-
-        "runScript" => {
-            let script = required_option("script", &rule.action_value)?;
-
-            validate_script("Script", script, rule.working_directory.as_deref())?;
         }
 
         "openUrl" => {
@@ -145,39 +139,6 @@ fn validate_program(
         ));
     }
 
-    // Bare command is allowed so the OS/PATH can resolve it later.
-    Ok(())
-}
-
-fn validate_script(
-    field: &str,
-    value: &str,
-    working_directory: Option<&str>,
-) -> Result<(), String> {
-    let value = value.trim();
-
-    if value.is_empty() {
-        return Err(format!("{field} is required"));
-    }
-
-    let path = PathBuf::from(value);
-
-    let resolved = if path.is_absolute() {
-        path
-    } else if let Some(directory) = working_directory
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-    {
-        Path::new(directory).join(path)
-    } else {
-        return Err(format!(
-            "{field} must use an absolute path or have a working directory"
-        ));
-    };
-
-    validate_file(field, &resolved)?;
-    validate_ext(field, &resolved)?;
-
     Ok(())
 }
 
@@ -191,17 +152,4 @@ fn validate_file(field: &str, path: &Path) -> Result<(), String> {
     }
 
     Ok(())
-}
-
-fn validate_ext(field: &str, path: &Path) -> Result<(), String> {
-    let extension = path
-        .extension()
-        .and_then(|value| value.to_str())
-        .map(str::to_ascii_lowercase)
-        .ok_or_else(|| format!("{field} must have a valid extension"))?;
-
-    match extension.as_str() {
-        "bat" | "cmd" | "ps1" | "sh" => Ok(()),
-        _ => Err(format!("{field} has an unsupported extension")),
-    }
 }

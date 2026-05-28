@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const actionTypeSchema = z.enum(['runProgram', 'runScript', 'openUrl', 'module'])
+export const actionTypeSchema = z.enum(['runProgram', 'openUrl', 'module'])
 
 export const matchTypeSchema = z.enum(['equals', 'contains', 'startsWith'])
 
@@ -35,13 +35,6 @@ const programSchema = baseSchema.extend({
   workingDirectory: optionalText,
 })
 
-const scriptSchema = baseSchema.extend({
-  actionType: z.literal('runScript'),
-  actionValue: z.string().trim().min(1, 'Script is required'),
-  arguments: optionalText,
-  workingDirectory: optionalText,
-})
-
 const urlSchema = baseSchema.extend({
   actionType: z.literal('openUrl'),
   actionValue: z.url('URL is required'),
@@ -55,7 +48,6 @@ const moduleSchema = baseSchema.extend({
 
 export const ruleSchema = z.discriminatedUnion('actionType', [
   programSchema,
-  scriptSchema,
   urlSchema,
   moduleSchema,
 ])

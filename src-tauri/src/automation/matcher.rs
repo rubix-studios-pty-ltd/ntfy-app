@@ -109,5 +109,5 @@ fn ascii_prefix_end(incoming: &str, needle: &str) -> Option<usize> {
 }
 
 fn same_ascii_char(left: char, right: char) -> bool {
-    left.to_ascii_lowercase() == right.to_ascii_lowercase()
+    left.eq_ignore_ascii_case(&right)
 }
