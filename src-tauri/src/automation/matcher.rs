@@ -51,41 +51,20 @@ pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<Matc
 }
 
 fn match_equals(incoming: &str, line: &str) -> Option<String> {
-    if same_text(incoming, line) {
-        return Some(incoming.to_string());
-    }
-
-    None
+    same_text(incoming, line).then(|| incoming.to_string())
 }
 
 fn match_starts_with(incoming: &str, line: &str) -> Option<String> {
-    let incoming_normalized = incoming.to_ascii_lowercase();
-    let line_normalized = line.to_ascii_lowercase();
+    let end = ascii_prefix_end(incoming, line)?;
 
-    if !incoming_normalized.starts_with(&line_normalized) {
-        return None;
-    }
-
-    let value = incoming
-        .get(line.len()..)
-        .unwrap_or_default()
-        .trim()
-        .to_string();
-
-    Some(value)
+    Some(incoming[end..].trim().to_string())
 }
 
 fn match_contains(incoming: &str, line: &str) -> Option<String> {
-    let incoming_normalized = incoming.to_ascii_lowercase();
-    let line_normalized = line.to_ascii_lowercase();
+    let (start, end) = ascii_find(incoming, line)?;
 
-    let index = incoming_normalized.find(&line_normalized)?;
-
-    let start = index;
-    let end = index + line.len();
-
-    let before = incoming.get(..start).unwrap_or_default().trim();
-    let after = incoming.get(end..).unwrap_or_default().trim();
+    let before = incoming[..start].trim();
+    let after = incoming[end..].trim();
 
     let value = if after.is_empty() {
         before.to_string()
@@ -98,4 +77,37 @@ fn match_contains(incoming: &str, line: &str) -> Option<String> {
 
 fn same_text(left: &str, right: &str) -> bool {
     left.trim().eq_ignore_ascii_case(right.trim())
+}
+
+fn ascii_find(incoming: &str, needle: &str) -> Option<(usize, usize)> {
+    for (start, _) in incoming.char_indices() {
+        if let Some(end) = ascii_prefix_end(&incoming[start..], needle) {
+            return Some((start, start + end));
+        }
+    }
+
+    None
+}
+
+fn ascii_prefix_end(incoming: &str, needle: &str) -> Option<usize> {
+    let mut incoming_chars = incoming.char_indices();
+
+    for needle_char in needle.chars() {
+        let (_, incoming_char) = incoming_chars.next()?;
+
+        if !same_ascii_char(incoming_char, needle_char) {
+            return None;
+        }
+    }
+
+    Some(
+        incoming_chars
+            .next()
+            .map(|(index, _)| index)
+            .unwrap_or(incoming.len()),
+    )
+}
+
+fn same_ascii_char(left: char, right: char) -> bool {
+    left.to_ascii_lowercase() == right.to_ascii_lowercase()
 }

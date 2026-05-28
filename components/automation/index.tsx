@@ -211,7 +211,7 @@ export function Automation() {
               <span className="text-sm truncate">{rule.name}</span>
 
               <div className="flex flex-col gap-0.5 text-sm">
-                <span>Topic: {rule.topic || 'Any'}</span>
+                <span>Topic: {rule.topic}</span>
                 <div className="scrollbar h-6 overflow-hidden overflow-y-auto truncate">
                   {rule.matchValue
                     .split(/\r?\n/)
