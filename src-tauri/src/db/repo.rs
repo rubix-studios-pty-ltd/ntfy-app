@@ -3,16 +3,18 @@ use rusqlite::{Connection, OptionalExtension, Row, params};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
-use super::models::{ActionConfig, AutomationLog, AutomationRule, AutomationRuleInput};
+use super::models::{
+    ActionConfig, LogsAutomation, AutomationRule, AutomationInput, LogsInput, LogsList,
+};
 
-fn now_millis() -> String {
+fn now_ms() -> String {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_millis().to_string())
         .unwrap_or_else(|_| "0".to_string())
 }
 
-fn config_from_row(row: &Row<'_>) -> rusqlite::Result<Option<ActionConfig>> {
+fn config_row(row: &Row<'_>) -> rusqlite::Result<Option<ActionConfig>> {
     let action_config: Option<String> = row.get("action_config")?;
 
     match action_config {
@@ -25,14 +27,14 @@ fn config_from_row(row: &Row<'_>) -> rusqlite::Result<Option<ActionConfig>> {
     }
 }
 
-fn config_to_json(action_config: Option<ActionConfig>) -> Result<Option<String>, String> {
+fn config_json(action_config: Option<ActionConfig>) -> Result<Option<String>, String> {
     action_config
         .map(|config| serde_json::to_string(&config))
         .transpose()
         .map_err(|error| error.to_string())
 }
 
-fn rule_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
+fn rule_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
     Ok(AutomationRule {
         id: row.get("id")?,
         active: row.get::<_, i64>("active")? != 0,
@@ -43,7 +45,7 @@ fn rule_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
         action_type: row.get("action_type")?,
         action_value: row.get("action_value")?,
         module_id: row.get("module_id")?,
-        action_config: config_from_row(row)?,
+        action_config: config_row(row)?,
         arguments: row.get("arguments")?,
         working_directory: row.get("working_directory")?,
         created_at: row.get("created_at")?,
@@ -53,23 +55,7 @@ fn rule_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
     })
 }
 
-fn log_from_row(row: &Row<'_>) -> rusqlite::Result<AutomationLog> {
-    Ok(AutomationLog {
-        id: row.get("id")?,
-        rule_id: row.get("rule_id")?,
-        topic: row.get("topic")?,
-        title: row.get("title")?,
-        message: row.get("message")?,
-        action_type: row.get("action_type")?,
-        action_value: row.get("action_value")?,
-        module_id: row.get("module_id")?,
-        status: row.get("status")?,
-        error: row.get("error")?,
-        created_at: row.get("created_at")?,
-    })
-}
-
-fn fetch_rule_by_id(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
+fn rule_id(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
     connection
         .query_row(
             r#"
@@ -94,7 +80,7 @@ fn fetch_rule_by_id(connection: &Connection, id: &str) -> Result<AutomationRule,
             WHERE id = ?1
             "#,
             params![id],
-            rule_from_row,
+            rule_row,
         )
         .optional()
         .map_err(|error| error.to_string())?
@@ -129,7 +115,7 @@ pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String
         .map_err(|error| error.to_string())?;
 
     statement
-        .query_map([], rule_from_row)
+        .query_map([], rule_row)
         .map_err(|error| error.to_string())?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| error.to_string())
@@ -137,11 +123,11 @@ pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String
 
 pub fn create_rule(
     connection: &Connection,
-    rule: AutomationRuleInput,
+    rule: AutomationInput,
 ) -> Result<AutomationRule, String> {
-    let now = now_millis();
+    let now = now_ms();
     let status = rule.status.clone().or_else(|| Some("never".to_string()));
-    let action_config = config_to_json(rule.action_config)?;
+    let action_config = config_json(rule.action_config)?;
 
     connection
         .execute(
@@ -186,16 +172,16 @@ pub fn create_rule(
         )
         .map_err(|error| error.to_string())?;
 
-    fetch_rule_by_id(connection, &rule.id)
+    rule_id(connection, &rule.id)
 }
 
 pub fn update_rule(
     connection: &Connection,
-    rule: AutomationRuleInput,
+    rule: AutomationInput,
 ) -> Result<AutomationRule, String> {
-    let now = now_millis();
-    let existing = fetch_rule_by_id(connection, &rule.id)?;
-    let action_config = config_to_json(rule.action_config)?;
+    let now = now_ms();
+    let existing = rule_id(connection, &rule.id)?;
+    let action_config = config_json(rule.action_config)?;
 
     connection
         .execute(
@@ -237,7 +223,7 @@ pub fn update_rule(
         )
         .map_err(|error| error.to_string())?;
 
-    fetch_rule_by_id(connection, &rule.id)
+    rule_id(connection, &rule.id)
 }
 
 pub fn delete_rule(connection: &Connection, id: &str) -> Result<(), String> {
@@ -249,9 +235,9 @@ pub fn delete_rule(connection: &Connection, id: &str) -> Result<(), String> {
 }
 
 pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    let current = fetch_rule_by_id(connection, id)?;
+    let current = rule_id(connection, id)?;
 
-    let updated = AutomationRuleInput {
+    let updated = AutomationInput {
         id: current.id.clone(),
         active: !current.active,
         name: current.name,
@@ -272,8 +258,8 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
 }
 
 pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    let current = fetch_rule_by_id(connection, id)?;
-    let now = now_millis();
+    let current = rule_id(connection, id)?;
+    let now = now_ms();
     let log_id = Uuid::new_v4().to_string();
 
     connection
@@ -282,6 +268,7 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
             INSERT INTO automation_logs (
               id,
               rule_id,
+              rule_name,
               topic,
               title,
               message,
@@ -291,14 +278,15 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
               status,
               error,
               created_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
             "#,
             params![
                 log_id,
                 current.id,
+                current.name,
                 current.topic,
                 Some("Automation test".to_string()),
-                Some("Rule executed successfully".to_string()),
+                Some("Test success".to_string()),
                 current.action_type,
                 current.action_value,
                 current.module_id,
@@ -322,35 +310,131 @@ pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, St
         )
         .map_err(|error| error.to_string())?;
 
-    fetch_rule_by_id(connection, id)
+    rule_id(connection, id)
 }
 
-pub fn rule_logs(connection: &Connection, id: &str) -> Result<Vec<AutomationLog>, String> {
-    let mut statement = connection
-        .prepare(
-            r#"
-            SELECT
-              id,
-              rule_id,
-              topic,
-              title,
-              message,
-              action_type,
-              action_value,
-              module_id,
-              status,
-              error,
-              created_at
-            FROM automation_logs
-            WHERE rule_id = ?1
-            ORDER BY created_at DESC
-            "#,
-        )
-        .map_err(|error| error.to_string())?;
+fn log_row(row: &Row<'_>) -> rusqlite::Result<LogsAutomation> {
+    Ok(LogsAutomation {
+        id: row.get("id")?,
+        rule_id: row.get("rule_id")?,
+        rule_name: row.get("rule_name")?,
+        topic: row.get("topic")?,
+        title: row.get("title")?,
+        message: row.get("message")?,
+        action_type: row.get("action_type")?,
+        action_value: row.get("action_value")?,
+        module_id: row.get("module_id")?,
+        status: row.get("status")?,
+        error: row.get("error")?,
+        created_at: row.get("created_at")?,
+    })
+}
 
-    statement
-        .query_map(params![id], log_from_row)
-        .map_err(|error| error.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| error.to_string())
+pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, String> {
+    let page = input.page.unwrap_or(1).max(1);
+    let page_size = input.page_size.unwrap_or(50).clamp(5, 100);
+    let offset = (page - 1) * page_size;
+
+    let limit = i64::from(page_size);
+    let offset = i64::from(offset);
+
+    let rule_id = input
+        .rule_id
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+
+    let total = match rule_id {
+        Some(rule_id) => connection.query_row(
+            "SELECT COUNT(*) FROM automation_logs WHERE rule_id = ?1",
+            params![rule_id],
+            |row| row.get::<_, u32>(0),
+        ),
+
+        None => connection.query_row(
+            "SELECT COUNT(*) FROM automation_logs",
+            [],
+            |row| row.get::<_, u32>(0),
+        ),
+    }
+    .map_err(|error| error.to_string())?;
+
+    let items = match rule_id {
+        Some(rule_id) => {
+            let mut statement = connection
+                .prepare(
+                    r#"
+                    SELECT
+                        logs.id,
+                        logs.rule_id,
+                        logs.rule_name,
+                        logs.topic,
+                        logs.title,
+                        logs.message,
+                        logs.action_type,
+                        logs.action_value,
+                        logs.module_id,
+                        logs.status,
+                        logs.error,
+                        logs.created_at
+                    FROM automation_logs logs
+                    WHERE logs.rule_id = ?1
+                    ORDER BY logs.created_at DESC, logs.id DESC
+                    LIMIT ?2 OFFSET ?3
+                    "#,
+                )
+                .map_err(|error| error.to_string())?;
+
+            statement
+                .query_map(params![rule_id, limit, offset], log_row)
+                .map_err(|error| error.to_string())?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|error| error.to_string())?
+        }
+
+        None => {
+            let mut statement = connection
+                .prepare(
+                    r#"
+                    SELECT
+                        logs.id,
+                        logs.rule_id,
+                        logs.rule_name,
+                        logs.topic,
+                        logs.title,
+                        logs.message,
+                        logs.action_type,
+                        logs.action_value,
+                        logs.module_id,
+                        logs.status,
+                        logs.error,
+                        logs.created_at
+                    FROM automation_logs logs
+                    ORDER BY logs.created_at DESC, logs.id DESC
+                    LIMIT ?1 OFFSET ?2
+                    "#,
+                )
+                .map_err(|error| error.to_string())?;
+
+            statement
+                .query_map(params![limit, offset], log_row)
+                .map_err(|error| error.to_string())?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|error| error.to_string())?
+        }
+    };
+
+    let total_pages = if total == 0 {
+        1
+    } else {
+        total.div_ceil(page_size)
+    };
+
+    Ok(LogsList {
+        items,
+        page,
+        page_size,
+        total,
+        total_pages,
+    })
 }

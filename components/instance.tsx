@@ -31,28 +31,26 @@ export function Instance() {
         startInstance(instance)
       }}
     >
-      <div className="grid gap-4">
-        <Label className="font-bold text-slate-200">Instance</Label>
-        <Input
-          className="border border-white/10 bg-white/5 text-slate-50 outline-none transition focus:border-teal-400/70 focus:ring-2 focus:ring-teal-400/15"
-          name="instanceUrl"
-          type="url"
-          inputMode="url"
-          autoComplete="url"
-          spellCheck={false}
-          value={instance || ''}
-          placeholder="https://ntfy.sh"
-          required
-          onChange={(event) => setInstance(event.target.value.trim())}
-        />
+      <Label className="font-bold">Instance</Label>
+      <Input
+        className="border border-border"
+        name="instanceUrl"
+        type="url"
+        inputMode="url"
+        autoComplete="url"
+        spellCheck={false}
+        value={instance || ''}
+        placeholder="https://ntfy.sh"
+        required
+        onChange={(event) => setInstance(event.target.value.trim())}
+      />
 
-        <Button
-          className="flex-1 cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 text-slate-50 font-semibold"
-          type="submit"
-        >
-          Start
-        </Button>
-      </div>
+      <Button
+        className="flex-1 cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500 text-primary-foreground font-semibold"
+        type="submit"
+      >
+        Start
+      </Button>
     </form>
   )
 }

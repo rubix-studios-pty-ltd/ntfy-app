@@ -1,13 +1,13 @@
-import { type ActionType } from '@/types/automation'
+import { type ActionType } from '@/schema/automation'
 
 export const actionType = (actionType: ActionType) => {
   switch (actionType) {
     case 'openUrl':
-      return 'Open URL'
+      return 'URL'
     case 'runProgram':
-      return 'Run program'
+      return 'Program'
     case 'runScript':
-      return 'Run script'
+      return 'Script'
     case 'module':
       return 'Module'
   }

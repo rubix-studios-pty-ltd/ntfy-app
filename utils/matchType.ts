@@ -1,4 +1,4 @@
-import { type MatchType } from '@/types/automation'
+import { type MatchType } from '@/schema/automation'
 
 export const matchType = (matchType: MatchType) => {
   switch (matchType) {

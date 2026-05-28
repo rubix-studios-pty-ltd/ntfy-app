@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Modal } from '@/components/automation/modal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
 import {
   createRule,
@@ -16,7 +17,7 @@ import {
   toggleRule,
   updateRule,
 } from '@/lib/tauri/automation'
-import { type RulesType, ruleSchema } from '@/types/automation'
+import { type RulesType, ruleSchema } from '@/schema/automation'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
 import { getAction } from '@/utils/getAction'
@@ -50,7 +51,9 @@ export function Automation() {
 
     return rules.filter((rule) => {
       return [rule.name, rule.topic, rule.matchValue, getAction(rule)].some((value) =>
-        String(value ?? '').toLowerCase().includes(query),
+        String(value ?? '')
+          .toLowerCase()
+          .includes(query)
       )
     })
   }, [rules, search])
@@ -157,13 +160,13 @@ export function Automation() {
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
 
           <Input
-            className="border border-white/10 bg-white/5 pl-9 text-slate-50 text-sm xs:text-sm"
+            className="pl-9 border-border text-sm xs:text-sm"
             placeholder="Search..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -171,15 +174,15 @@ export function Automation() {
         </div>
 
         <Button
-          className="cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 text-slate-50 font-semibold"
+          className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
           onClick={handleAddRule}
         >
           Add
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/3">
-        <div className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] gap-2 border-b border-white/10 bg-white/4 p-3 text-xs font-semibold text-slate-400">
+      <div>
+        <div className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b p-3 text-sm font-bold">
           <span>Active</span>
           <span>Name</span>
           <span>Trigger</span>
@@ -188,77 +191,83 @@ export function Automation() {
           <span aria-hidden="true" />
         </div>
 
-        {searchFilter.map((rule) => (
-          <div
-            key={rule.id}
-            className="grid grid-cols-[60px_1fr_1.4fr_1.2fr_80px_80px] gap-2 items-center border-b border-white/5 p-3 last:border-b-0"
-          >
-            <Switch
-              checked={rule.active}
-              onCheckedChange={() => handleToggleRule(rule.id)}
-              className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-400/40 data-[state=checked]:bg-emerald-500/20 data-[state=unchecked]:border-white/10 data-[state=unchecked]:bg-white/5 [&>span]:bg-slate-500 data-[state=checked]:[&>span]:bg-emerald-300"
-            />
+        <ScrollArea
+          className="h-[calc(100vh-186px)] overflow-hidden"
+          onWheelCapture={(event) => {
+            event.stopPropagation()
+          }}
+        >
+          {searchFilter.map((rule) => (
+            <div
+              key={rule.id}
+              className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b border-border/10 p-3 last:border-b-0"
+            >
+              <Switch
+                checked={rule.active}
+                onCheckedChange={() => handleToggleRule(rule.id)}
+                className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
+              />
 
-            <span className="text-slate-100 text-sm truncate">{rule.name}</span>
+              <span className="text-sm truncate">{rule.name}</span>
 
-            <div className="flex flex-col gap-0.5 text-xs">
-              <span className="text-slate-200">Topic: {rule.topic || 'Any'}</span>
-              <div className="scrollbar text-slate-500 h-4 overflow-hidden overflow-y-auto truncate">
-                {rule.matchValue
-                  .split(/\r?\n/)
-                  .map((value) => value.trim())
-                  .filter((value) => value.length > 0)
-                  .map((value, index) => (
-                    <span key={`${rule.id}-match-${index}`} className="block">
-                      {matchType(rule.matchType)} "{value}"
-                    </span>
-                  ))}
+              <div className="flex flex-col gap-0.5 text-sm">
+                <span>Topic: {rule.topic || 'Any'}</span>
+                <div className="scrollbar h-6 overflow-hidden overflow-y-auto truncate">
+                  {rule.matchValue
+                    .split(/\r?\n/)
+                    .map((value) => value.trim())
+                    .filter((value) => value.length > 0)
+                    .map((value, index) => (
+                      <span key={`${rule.id}-match-${index}`} className="block truncate">
+                        {matchType(rule.matchType)}: {value}
+                      </span>
+                    ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-0.5 text-sm">
+                <span className="font-semibold">{actionType(rule.actionType)}</span>
+                <span className="block min-w-0 truncate">{getAction(rule)}</span>
+              </div>
+
+              <div className="flex flex-col gap-0.5 text-sm">
+                <span className={statusStyle(rule.status ?? 'never')}>
+                  {status(rule.status ?? 'never')}
+                </span>
+                <span className="text-muted-foreground text-xs">{formatDate(rule.lastRun)}</span>
+              </div>
+
+              <div className="flex justify-end gap-0.5">
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="cursor-pointer text-muted-foreground transition-all duration-500"
+                  onClick={() => handleTestRule(rule.id)}
+                >
+                  <PlayIcon className="size-3.5" />
+                </Button>
+
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="cursor-pointer text-muted-foreground transition-all duration-500"
+                  onClick={() => handleEditRule(rule)}
+                >
+                  <PencilIcon className="size-3.5" />
+                </Button>
+
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="cursor-pointer text-muted-foreground transition-all duration-500"
+                  onClick={() => handleDeleteRule(rule.id)}
+                >
+                  <TrashIcon className="size-3.5" />
+                </Button>
               </div>
             </div>
-
-            <div className="flex flex-col gap-0.5 text-xs">
-              <span className="text-slate-200">{actionType(rule.actionType)}</span>
-              <span className="max-w-55 truncate text-slate-500">{getAction(rule)}</span>
-            </div>
-
-            <div className="flex flex-col gap-0.5 text-xs">
-              <span className={statusStyle(rule.status ?? 'never')}>
-                {status(rule.status ?? 'never')}
-              </span>
-              <span className="text-slate-500">{formatDate(rule.lastRun)}</span>
-            </div>
-
-            <div className="flex justify-end gap-0.5">
-              <Button
-                size="xs"
-                variant="ghost"
-                className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
-                onClick={() => handleTestRule(rule.id)}
-              >
-                <PlayIcon className="size-3.5" />
-              </Button>
-
-              <Button
-                size="xs"
-                variant="ghost"
-                className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
-                onClick={() => handleEditRule(rule)}
-              >
-                <PencilIcon className="size-3.5" />
-              </Button>
-
-              <Button
-                size="xs"
-                variant="ghost"
-                className="cursor-pointer text-red-300 hover:bg-red-500/10 hover:text-red-200"
-                onClick={() => handleDeleteRule(rule.id)}
-              >
-                <TrashIcon className="size-3.5" />
-              </Button>
-            </div>
-          </div>
-        ))}
-
+          ))}
+        </ScrollArea>
         {searchFilter.length === 0 && (
           <div className="px-4 py-10 text-center text-sm text-slate-500">
             No automation rules found.
@@ -267,6 +276,6 @@ export function Automation() {
       </div>
 
       <Modal rule={editingRule} setRule={setEditingRule} onSave={saveRule} />
-    </>
+    </div>
   )
 }

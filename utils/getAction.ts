@@ -1,4 +1,4 @@
-import { type RulesType } from '@/types/automation'
+import { type RulesType } from '@/schema/automation'
 
 export const getAction = (rule: RulesType) => {
   if (rule.actionType === 'module') {

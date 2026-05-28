@@ -25,6 +25,7 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
         CREATE TABLE IF NOT EXISTS automation_logs (
             id TEXT PRIMARY KEY,
             rule_id TEXT NOT NULL,
+            rule_name TEXT NOT NULL,
             topic TEXT,
             title TEXT,
             message TEXT,

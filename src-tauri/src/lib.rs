@@ -1,3 +1,4 @@
+mod automation;
 mod autostart;
 mod commands;
 mod config;

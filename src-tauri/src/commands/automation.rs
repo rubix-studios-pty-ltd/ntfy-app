@@ -1,4 +1,6 @@
-use crate::db::{DbState, models::AutomationRuleInput, repo};
+use crate::automation::validation::validate_rule;
+use crate::db::models::{LogsInput, LogsList};
+use crate::db::{DbState, models::AutomationInput, repo};
 
 #[tauri::command]
 pub async fn list_rules(
@@ -10,16 +12,18 @@ pub async fn list_rules(
 #[tauri::command]
 pub async fn create_rule(
     state: tauri::State<'_, DbState>,
-    rule: AutomationRuleInput,
+    rule: AutomationInput,
 ) -> Result<crate::db::models::AutomationRule, String> {
+    validate_rule(&rule)?;
     crate::db::run(state, move |conn| repo::create_rule(conn, rule)).await
 }
 
 #[tauri::command]
 pub async fn update_rule(
     state: tauri::State<'_, DbState>,
-    rule: AutomationRuleInput,
+    rule: AutomationInput,
 ) -> Result<crate::db::models::AutomationRule, String> {
+    validate_rule(&rule)?;
     crate::db::run(state, move |conn| repo::update_rule(conn, rule)).await
 }
 
@@ -45,9 +49,9 @@ pub async fn test_rule(
 }
 
 #[tauri::command]
-pub async fn rule_logs(
+pub async fn list_logs(
     state: tauri::State<'_, DbState>,
-    rule_id: String,
-) -> Result<Vec<crate::db::models::AutomationLog>, String> {
-    crate::db::run(state, move |conn| repo::rule_logs(conn, &rule_id)).await
+    input: LogsInput,
+) -> Result<LogsList, String> {
+    crate::db::run(state, move |conn| repo::list_logs(conn, input)).await
 }

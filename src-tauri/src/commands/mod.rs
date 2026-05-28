@@ -11,6 +11,6 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         automation::delete_rule,
         automation::toggle_rule,
         automation::test_rule,
-        automation::rule_logs,
+        automation::list_logs,
     ]
 }

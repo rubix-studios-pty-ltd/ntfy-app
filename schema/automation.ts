@@ -49,7 +49,7 @@ const urlSchema = baseSchema.extend({
 
 const moduleSchema = baseSchema.extend({
   actionType: z.literal('module'),
-  moduleId: z.string().trim().min(1, 'Module is required'),
+  moduleId: moduleIdSchema,
   actionConfig: z.record(z.string(), z.unknown()).optional(),
 })
 
@@ -60,22 +60,7 @@ export const ruleSchema = z.discriminatedUnion('actionType', [
   moduleSchema,
 ])
 
-export const logSchema = z.object({
-  id: z.string(),
-  ruleId: z.string(),
-  topic: z.string().optional().nullable(),
-  title: z.string().optional().nullable(),
-  message: z.string().optional().nullable(),
-  actionType: actionTypeSchema,
-  actionValue: z.string().optional().nullable(),
-  moduleId: z.string().optional().nullable(),
-  status: statusSchema.exclude(['never']),
-  error: z.string().optional().nullable(),
-  createdAt: z.string(),
-})
-
 export type ActionType = z.infer<typeof actionTypeSchema>
-export type LogsType = z.infer<typeof logSchema>
 export type MatchType = z.infer<typeof matchTypeSchema>
 export type ModuleId = z.infer<typeof moduleIdSchema>
 export type RulesType = z.infer<typeof ruleSchema>

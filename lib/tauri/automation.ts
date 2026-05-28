@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 
-import { type LogsType, type RulesType } from '@/types/automation'
+import { type RulesType } from '@/schema/automation'
+import { type LogsInput, type LogsList } from '@/types/logs'
 
 export function listRules() {
   return invoke<RulesType[]>('list_rules')
@@ -26,6 +27,6 @@ export function testRule(ruleId: string) {
   return invoke<RulesType>('test_rule', { ruleId })
 }
 
-export function ruleLogs(ruleId: string) {
-  return invoke<LogsType[]>('rule_logs', { ruleId })
+export function listLogs(input: LogsInput = {}) {
+  return invoke<LogsList>('list_logs', { input })
 }

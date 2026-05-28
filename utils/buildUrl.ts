@@ -8,14 +8,14 @@ export const buildUrl = ({ instance, topic, token }: WebhookInput): WebhookResul
   if (!cleanInstance) {
     return {
       success: false,
-      error: 'Missing instance URL',
+      error: 'Missing instance URL...',
     }
   }
 
   if (!cleanTopic) {
     return {
       success: false,
-      error: 'Please enter a topic',
+      error: 'Please enter a topic...',
     }
   }
 

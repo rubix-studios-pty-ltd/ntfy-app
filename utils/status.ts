@@ -1,4 +1,4 @@
-import { type RulesType, type StatusType } from '@/types/automation'
+import { type RulesType, type StatusType } from '@/schema/automation'
 
 export const baseStatus = (): RulesType => {
   return {
@@ -30,10 +30,10 @@ export const status = (status: StatusType) => {
 export const statusStyle = (status: StatusType) => {
   switch (status) {
     case 'success':
-      return 'text-emerald-300'
+      return 'font-semibold text-emerald-600'
     case 'failed':
-      return 'text-red-300'
+      return 'font-semibold text-red-600'
     case 'never':
-      return 'text-slate-400'
+      return 'font-semibold'
   }
 }

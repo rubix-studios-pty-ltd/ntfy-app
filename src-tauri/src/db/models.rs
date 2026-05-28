@@ -27,7 +27,7 @@ pub struct AutomationRule {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AutomationRuleInput {
+pub struct AutomationInput {
     pub id: String,
     pub active: bool,
     pub name: String,
@@ -46,9 +46,10 @@ pub struct AutomationRuleInput {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AutomationLog {
+pub struct LogsAutomation {
     pub id: String,
     pub rule_id: String,
+    pub rule_name: String,
     pub topic: Option<String>,
     pub title: Option<String>,
     pub message: Option<String>,
@@ -58,4 +59,22 @@ pub struct AutomationLog {
     pub status: String,
     pub error: Option<String>,
     pub created_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogsInput {
+    pub page: Option<u32>,
+    pub page_size: Option<u32>,
+    pub rule_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogsList {
+    pub items: Vec<LogsAutomation>,
+    pub page: u32,
+    pub page_size: u32,
+    pub total: u32,
+    pub total_pages: u32,
 }

@@ -67,10 +67,10 @@ export function Webhook() {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <Label className="font-bold text-slate-200">Instance</Label>
+        <Label className="font-bold">Instance</Label>
 
         <Input
-          className="border border-white/10 bg-white/5 text-slate-50 outline-none transition focus:border-teal-400/70 focus:ring-2 focus:ring-teal-400/15"
+          className="border border-border"
           value={instance ?? ''}
           placeholder="No instance configured"
           readOnly
@@ -78,20 +78,20 @@ export function Webhook() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label className="font-bold text-slate-200">Topic</Label>
+        <Label className="font-bold">Topic</Label>
 
         <Input
-          className="border border-white/10 bg-white/5 text-slate-50 outline-none transition focus:border-teal-400/70 focus:ring-2 focus:ring-teal-400/15"
+          className="border border-border"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label className="font-bold text-slate-200">Token</Label>
+        <Label className="font-bold">Token</Label>
 
         <Input
-          className="border border-white/10 bg-white/5 text-slate-50 outline-none transition focus:border-teal-400/70 focus:ring-2 focus:ring-teal-400/15"
+          className="border border-border"
           value={token}
           onChange={(e) => setToken(e.target.value)}
           type="password"
@@ -100,14 +100,15 @@ export function Webhook() {
 
       <div className="flex gap-2">
         <Button
-          className="flex-1 cursor-pointer rounded-lg bg-linear-to-br from-teal-600 to-emerald-800 font-semibold text-slate-50"
+          className="flex-1 cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500 text-primary-foreground font-semibold"
           onClick={handleBuildUrl}
         >
           Build URL
         </Button>
 
         <Button
-          className="cursor-pointer rounded-lg bg-linear-to-br from-zinc-800 to-zinc-900 font-semibold text-slate-50"
+          variant="outline"
+          className="cursor-pointer transition-all duration-500"
           onClick={handleClear}
         >
           Clear
@@ -117,21 +118,21 @@ export function Webhook() {
       {result && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <Label className="font-bold text-slate-200">Url</Label>
+            <Label className="font-bold">Webhook</Label>
 
             <Button
               size="sm"
               variant="ghost"
-              className="cursor-pointer text-slate-300 hover:bg-white/5 hover:text-slate-50"
+              className="cursor-pointer text-muted-foreground transition-all duration-500"
               onClick={handleCopy}
             >
-              {copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+              {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
             </Button>
           </div>
 
           <Textarea
             readOnly
-            className="resize-none border border-white/10 bg-white/5 text-slate-50 outline-none transition focus:border-teal-400/70 focus:ring-2 focus:ring-teal-400/15"
+            className="resize-none border border-border bg-background text-foreground"
             value={result}
             rows={2}
           />
