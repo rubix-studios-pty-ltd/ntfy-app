@@ -5,19 +5,29 @@ A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted n
 Automatic updates are disabled by default to reduce background activity, external requests to GitHub, and unnecessary resource usage. Update checking and installation are user controlled through the system tray.
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-0.0.8-green)
 
-![Ntfy App](docs/screenshots/ntfy-app-instance.webp)
-![Ntfy Webhook](docs/screenshots/ntfy-app-webhook.webp)
+![Ntfy App](docs/screenshots/notifications.webp)
+![Ntfy Main](docs/screenshots/main.webp)
+![Ntfy Automation](docs/screenshots/automation.webp)
 
 ## Features
 
-- **Cross-platform**: Works on Windows, Linux, and macOS (Intel & Apple Silicon)
-- **Notifications**: Receive ntfy.sh notifications on your desktop
-- **Self-hosted**: Connect to your own ntfy instances
-- **Lightweight**: Built with Rust and Tauri for optimal performance
-- **Modern UI**: Built with Next.js, React, and Tailwind CSS
-- **Tray Integration**: System tray as a default for unobtrusive notifications
+- **Notifications**: Receive native desktop notifications from any ntfy topic
+- **Webhook Builder**: Generate authenticated webhook URLs for your topics
+- **Self-hosted**: Connect to your own ntfy instance or use ntfy.sh
+- **Cross-platform**: Windows, Linux, and macOS (Intel & Apple Silicon)
+- **System Tray**: Runs quietly in the background with tray controls
+- **Lightweight**: Built with Rust and Tauri for minimal resource usage
+- **Modern UI**: Next.js, React, and Tailwind CSS
+
+## In Development (Beta)
+
+- **Automations**: Trigger local programs, scripts, URLs, and system actions
+  based on incoming ntfy messages
+
+> **Note:** Automation topics should be reserved and access-controlled.
+> For self-hosted instances, use ntfy ACL to restrict publish access
+> to trusted users only.
 
 ## macOS
 
