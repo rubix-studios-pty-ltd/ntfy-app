@@ -1,0 +1,58 @@
+import { z } from 'zod'
+
+export const actionTypeSchema = z.enum(['runProgram', 'openUrl', 'module'])
+
+export const matchTypeSchema = z.enum(['equals', 'contains', 'startsWith'])
+
+export const moduleIdSchema = z.string().trim().min(1, 'Module is required')
+
+export const statusSchema = z.enum(['success', 'failed', 'never'])
+
+const optionalText = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim() || undefined : (value ?? undefined)),
+  z.string().optional()
+)
+
+const baseSchema = z.object({
+  id: z.string().min(1),
+  active: z.boolean(),
+
+  name: z.string().trim().min(1, 'Name is required'),
+  topic: z.string().trim().min(1, 'Topic is required'),
+
+  matchType: matchTypeSchema,
+  matchValue: z.string().trim().min(1, 'Match is required'),
+
+  lastRun: optionalText,
+  status: statusSchema.optional(),
+})
+
+const programSchema = baseSchema.extend({
+  actionType: z.literal('runProgram'),
+  actionValue: z.string().trim().min(1, 'Program is required'),
+  arguments: optionalText,
+  workingDirectory: optionalText,
+})
+
+const urlSchema = baseSchema.extend({
+  actionType: z.literal('openUrl'),
+  actionValue: z.url('URL is required'),
+})
+
+const moduleSchema = baseSchema.extend({
+  actionType: z.literal('module'),
+  moduleId: moduleIdSchema,
+  actionConfig: z.record(z.string(), z.unknown()).optional(),
+})
+
+export const ruleSchema = z.discriminatedUnion('actionType', [
+  programSchema,
+  urlSchema,
+  moduleSchema,
+])
+
+export type ActionType = z.infer<typeof actionTypeSchema>
+export type MatchType = z.infer<typeof matchTypeSchema>
+export type ModuleId = z.infer<typeof moduleIdSchema>
+export type RulesType = z.infer<typeof ruleSchema>
+export type StatusType = z.infer<typeof statusSchema>

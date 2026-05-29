@@ -11,7 +11,8 @@ pub fn open_webhook_window(app: &AppHandle) {
 
     match WebviewWindowBuilder::new(app, "webhook", WebviewUrl::App("/webhook".into()))
         .title("Ntfy")
-        .inner_size(400.0, 500.0)
+        .inner_size(400.0, 530.0)
+        .min_inner_size(400.0, 530.0)
         .resizable(true)
         .fullscreen(false)
         .decorations(true)

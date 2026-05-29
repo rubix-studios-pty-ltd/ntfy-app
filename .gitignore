@@ -33,7 +33,6 @@ web_modules/
 !.yarn/versions
 
 # debug
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*

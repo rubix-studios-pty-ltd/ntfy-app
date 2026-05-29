@@ -1,9 +1,9 @@
-type SuccessResult = {
+export type SuccessResult = {
   success: true
   url: string
 }
 
-type ErrorResult = {
+export type ErrorResult = {
   success: false
   error: string
 }
