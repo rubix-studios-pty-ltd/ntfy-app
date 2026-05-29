@@ -15,6 +15,9 @@ use windows::main::setup_window_events;
 
 use tauri::Manager;
 
+const LOG_RETENTION_DAYS: u32 = 30;
+const LOG_MAX_ROWS: u32 = 1000;
+
 pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
@@ -33,7 +36,7 @@ pub fn run() {
 
             tauri::async_runtime::spawn(async move {
                 if let Err(error) = db::run(handle.state::<db::DbState>(), |conn| {
-                    db::repo::cleanup_logs(conn, 30, 1000)
+                    db::repo::cleanup_logs(conn, LOG_RETENTION_DAYS, LOG_MAX_ROWS)
                 })
                 .await
                 {

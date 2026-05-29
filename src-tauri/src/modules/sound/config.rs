@@ -1,7 +1,7 @@
 use serde_json::Value;
 
-use crate::automation::executor::replace_tokens;
 use crate::automation::matcher::MatchContext;
+use crate::automation::tokens::replace_tokens;
 use crate::db::models::AutomationRule;
 
 pub fn number_config(

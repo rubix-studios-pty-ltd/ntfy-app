@@ -468,7 +468,7 @@ pub fn cleanup_logs(
     Ok(())
 }
 
-pub fn test_run(
+pub fn record_execution(
     connection: &Connection,
     rule: &AutomationRule,
     title: Option<String>,

@@ -77,7 +77,7 @@ pub async fn test_rule(
     let error = result.as_ref().err().cloned();
 
     let updated_rule = run(state, move |conn| {
-        repo::test_run(conn, &rule, input.title, Some(input.message), status, error)
+        repo::record_execution(conn, &rule, input.title, Some(input.message), status, error)
     })
     .await?;
 

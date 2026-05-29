@@ -3,6 +3,7 @@ use tauri::AppHandle;
 
 use crate::automation::matcher::MatchContext;
 use crate::automation::modules;
+use crate::automation::tokens::replace_tokens;
 use crate::db::models::AutomationRule;
 
 pub async fn execute_rule(
@@ -16,13 +17,6 @@ pub async fn execute_rule(
         "module" => modules::execute(rule, context),
         _ => Err("Invalid action type".to_string()),
     }
-}
-
-pub fn replace_tokens(value: &str, context: &MatchContext) -> String {
-    value
-        .replace("$value", &context.value)
-        .replace("$message", &context.message)
-        .replace("$matchedLine", &context.matched_line)
 }
 
 fn open_url(app: &AppHandle, rule: &AutomationRule) -> Result<(), String> {

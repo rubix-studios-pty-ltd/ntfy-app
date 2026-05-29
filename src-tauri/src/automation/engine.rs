@@ -37,7 +37,7 @@ pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Resu
         let message = event.message.clone();
 
         run(app.state::<DbState>(), move |conn| {
-            repo::test_run(conn, &rule, title, Some(message), status, error)
+            repo::record_execution(conn, &rule, title, Some(message), status, error)
         })
         .await?;
     }
