@@ -4,8 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 use super::models::{
-    ActionConfig, AutomationInput, AutomationRule, LogAutomationInput, LogsAutomation, LogsInput,
-    LogsList,
+    ActionConfig, AutomationInput, AutomationRule, LogsAutomation, LogsInput, LogsList,
 };
 
 fn now_ms() -> String {
@@ -122,6 +121,45 @@ pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String
         .map_err(|error| error.to_string())
 }
 
+pub fn list_active_rules(
+    connection: &Connection,
+    topic: &str,
+) -> Result<Vec<AutomationRule>, String> {
+    let mut statement = connection
+        .prepare(
+            r#"
+            SELECT
+              id,
+              active,
+              name,
+              topic,
+              match_type,
+              match_value,
+              action_type,
+              action_value,
+              module_id,
+              action_config,
+              arguments,
+              working_directory,
+              created_at,
+              updated_at,
+              last_run_at,
+              status
+            FROM automation_rules
+            WHERE topic = ?1
+              AND active = 1
+            ORDER BY created_at DESC
+            "#,
+        )
+        .map_err(|error| error.to_string())?;
+
+    statement
+        .query_map(params![topic], rule_row)
+        .map_err(|error| error.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())
+}
+
 pub fn create_rule(
     connection: &Connection,
     rule: AutomationInput,
@@ -228,9 +266,13 @@ pub fn update_rule(
 }
 
 pub fn delete_rule(connection: &Connection, id: &str) -> Result<(), String> {
-    connection
+    let affected = connection
         .execute("DELETE FROM automation_rules WHERE id = ?1", params![id])
         .map_err(|error| error.to_string())?;
+
+    if affected == 0 {
+        return Err("Rule not found".to_string());
+    }
 
     Ok(())
 }
@@ -258,59 +300,7 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
     update_rule(connection, updated)
 }
 
-pub fn test_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    let current = rule_id(connection, id)?;
-    let now = now_ms();
-    let log_id = Uuid::new_v4().to_string();
-
-    connection
-        .execute(
-            r#"
-            INSERT INTO automation_logs (
-              id,
-              rule_id,
-              rule_name,
-              topic,
-              title,
-              message,
-              action_type,
-              action_value,
-              module_id,
-              status,
-              error,
-              created_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
-            "#,
-            params![
-                log_id,
-                current.id,
-                current.name,
-                current.topic,
-                Some("Automation test".to_string()),
-                Some("Test success".to_string()),
-                current.action_type,
-                current.action_value,
-                current.module_id,
-                "success",
-                Option::<String>::None,
-                now.clone(),
-            ],
-        )
-        .map_err(|error| error.to_string())?;
-
-    connection
-        .execute(
-            r#"
-            UPDATE automation_rules
-            SET last_run_at = ?2,
-                status = ?3,
-                updated_at = ?4
-            WHERE id = ?1
-            "#,
-            params![id, now.clone(), "success", now],
-        )
-        .map_err(|error| error.to_string())?;
-
+pub fn get_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
     rule_id(connection, id)
 }
 
@@ -438,9 +428,16 @@ pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, 
     })
 }
 
-pub fn create_log(connection: &Connection, input: LogAutomationInput) -> Result<(), String> {
+pub fn test_run(
+    connection: &Connection,
+    rule: &AutomationRule,
+    title: Option<String>,
+    message: Option<String>,
+    status: &str,
+    error: Option<String>,
+) -> Result<AutomationRule, String> {
     let now = now_ms();
-    let id = Uuid::new_v4().to_string();
+    let log_id = Uuid::new_v4().to_string();
 
     connection
         .execute(
@@ -461,31 +458,21 @@ pub fn create_log(connection: &Connection, input: LogAutomationInput) -> Result<
             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
             "#,
             params![
-                id,
-                input.rule_id,
-                input.rule_name,
-                input.topic,
-                input.title,
-                input.message,
-                input.action_type,
-                input.action_value,
-                input.module_id,
-                input.status,
-                input.error,
-                now,
+                log_id,
+                rule.id,
+                rule.name,
+                rule.topic,
+                title,
+                message,
+                rule.action_type,
+                rule.action_value,
+                rule.module_id,
+                status,
+                error,
+                now.clone(),
             ],
         )
         .map_err(|error| error.to_string())?;
-
-    Ok(())
-}
-
-pub fn rule_execution(
-    connection: &Connection,
-    id: &str,
-    status: &str,
-) -> Result<AutomationRule, String> {
-    let now = now_ms();
 
     connection
         .execute(
@@ -496,9 +483,9 @@ pub fn rule_execution(
                 updated_at = ?4
             WHERE id = ?1
             "#,
-            params![id, now.clone(), status, now],
+            params![rule.id, now.clone(), status, now],
         )
         .map_err(|error| error.to_string())?;
 
-    rule_id(connection, id)
+    rule_id(connection, &rule.id)
 }

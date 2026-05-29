@@ -38,6 +38,9 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
             FOREIGN KEY (rule_id) REFERENCES automation_rules(id) ON DELETE CASCADE
         );
 
+        CREATE INDEX IF NOT EXISTS idx_automation_active
+            ON automation_rules(topic, active);
+
         CREATE INDEX IF NOT EXISTS idx_automation_logs_rule_id
             ON automation_logs(rule_id, created_at DESC);
         "#,
