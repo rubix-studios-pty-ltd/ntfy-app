@@ -16,13 +16,10 @@ const optionalText = z.preprocess(
 const baseSchema = z.object({
   id: z.string().min(1),
   active: z.boolean(),
-
   name: z.string().trim().min(1, 'Name is required'),
   topic: z.string().trim().min(1, 'Topic is required'),
-
   matchType: matchTypeSchema,
   matchValue: z.string().trim().min(1, 'Match is required'),
-
   lastRun: optionalText,
   status: statusSchema.optional(),
 })
