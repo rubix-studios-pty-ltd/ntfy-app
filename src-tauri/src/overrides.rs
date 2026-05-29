@@ -125,8 +125,9 @@ pub fn handle_page_load(window: &Webview) {
                       .trim();
 
                   window.__TAURI__.event.emit('ntfy_notification', {
+                    topic: data.topic || '',
                     title: data.title || data.topic || 'ntfy',
-                    body: clean(data.message),
+                    message: clean(data.message),
                   });
                 } catch (error) {
                   console.error('ntfy: Failed to emit notification', error);
