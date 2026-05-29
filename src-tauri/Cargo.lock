@@ -2044,6 +2044,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "libpulse-binding"
+version = "2.30.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "909eb3049e16e373680fe65afe6e2a722ace06b671250cc4849557bc57d6a397"
+dependencies = [
+ "bitflags 2.11.1",
+ "libc",
+ "libpulse-sys",
+ "num-derive",
+ "num-traits",
+ "winapi",
+]
+
+[[package]]
+name = "libpulse-sys"
+version = "1.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d74371848b22e989f829cc1621d2ebd74960711557d8b45cfe740f60d0a05e61"
+dependencies = [
+ "libc",
+ "num-derive",
+ "num-traits",
+ "pkg-config",
+ "winapi",
+]
+
+[[package]]
 name = "libredox"
 version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2254,6 +2281,7 @@ dependencies = [
  "tauri-plugin-updater",
  "url",
  "uuid",
+ "volumecontrol",
  "windows 0.62.2",
 ]
 
@@ -2262,6 +2290,17 @@ name = "num-conv"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "521739c6d2bac4aa25192232afe6841231376b2b26d4d9fae5ecf8ca5772e441"
+
+[[package]]
+name = "num-derive"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed3955f1a9c7c0c15e092f9c887db08b1fc683305fdf6eb6684f22555355e202"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
 
 [[package]]
 name = "num-traits"
@@ -2326,6 +2365,15 @@ dependencies = [
  "bitflags 2.11.1",
  "objc2",
  "objc2-foundation",
+]
+
+[[package]]
+name = "objc2-core-audio"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e1eebcea8b0dbff5f7c8504f3107c68fc061a3eb44932051c8cf8a68d969c3b2"
+dependencies = [
+ "objc2-core-foundation",
 ]
 
 [[package]]
@@ -4688,6 +4736,59 @@ name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+
+[[package]]
+name = "volumecontrol"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dbcf995be139d3798334cc7690d4ab26a7b525ff0a5792507151e153ea2c637"
+dependencies = [
+ "volumecontrol-core",
+ "volumecontrol-linux",
+ "volumecontrol-macos",
+ "volumecontrol-windows",
+]
+
+[[package]]
+name = "volumecontrol-core"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfff75d0fba84a608808b8ef3a7f85a35690e8278bbe696d08559e69bb676cd6"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "volumecontrol-linux"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdca786f6f6b58d43702d0623ab637b7e747215cb18f7ad53d75dbf2b39dc711"
+dependencies = [
+ "libpulse-binding",
+ "volumecontrol-core",
+]
+
+[[package]]
+name = "volumecontrol-macos"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9e71f6d8c3cf1fd2b398d8ee54df8e262de03286897a78a8e435e828028363a"
+dependencies = [
+ "objc2-core-audio",
+ "objc2-core-foundation",
+ "volumecontrol-core",
+]
+
+[[package]]
+name = "volumecontrol-windows"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46dfa7183cb1892b9cb7743c1bb81e87f6b79c7f26f604200a1b5d4474a39713"
+dependencies = [
+ "thiserror 2.0.18",
+ "volumecontrol-core",
+ "windows 0.62.2",
+]
 
 [[package]]
 name = "vswhom"
