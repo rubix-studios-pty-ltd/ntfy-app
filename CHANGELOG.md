@@ -12,6 +12,43 @@
 
 
 
+
+## [0.1.0] - 2026-05-29
+
+### Added
+
+- add automation feature with UI and backend integration
+- implement automation rule management with CRUD operations
+- enhance automation UI with improved layout and scrollbar styling
+- add hidden span for accessibility in automation UI
+- implement logs management with UI and backend integration
+- enhance automation module with new action types and configuration options
+- restructure automation module and update schemas
+- implement notification handling and improve payload structure
+- update automation components with alert dialog and refactor test rule handling
+- **automation**: in development automation rules.
+
+### Fixed
+
+- update tray menu item labels for clarity and consistency
+- handle undefined rule properties in modal inputs
+- update search placeholder and button label for clarity in automation UI
+- adjust button class order for consistent styling in automation and logs components
+- unify scrollbar styling for consistent appearance across components
+- ensure safe string conversion for search filter in automation rules
+- update dependencies in Cargo.lock and improve validation logic in automation modules
+- update message display for empty search results in automation rules
+- update log loading logic to use a ref for current page and improve scrollbar styles
+- improve scrollbar styles for better visibility and consistency
+
+### Changed
+
+- extract webhook URL builder utility
+- move readUrl and saveUrl utilities to lib/tauri for better organization
+- rename volume module IDs for clarity and update related logic
+- remove 'runScript' action type and related logic from automation components
+- remove custom EventSource handling and improve WebSocket message validation
+
 ## [0.0.15] - 2026-05-26
 
 ### Added

@@ -2240,7 +2240,7 @@ dependencies = [
 
 [[package]]
 name = "ntfy_app"
-version = "0.0.15"
+version = "0.1.0"
 dependencies = [
  "auto-launch",
  "rusqlite",
