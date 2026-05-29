@@ -8,11 +8,10 @@ export const moduleIdSchema = z.string().trim().min(1, 'Module is required')
 
 export const statusSchema = z.enum(['success', 'failed', 'never'])
 
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => value || undefined)
-  .optional()
+const optionalText = z.preprocess(
+  (value) => (typeof value === 'string' ? value.trim() || undefined : (value ?? undefined)),
+  z.string().optional()
+)
 
 const baseSchema = z.object({
   id: z.string().min(1),

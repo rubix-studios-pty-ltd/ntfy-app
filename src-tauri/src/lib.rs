@@ -4,6 +4,7 @@ mod commands;
 mod config;
 mod db;
 mod listener;
+mod modules;
 mod overrides;
 mod tray;
 mod windows;

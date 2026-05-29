@@ -4,7 +4,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 use super::models::{
-    ActionConfig, AutomationInput, AutomationRule, LogsAutomation, LogsInput, LogsList,
+    ActionConfig, AutomationInput, AutomationRule, LogAutomationInput, LogsAutomation, LogsInput,
+    LogsList,
 };
 
 fn now_ms() -> String {
@@ -435,4 +436,69 @@ pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, 
         total,
         total_pages,
     })
+}
+
+pub fn create_log(connection: &Connection, input: LogAutomationInput) -> Result<(), String> {
+    let now = now_ms();
+    let id = Uuid::new_v4().to_string();
+
+    connection
+        .execute(
+            r#"
+            INSERT INTO automation_logs (
+              id,
+              rule_id,
+              rule_name,
+              topic,
+              title,
+              message,
+              action_type,
+              action_value,
+              module_id,
+              status,
+              error,
+              created_at
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
+            "#,
+            params![
+                id,
+                input.rule_id,
+                input.rule_name,
+                input.topic,
+                input.title,
+                input.message,
+                input.action_type,
+                input.action_value,
+                input.module_id,
+                input.status,
+                input.error,
+                now,
+            ],
+        )
+        .map_err(|error| error.to_string())?;
+
+    Ok(())
+}
+
+pub fn rule_execution(
+    connection: &Connection,
+    id: &str,
+    status: &str,
+) -> Result<AutomationRule, String> {
+    let now = now_ms();
+
+    connection
+        .execute(
+            r#"
+            UPDATE automation_rules
+            SET last_run_at = ?2,
+                status = ?3,
+                updated_at = ?4
+            WHERE id = ?1
+            "#,
+            params![id, now.clone(), status, now],
+        )
+        .map_err(|error| error.to_string())?;
+
+    rule_id(connection, id)
 }

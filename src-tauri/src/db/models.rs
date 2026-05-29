@@ -61,6 +61,20 @@ pub struct LogsAutomation {
     pub created_at: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct LogAutomationInput {
+    pub rule_id: String,
+    pub rule_name: String,
+    pub topic: Option<String>,
+    pub title: Option<String>,
+    pub message: Option<String>,
+    pub action_type: String,
+    pub action_value: Option<String>,
+    pub module_id: Option<String>,
+    pub status: String,
+    pub error: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LogsInput {

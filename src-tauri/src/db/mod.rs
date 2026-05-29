@@ -1,10 +1,10 @@
+use rusqlite::Connection;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-
-use rusqlite::Connection;
 use tauri::Manager;
 
 mod migrations;
+
 pub mod models;
 pub mod repo;
 

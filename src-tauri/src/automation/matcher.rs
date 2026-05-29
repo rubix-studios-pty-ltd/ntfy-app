@@ -51,6 +51,10 @@ pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<Matc
 }
 
 fn match_equals(incoming: &str, line: &str) -> Option<String> {
+    if line.contains("$value") {
+        return match_template(incoming, line);
+    }
+
     same_text(incoming, line).then(|| incoming.to_string())
 }
 
@@ -77,6 +81,54 @@ fn match_contains(incoming: &str, line: &str) -> Option<String> {
 
 fn same_text(left: &str, right: &str) -> bool {
     left.trim().eq_ignore_ascii_case(right.trim())
+}
+
+fn match_template(incoming: &str, template: &str) -> Option<String> {
+    let mut parts = template.split("$value");
+
+    let prefix = parts.next()?.trim();
+    let suffix = parts.next()?.trim();
+
+    if parts.next().is_some() {
+        return None;
+    }
+
+    let start = if prefix.is_empty() {
+        0
+    } else {
+        ascii_prefix_end(incoming, prefix)?
+    };
+
+    let remaining = incoming[start..].trim_start();
+
+    let end = if suffix.is_empty() {
+        incoming.len()
+    } else {
+        let suffix_start = ascii_suffix_start(remaining, suffix)?;
+        start + remaining[..suffix_start].len()
+    };
+
+    let value = incoming[start..end].trim();
+
+    if value.is_empty() {
+        return None;
+    }
+
+    Some(value.to_string())
+}
+
+fn ascii_suffix_start(incoming: &str, suffix: &str) -> Option<usize> {
+    if suffix.is_empty() {
+        return Some(incoming.len());
+    }
+
+    for (start, _) in incoming.char_indices() {
+        if same_text(&incoming[start..], suffix) {
+            return Some(start);
+        }
+    }
+
+    None
 }
 
 fn ascii_find(incoming: &str, needle: &str) -> Option<(usize, usize)> {

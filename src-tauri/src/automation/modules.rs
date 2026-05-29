@@ -1,7 +1,8 @@
-use crate::db::models::ActionConfig;
 use serde_json::Value;
 
-mod registry;
+use crate::automation::matcher::MatchContext;
+use crate::db::models::{ActionConfig, AutomationRule};
+use crate::modules::registry;
 
 #[derive(Clone, Copy)]
 pub enum Validation {
@@ -11,20 +12,27 @@ pub enum Validation {
 }
 
 #[derive(Clone, Copy)]
-pub(super) enum FieldKind {
+pub enum FieldKind {
     Number,
+    #[allow(dead_code)]
     Boolean,
+    #[allow(dead_code)]
     Text,
+    #[allow(dead_code)]
     Select,
 }
 
-pub(super) struct ModuleField {
+pub struct ModuleField {
     pub key: &'static str,
     pub kind: FieldKind,
     pub min: Option<f64>,
     pub max: Option<f64>,
     pub allow_variables: bool,
     pub options: &'static [&'static str],
+}
+
+pub fn execute(rule: &AutomationRule, context: &MatchContext) -> Result<(), String> {
+    registry::execute(rule, context)
 }
 
 pub fn validate_config(

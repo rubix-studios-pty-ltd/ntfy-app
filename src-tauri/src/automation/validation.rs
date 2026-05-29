@@ -1,8 +1,8 @@
-use crate::automation::modules::{Validation, validate_config};
-use crate::db::models::AutomationInput;
-
 use std::path::{Path, PathBuf};
 use url::Url;
+
+use crate::automation::modules::{Validation, validate_config};
+use crate::db::models::AutomationInput;
 
 const ACTION_TYPES: &[&str] = &["runProgram", "openUrl", "module"];
 const MATCH_TYPES: &[&str] = &["equals", "contains", "startsWith"];
