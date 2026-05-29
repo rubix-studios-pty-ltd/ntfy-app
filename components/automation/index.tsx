@@ -5,6 +5,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Modal } from '@/components/automation/modal'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -27,7 +37,8 @@ import { baseStatus, status, statusStyle } from '@/utils/status'
 export function Automation() {
   const [rules, setRules] = useState<RulesType[]>([])
   const [search, setSearch] = useState('')
-  const [editingRule, setEditingRule] = useState<RulesType | null>(null)
+  const [editing, setEditing] = useState<RulesType | null>(null)
+  const [remove, setRemove] = useState<RulesType | null>(null)
 
   useEffect(() => {
     const loadRules = async () => {
@@ -59,19 +70,19 @@ export function Automation() {
   }, [rules, search])
 
   const handleAddRule = () => {
-    setEditingRule(baseStatus())
+    setEditing(baseStatus())
   }
 
   const handleEditRule = (rule: RulesType) => {
-    setEditingRule(rule)
+    setEditing(rule)
   }
 
   const saveRule = async () => {
-    if (!editingRule) {
+    if (!editing) {
       return
     }
 
-    const parsed = ruleSchema.safeParse(editingRule)
+    const parsed = ruleSchema.safeParse(editing)
 
     if (!parsed.success) {
       const error = parsed.error.issues[0]
@@ -101,7 +112,7 @@ export function Automation() {
         })
       })
 
-      setEditingRule(null)
+      setEditing(null)
       toast.success('Success')
     } catch (error) {
       console.error('Failed:', error)
@@ -109,10 +120,18 @@ export function Automation() {
     }
   }
 
-  const handleDeleteRule = async (ruleId: string) => {
+  const handleDelete = async () => {
+    if (!remove) {
+      return
+    }
+
     try {
-      await deleteRule(ruleId)
-      setRules((current) => current.filter((rule) => rule.id !== ruleId))
+      await deleteRule(remove.id)
+
+      setRules((current) => current.filter((rule) => rule.id !== remove.id))
+      setRemove(null)
+
+      toast.success('Deleted')
     } catch (error) {
       console.error('Failed:', error)
       toast.error('Delete failed')
@@ -138,9 +157,13 @@ export function Automation() {
     }
   }
 
-  const handleTestRule = async (ruleId: string) => {
+  const handleTestRule = async (rule: RulesType) => {
     try {
-      const savedRule = await testRule(ruleId)
+      const savedRule = await testRule({
+        ruleId: rule.id,
+        message: rule.matchValue,
+        title: rule.name,
+      })
 
       setRules((current) => {
         return current.map((rule) => {
@@ -242,7 +265,7 @@ export function Automation() {
                   size="xs"
                   variant="ghost"
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
-                  onClick={() => handleTestRule(rule.id)}
+                  onClick={() => handleTestRule(rule)}
                 >
                   <PlayIcon className="size-3.5" />
                 </Button>
@@ -260,7 +283,7 @@ export function Automation() {
                   size="xs"
                   variant="ghost"
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
-                  onClick={() => handleDeleteRule(rule.id)}
+                  onClick={() => setRemove(rule)}
                 >
                   <TrashIcon className="size-3.5" />
                 </Button>
@@ -274,7 +297,33 @@ export function Automation() {
         </ScrollArea>
       </div>
 
-      <Modal rule={editingRule} setRule={setEditingRule} onSave={saveRule} />
+      <AlertDialog open={remove !== null} onOpenChange={(open) => !open && setRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete automation "{remove?.name}" and all associated data. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+
+            <AlertDialogAction
+              className="cursor-pointer text-destructive-foreground hover:bg-destructive/90"
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDelete()
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Modal rule={editing} setRule={setEditing} onSave={saveRule} />
     </div>
   )
 }
