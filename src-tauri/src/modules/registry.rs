@@ -1,11 +1,11 @@
-use super::sound;
+use super::{sound, system};
 
 use crate::automation::matcher::MatchContext;
 use crate::automation::modules::ModuleField;
 use crate::db::models::AutomationRule;
 
 pub fn fields(module_id: &str) -> Option<&'static [ModuleField]> {
-    sound::fields(module_id)
+    sound::fields(module_id).or_else(|| system::fields(module_id))
 }
 
 pub fn execute(rule: &AutomationRule, context: &MatchContext) -> Result<(), String> {
@@ -16,5 +16,13 @@ pub fn execute(rule: &AutomationRule, context: &MatchContext) -> Result<(), Stri
         .filter(|value| !value.is_empty())
         .ok_or_else(|| "Module is required".to_string())?;
 
-    sound::execute(module_id, rule, context)
+    if sound::fields(module_id).is_some() {
+        return sound::execute(module_id, rule, context);
+    }
+
+    if system::fields(module_id).is_some() {
+        return system::execute(module_id, rule, context);
+    }
+
+    Err(format!("Unknown module: {module_id}"))
 }

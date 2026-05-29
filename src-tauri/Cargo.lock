@@ -2273,6 +2273,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "system_shutdown",
  "tauri",
  "tauri-build",
  "tauri-plugin-notification",
@@ -3807,6 +3808,16 @@ dependencies = [
  "pkg-config",
  "toml 0.8.2",
  "version-compare",
+]
+
+[[package]]
+name = "system_shutdown"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29396e5e1b637d102ec5037bf7fbb8da78264fa299101ced9ce827756b1bac02"
+dependencies = [
+ "windows 0.62.2",
+ "zbus",
 ]
 
 [[package]]
