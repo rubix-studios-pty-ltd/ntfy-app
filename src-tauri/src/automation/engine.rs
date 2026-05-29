@@ -2,7 +2,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
-use crate::db::{DbState, repo};
+use crate::db::{DbState, repo, run};
 use crate::listener::Payload;
 
 pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Result<(), String> {
@@ -18,7 +18,7 @@ pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Resu
         message: notification.message,
     };
 
-    let rules = crate::db::run(app.state::<DbState>(), move |conn| {
+    let rules = run(app.state::<DbState>(), move |conn| {
         repo::list_active_rules(conn, &topic)
     })
     .await?;
@@ -36,8 +36,8 @@ pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Resu
         let title = event.title.clone();
         let message = event.message.clone();
 
-        crate::db::run(app.state::<DbState>(), move |conn| {
-            repo::test_run(conn, &rule, title, Some(message), status, error)
+        run(app.state::<DbState>(), move |conn| {
+            repo::record_execution(conn, &rule, title, Some(message), status, error)
         })
         .await?;
     }

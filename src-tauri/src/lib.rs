@@ -15,6 +15,9 @@ use windows::main::setup_window_events;
 
 use tauri::Manager;
 
+const LOG_RETENTION_DAYS: u32 = 30;
+const LOG_MAX_ROWS: u32 = 1000;
+
 pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
@@ -28,6 +31,18 @@ pub fn run() {
         .setup(|app| {
             let db_state = db::init(app.handle())?;
             app.manage(db_state);
+
+            let handle = app.handle().clone();
+
+            tauri::async_runtime::spawn(async move {
+                if let Err(error) = db::run(handle.state::<db::DbState>(), |conn| {
+                    db::repo::cleanup_logs(conn, LOG_RETENTION_DAYS, LOG_MAX_ROWS)
+                })
+                .await
+                {
+                    eprintln!("Failed to clean automation logs: {error}");
+                }
+            });
 
             listener::listener(app.handle());
             setup_tray(app)?;
