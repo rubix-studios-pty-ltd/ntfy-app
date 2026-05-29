@@ -29,6 +29,18 @@ pub fn run() {
             let db_state = db::init(app.handle())?;
             app.manage(db_state);
 
+            let handle = app.handle().clone();
+
+            tauri::async_runtime::spawn(async move {
+                if let Err(error) = db::run(handle.state::<db::DbState>(), |conn| {
+                    db::repo::cleanup_logs(conn, 30, 1000)
+                })
+                .await
+                {
+                    eprintln!("Failed to clean automation logs: {error}");
+                }
+            });
+
             listener::listener(app.handle());
             setup_tray(app)?;
 

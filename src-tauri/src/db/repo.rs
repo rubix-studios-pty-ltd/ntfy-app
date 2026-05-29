@@ -428,6 +428,46 @@ pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, 
     })
 }
 
+pub fn cleanup_logs(
+    connection: &Connection,
+    retention_days: u32,
+    max_logs: u32,
+) -> Result<(), String> {
+    let now = now_ms().parse::<i64>().map_err(|error| error.to_string())?;
+
+    let retention_ms = i64::from(retention_days) * 24 * 60 * 60 * 1000;
+    let cutoff = now.saturating_sub(retention_ms);
+
+    connection
+        .execute(
+            r#"
+            DELETE FROM automation_logs
+            WHERE CAST(created_at AS INTEGER) < ?1
+            "#,
+            params![cutoff],
+        )
+        .map_err(|error| error.to_string())?;
+
+    if max_logs > 0 {
+        connection
+            .execute(
+                r#"
+                DELETE FROM automation_logs
+                WHERE id IN (
+                    SELECT id
+                    FROM automation_logs
+                    ORDER BY CAST(created_at AS INTEGER) DESC, id DESC
+                    LIMIT -1 OFFSET ?1
+                )
+                "#,
+                params![i64::from(max_logs)],
+            )
+            .map_err(|error| error.to_string())?;
+    }
+
+    Ok(())
+}
+
 pub fn test_run(
     connection: &Connection,
     rule: &AutomationRule,
@@ -486,6 +526,8 @@ pub fn test_run(
             params![rule.id, now.clone(), status, now],
         )
         .map_err(|error| error.to_string())?;
+
+    cleanup_logs(connection, 30, 1000)?;
 
     rule_id(connection, &rule.id)
 }

@@ -2,6 +2,7 @@ use std::process::Command;
 use tauri::AppHandle;
 
 use crate::automation::matcher::MatchContext;
+use crate::automation::modules;
 use crate::db::models::AutomationRule;
 
 pub async fn execute_rule(
@@ -12,9 +13,16 @@ pub async fn execute_rule(
     match rule.action_type.as_str() {
         "openUrl" => open_url(app, rule),
         "runProgram" => run_program(rule, context),
-        "module" => crate::automation::modules::execute(rule, context),
+        "module" => modules::execute(rule, context),
         _ => Err("Invalid action type".to_string()),
     }
+}
+
+pub fn replace_tokens(value: &str, context: &MatchContext) -> String {
+    value
+        .replace("$value", &context.value)
+        .replace("$message", &context.message)
+        .replace("$matchedLine", &context.matched_line)
 }
 
 fn open_url(app: &AppHandle, rule: &AutomationRule) -> Result<(), String> {
@@ -64,13 +72,6 @@ fn run_program(rule: &AutomationRule, context: &MatchContext) -> Result<(), Stri
     command.spawn().map_err(|error| error.to_string())?;
 
     Ok(())
-}
-
-fn replace_tokens(value: &str, context: &MatchContext) -> String {
-    value
-        .replace("$value", &context.value)
-        .replace("$message", &context.message)
-        .replace("$matchedLine", &context.matched_line)
 }
 
 fn parse_arguments(input: &str) -> Result<Vec<String>, String> {

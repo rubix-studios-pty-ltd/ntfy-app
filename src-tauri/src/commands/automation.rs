@@ -5,7 +5,7 @@ use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
 use crate::automation::validation::validate_rule;
 use crate::db::models::{AutomationInput, AutomationRule, LogsInput, LogsList};
-use crate::db::{DbState, repo};
+use crate::db::{DbState, repo, run};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,41 +16,39 @@ pub struct TestRuleInput {
 }
 
 #[tauri::command]
-pub async fn list_rules(
-    state: tauri::State<'_, DbState>,
-) -> Result<Vec<crate::db::models::AutomationRule>, String> {
-    crate::db::run(state, repo::list_rules).await
+pub async fn list_rules(state: tauri::State<'_, DbState>) -> Result<Vec<AutomationRule>, String> {
+    run(state, repo::list_rules).await
 }
 
 #[tauri::command]
 pub async fn create_rule(
     state: tauri::State<'_, DbState>,
     rule: AutomationInput,
-) -> Result<crate::db::models::AutomationRule, String> {
+) -> Result<AutomationRule, String> {
     validate_rule(&rule)?;
-    crate::db::run(state, move |conn| repo::create_rule(conn, rule)).await
+    run(state, move |conn| repo::create_rule(conn, rule)).await
 }
 
 #[tauri::command]
 pub async fn update_rule(
     state: tauri::State<'_, DbState>,
     rule: AutomationInput,
-) -> Result<crate::db::models::AutomationRule, String> {
+) -> Result<AutomationRule, String> {
     validate_rule(&rule)?;
-    crate::db::run(state, move |conn| repo::update_rule(conn, rule)).await
+    run(state, move |conn| repo::update_rule(conn, rule)).await
 }
 
 #[tauri::command]
 pub async fn delete_rule(state: tauri::State<'_, DbState>, rule_id: String) -> Result<(), String> {
-    crate::db::run(state, move |conn| repo::delete_rule(conn, &rule_id)).await
+    run(state, move |conn| repo::delete_rule(conn, &rule_id)).await
 }
 
 #[tauri::command]
 pub async fn toggle_rule(
     state: tauri::State<'_, DbState>,
     rule_id: String,
-) -> Result<crate::db::models::AutomationRule, String> {
-    crate::db::run(state, move |conn| repo::toggle_rule(conn, &rule_id)).await
+) -> Result<AutomationRule, String> {
+    run(state, move |conn| repo::toggle_rule(conn, &rule_id)).await
 }
 
 #[tauri::command]
@@ -61,7 +59,7 @@ pub async fn test_rule(
 ) -> Result<AutomationRule, String> {
     let rule_id = input.rule_id.clone();
 
-    let rule = crate::db::run(state.clone(), move |conn| repo::get_rule(conn, &rule_id)).await?;
+    let rule = run(state.clone(), move |conn| repo::get_rule(conn, &rule_id)).await?;
 
     let event = AutomationEvent {
         topic: rule.topic.clone(),
@@ -78,7 +76,7 @@ pub async fn test_rule(
 
     let error = result.as_ref().err().cloned();
 
-    let updated_rule = crate::db::run(state, move |conn| {
+    let updated_rule = run(state, move |conn| {
         repo::test_run(conn, &rule, input.title, Some(input.message), status, error)
     })
     .await?;
@@ -94,5 +92,5 @@ pub async fn list_logs(
     state: tauri::State<'_, DbState>,
     input: LogsInput,
 ) -> Result<LogsList, String> {
-    crate::db::run(state, move |conn| repo::list_logs(conn, input)).await
+    run(state, move |conn| repo::list_logs(conn, input)).await
 }
