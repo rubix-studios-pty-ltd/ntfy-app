@@ -13,6 +13,13 @@
 
 
 
+
+## [0.1.1] - 2026-05-29
+
+### Fixed
+
+- enhance automation rule handling and logging, improve argument parsing
+
 ## [0.1.0] - 2026-05-29
 
 ### Added
