@@ -527,7 +527,5 @@ pub fn test_run(
         )
         .map_err(|error| error.to_string())?;
 
-    cleanup_logs(connection, 30, 1000)?;
-
     rule_id(connection, &rule.id)
 }
