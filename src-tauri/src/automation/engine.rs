@@ -2,23 +2,28 @@ use tauri::{AppHandle, Manager};
 
 use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
-use crate::db::{DbState, models::LogAutomationInput, repo};
+use crate::db::{DbState, repo};
 use crate::listener::Payload;
 
 pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Result<(), String> {
-    if notification.topic.trim().is_empty() || notification.message.trim().is_empty() {
+    let topic = notification.topic.trim().to_string();
+
+    if topic.is_empty() || notification.message.trim().is_empty() {
         return Ok(());
     }
 
     let event = AutomationEvent {
-        topic: notification.topic,
+        topic: topic.clone(),
         title: notification.title,
         message: notification.message,
     };
 
-    let rules = crate::db::run(app.state::<DbState>(), repo::list_rules).await?;
+    let rules = crate::db::run(app.state::<DbState>(), move |conn| {
+        repo::list_active_rules(conn, &topic)
+    })
+    .await?;
 
-    for rule in rules.into_iter().filter(|rule| rule.active) {
+    for rule in rules {
         let Some(context) = match_rule(&rule, &event) else {
             continue;
         };
@@ -28,30 +33,11 @@ pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Resu
         let status = if result.is_ok() { "success" } else { "failed" };
 
         let error = result.as_ref().err().cloned();
-
-        let log = LogAutomationInput {
-            rule_id: rule.id.clone(),
-            rule_name: rule.name.clone(),
-            topic: Some(event.topic.clone()),
-            title: event.title.clone(),
-            message: Some(event.message.clone()),
-            action_type: rule.action_type.clone(),
-            action_value: rule.action_value.clone(),
-            module_id: rule.module_id.clone(),
-            status: status.to_string(),
-            error,
-        };
+        let title = event.title.clone();
+        let message = event.message.clone();
 
         crate::db::run(app.state::<DbState>(), move |conn| {
-            repo::create_log(conn, log)
-        })
-        .await?;
-
-        let rule_id = rule.id.clone();
-        let status_value = status.to_string();
-
-        crate::db::run(app.state::<DbState>(), move |conn| {
-            repo::rule_execution(conn, &rule_id, &status_value)
+            repo::test_run(conn, &rule, title, Some(message), status, error)
         })
         .await?;
     }

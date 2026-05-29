@@ -2,10 +2,10 @@ use serde::Deserialize;
 use tauri::{AppHandle, State};
 
 use crate::automation::executor::execute_rule;
-use crate::automation::matcher::{match_rule, AutomationEvent};
+use crate::automation::matcher::{AutomationEvent, match_rule};
 use crate::automation::validation::validate_rule;
 use crate::db::models::{AutomationInput, AutomationRule, LogsInput, LogsList};
-use crate::db::{repo, DbState};
+use crate::db::{DbState, repo};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -61,21 +61,32 @@ pub async fn test_rule(
 ) -> Result<AutomationRule, String> {
     let rule_id = input.rule_id.clone();
 
-    let rule = crate::db::run(state, move |conn| repo::test_rule(conn, &rule_id)).await?;
+    let rule = crate::db::run(state.clone(), move |conn| repo::get_rule(conn, &rule_id)).await?;
 
     let event = AutomationEvent {
         topic: rule.topic.clone(),
-        title: input.title,
-        message: input.message,
+        title: input.title.clone(),
+        message: input.message.clone(),
     };
 
-    let Some(context) = match_rule(&rule, &event) else {
-        return Err("Test message did not match this rule".to_string());
+    let result = match match_rule(&rule, &event) {
+        Some(context) => execute_rule(&app, &rule, &context).await,
+        None => Err("Test message did not match this rule".to_string()),
     };
 
-    execute_rule(&app, &rule, &context).await?;
+    let status = if result.is_ok() { "success" } else { "failed" };
 
-    Ok(rule)
+    let error = result.as_ref().err().cloned();
+
+    let updated_rule = crate::db::run(state, move |conn| {
+        repo::test_run(conn, &rule, input.title, Some(input.message), status, error)
+    })
+    .await?;
+
+    match result {
+        Ok(()) => Ok(updated_rule),
+        Err(error) => Err(error),
+    }
 }
 
 #[tauri::command]
