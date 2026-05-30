@@ -48,7 +48,7 @@
     "format": "biome format --write .",
     "release:new": "node scripts/release.mjs",
     "typecheck": "tsc --noEmit",
-    "update": "pnpm self-update && pnpm update --latest --interactive --recursive && pnpm install && pnpm prune && pnpm dedupe"
+    "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe"
   },
   "packageManager": "pnpm@11.4.0",
   "engines": {

@@ -34,7 +34,6 @@ const fail = (msg) => {
 
 const ROOT_DIR = path.resolve(__dirname, '..')
 
-// Check required tools
 for (const cmd of ['node', 'git']) {
   try {
     execSync(`where ${cmd}`, { stdio: 'ignore' })
@@ -43,7 +42,6 @@ for (const cmd of ['node', 'git']) {
   }
 }
 
-// Parse arguments
 if (!process.argv[2]) {
   console.log('Usage: node scripts/release.js [major|minor|patch|x.y.z]')
   console.log('')
@@ -55,7 +53,6 @@ if (!process.argv[2]) {
   process.exit(1)
 }
 
-// Read current version
 const pkgPath = path.join(ROOT_DIR, 'package.json')
 const currentVersion = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')).version
 
@@ -111,41 +108,35 @@ console.log('')
       execSync(`git tag | findstr "^v${newVersion}$"`, { stdio: 'ignore' })
       fail(`Tag v${newVersion} already exists.`)
     } catch {
-      // Tag does not exist, which is good
+      // Tag does not exist
     }
     ok(`Tag v${newVersion} is available`)
 
-    // Confirm
     const confirm = await question(`Proceed with release v${newVersion}? (y/n) `)
     if (!confirm.match(/^y/i)) {
       console.log('Aborted.')
       process.exit(0)
     }
 
-    // Bump versions
     step('Updating version numbers')
 
-    // package.json
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
     pkg.version = newVersion
     fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
     ok('package.json')
 
-    // src-tauri/tauri.conf.json
     const tauriConfPath = path.join(ROOT_DIR, 'src-tauri', 'tauri.conf.json')
     const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf-8'))
     tauriConf.version = newVersion
     fs.writeFileSync(tauriConfPath, `${JSON.stringify(tauriConf, null, 2)}\n`)
     ok('src-tauri/tauri.conf.json')
 
-    // src-tauri/Cargo.toml
     const cargoPath = path.join(ROOT_DIR, 'src-tauri', 'Cargo.toml')
     let cargo = fs.readFileSync(cargoPath, 'utf-8')
     cargo = cargo.replace(/^(version\s*=\s*)"[^"]*"/m, `$1"${newVersion}"`)
     fs.writeFileSync(cargoPath, cargo)
     ok('src-tauri/Cargo.toml')
 
-    // Regenerate Cargo.lock
     step('Regenerating Cargo.lock')
     execSync('cargo generate-lockfile --quiet', {
       cwd: path.join(ROOT_DIR, 'src-tauri'),
@@ -153,7 +144,6 @@ console.log('')
     })
     ok('Cargo.lock')
 
-    // Generate changelog
     step('Generating changelog')
 
     let lastTag = ''
@@ -222,7 +212,6 @@ console.log('')
       entry += '\n\nMaintenance release.'
     }
 
-    // Insert into CHANGELOG.md
     const changelogPath = path.join(ROOT_DIR, 'CHANGELOG.md')
     let changelog = fs.readFileSync(changelogPath, 'utf-8')
     const marker = '\n## ['
@@ -258,7 +247,6 @@ console.log('')
       process.exit(0)
     }
 
-    // Git commit and tag
     step('Creating release commit')
 
     execSync(
@@ -276,7 +264,6 @@ console.log('')
     })
     ok('Tagged')
 
-    // Done
     console.log('')
     console.log(`${colors.GREEN}========================================${colors.NC}`)
     console.log(`${colors.GREEN}  Released v${newVersion}${colors.NC}`)
