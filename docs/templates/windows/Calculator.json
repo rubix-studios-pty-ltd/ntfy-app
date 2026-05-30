@@ -1,0 +1,18 @@
+{
+  "type": "ntfy-app-rule",
+  "version": 1,
+  "exportedAt": "2026-05-30T21:49:00.117Z",
+  "rule": {
+    "active": true,
+    "name": "Calculator",
+    "topic": "automation",
+    "matchType": "contains",
+    "matchValue": "open calculator\nstart calculator",
+    "actionType": "runProgram",
+    "actionValue": "explorer.exe",
+    "moduleId": null,
+    "actionConfig": null,
+    "arguments": "shell:AppsFolder\\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App",
+    "workingDirectory": null
+  }
+}
