@@ -7,7 +7,7 @@
     "name": "Netflix",
     "topic": "automation",
     "matchType": "contains",
-    "matchValue": "open netflix\nstart neflix\nturn on netflix",
+    "matchValue": "open netflix\nstart netflix\nturn on netflix",
     "actionType": "runProgram",
     "actionValue": "explorer.exe",
     "moduleId": null,
