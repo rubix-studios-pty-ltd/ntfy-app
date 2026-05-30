@@ -14,6 +14,22 @@
 
 
 
+
+## [0.1.2] - 2026-05-30
+
+### Added
+
+- implement sound module with volume control and cleanup logs functionality
+- refactor execution logging and add token replacement functionality
+- implement cross-platform volume control functionality with Linux and macOS support
+- add system module with power control functionalities including hibernate, logout, reboot, shutdown, and sleep
+- add screen module for taking screenshots
+
+### Fixed
+
+- remove unnecessary cleanup_logs call in test_run function
+- remove unnecessary whitespace in baseSchema definition
+
 ## [0.1.1] - 2026-05-29
 
 ### Fixed
