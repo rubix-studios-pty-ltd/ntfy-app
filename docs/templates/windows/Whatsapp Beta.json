@@ -1,0 +1,18 @@
+{
+  "type": "ntfy-app-rule",
+  "version": 1,
+  "exportedAt": "2026-05-30T22:54:09.864Z",
+  "rule": {
+    "active": true,
+    "name": "Whatsapp Beta",
+    "topic": "automation",
+    "matchType": "contains",
+    "matchValue": "open whatsapp beta\nstart whatsapp beta",
+    "actionType": "runProgram",
+    "actionValue": "explorer.exe",
+    "moduleId": null,
+    "actionConfig": null,
+    "arguments": "shell:AppsFolder\\5319275A.51895FA4EA97F_cv1g1gvanyjgm!App",
+    "workingDirectory": null
+  }
+}

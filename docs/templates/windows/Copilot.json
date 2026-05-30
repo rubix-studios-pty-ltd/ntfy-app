@@ -1,0 +1,18 @@
+{
+  "type": "ntfy-app-rule",
+  "version": 1,
+  "exportedAt": "2026-05-30T22:57:58.340Z",
+  "rule": {
+    "active": true,
+    "name": "Copilot",
+    "topic": "automation",
+    "matchType": "contains",
+    "matchValue": "open copilot\nstart copilot",
+    "actionType": "runProgram",
+    "actionValue": "explorer.exe",
+    "moduleId": null,
+    "actionConfig": null,
+    "arguments": "shell:AppsFolder\\Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe!Microsoft.MicrosoftOfficeHub",
+    "workingDirectory": null
+  }
+}

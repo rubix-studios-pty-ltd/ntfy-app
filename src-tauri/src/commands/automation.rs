@@ -7,6 +7,21 @@ use crate::automation::validation::validate_rule;
 use crate::db::models::{AutomationInput, AutomationRule, LogsInput, LogsList};
 use crate::db::{DbState, repo, run};
 
+fn build_test_message(rule: &AutomationRule, input_message: &str) -> String {
+    let input_message = input_message.trim();
+
+    if input_message != rule.match_value.trim() {
+        return input_message.to_string();
+    }
+
+    rule.match_value
+        .lines()
+        .map(str::trim)
+        .find(|line| !line.is_empty())
+        .unwrap_or(input_message)
+        .replace("$value", "50")
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestRuleInput {
@@ -61,10 +76,12 @@ pub async fn test_rule(
 
     let rule = run(state.clone(), move |conn| repo::get_rule(conn, &rule_id)).await?;
 
+    let message = build_test_message(&rule, &input.message);
+
     let event = AutomationEvent {
         topic: rule.topic.clone(),
         title: input.title.clone(),
-        message: input.message.clone(),
+        message: message.clone(),
     };
 
     let result = match match_rule(&rule, &event) {

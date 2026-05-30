@@ -1,0 +1,18 @@
+{
+  "type": "ntfy-app-rule",
+  "version": 1,
+  "exportedAt": "2026-05-30T22:54:06.240Z",
+  "rule": {
+    "active": true,
+    "name": "Whatsapp",
+    "topic": "automation",
+    "matchType": "contains",
+    "matchValue": "open whatsapp\nstart whatsapp",
+    "actionType": "runProgram",
+    "actionValue": "explorer.exe",
+    "moduleId": null,
+    "actionConfig": null,
+    "arguments": "shell:AppsFolder\\5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App",
+    "workingDirectory": null
+  }
+}

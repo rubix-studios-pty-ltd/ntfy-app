@@ -14,6 +14,28 @@ pub struct MatchContext {
     pub message: String,
 }
 
+fn incoming_message(incoming: &str) -> Vec<&str> {
+    let mut message = Vec::new();
+
+    message.push(incoming);
+
+    for line in incoming
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+    {
+        let already_added = message
+            .iter()
+            .any(|msg| same_text(msg, line));
+
+        if !already_added {
+            message.push(line);
+        }
+    }
+
+    message
+}
+
 pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<MatchContext> {
     if !same_text(&rule.topic, &event.topic) {
         return None;
@@ -25,25 +47,33 @@ pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<Matc
         return None;
     }
 
-    for line in rule
+    let rules: Vec<&str> = rule
         .match_value
         .lines()
         .map(str::trim)
         .filter(|line| !line.is_empty())
-    {
-        let value = match rule.match_type.as_str() {
-            "equals" => match_equals(incoming, line),
-            "contains" => match_contains(incoming, line),
-            "startsWith" => match_starts_with(incoming, line),
-            _ => None,
-        };
+        .collect();
 
-        if let Some(value) = value {
-            return Some(MatchContext {
-                value,
-                matched_line: line.to_string(),
-                message: incoming.to_string(),
-            });
+    if rules.is_empty() {
+        return None;
+    }
+
+    for msg in incoming_message(incoming) {
+        for line in &rules {
+            let value = match rule.match_type.as_str() {
+                "equals" => match_equals(msg, line),
+                "contains" => match_contains(msg, line),
+                "startsWith" => match_starts_with(msg, line),
+                _ => None,
+            };
+
+            if let Some(value) = value {
+                return Some(MatchContext {
+                    value,
+                    matched_line: (*line).to_string(),
+                    message: msg.to_string(),
+                });
+            }
         }
     }
 
@@ -59,12 +89,25 @@ fn match_equals(incoming: &str, line: &str) -> Option<String> {
 }
 
 fn match_starts_with(incoming: &str, line: &str) -> Option<String> {
-    let end = ascii_prefix_end(incoming, line)?;
+    if line.contains("$value") {
+        return template_starts_with(incoming, line);
+    }
 
-    Some(incoming[end..].trim().to_string())
+    let end = ascii_prefix_end(incoming, line)?;
+    let value = incoming[end..].trim();
+
+    if value.is_empty() {
+        return Some(String::new());
+    }
+
+    Some(value.to_string())
 }
 
 fn match_contains(incoming: &str, line: &str) -> Option<String> {
+    if line.contains("$value") {
+        return template_contains(incoming, line);
+    }
+
     let (start, end) = ascii_find(incoming, line)?;
 
     let before = incoming[..start].trim();
@@ -93,19 +136,26 @@ fn match_template(incoming: &str, template: &str) -> Option<String> {
         return None;
     }
 
-    let start = if prefix.is_empty() {
+    let mut start = if prefix.is_empty() {
         0
     } else {
         ascii_prefix_end(incoming, prefix)?
     };
 
-    let remaining = incoming[start..].trim_start();
+    while start < incoming.len() {
+        let next_char = incoming[start..].chars().next()?;
+
+        if !next_char.is_whitespace() {
+            break;
+        }
+
+        start += next_char.len_utf8();
+    }
 
     let end = if suffix.is_empty() {
         incoming.len()
     } else {
-        let suffix_start = ascii_suffix_start(remaining, suffix)?;
-        start + remaining[..suffix_start].len()
+        start + ascii_suffix_start(&incoming[start..], suffix)?
     };
 
     let value = incoming[start..end].trim();
@@ -117,14 +167,16 @@ fn match_template(incoming: &str, template: &str) -> Option<String> {
     Some(value.to_string())
 }
 
-fn ascii_suffix_start(incoming: &str, suffix: &str) -> Option<usize> {
-    if suffix.is_empty() {
-        return Some(incoming.len());
-    }
+fn template_starts_with(incoming: &str, template: &str) -> Option<String> {
+    match_template(incoming, template)
+}
 
+fn template_contains(incoming: &str, template: &str) -> Option<String> {
     for (start, _) in incoming.char_indices() {
-        if same_text(&incoming[start..], suffix) {
-            return Some(start);
+        let msg = &incoming[start..];
+
+        if let Some(value) = match_template(msg, template) {
+            return Some(value);
         }
     }
 
@@ -135,6 +187,20 @@ fn ascii_find(incoming: &str, needle: &str) -> Option<(usize, usize)> {
     for (start, _) in incoming.char_indices() {
         if let Some(end) = ascii_prefix_end(&incoming[start..], needle) {
             return Some((start, start + end));
+        }
+    }
+
+    None
+}
+
+fn ascii_suffix_start(incoming: &str, suffix: &str) -> Option<usize> {
+    if suffix.is_empty() {
+        return Some(incoming.len());
+    }
+
+    for (start, _) in incoming.char_indices() {
+        if same_text(&incoming[start..], suffix) {
+            return Some(start);
         }
     }
 

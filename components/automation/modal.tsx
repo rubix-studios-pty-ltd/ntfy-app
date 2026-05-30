@@ -1,5 +1,9 @@
 'use client'
 
+import { SquareArrowDown, SquareArrowUp } from 'lucide-react'
+import { useRef } from 'react'
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,6 +28,7 @@ import { type ActionType, type MatchType, type RulesType } from '@/schema/automa
 import { actionLabels } from '@/utils/actionType'
 import { getBase } from '@/utils/getBase'
 import { getConfig, parseConfig } from '@/utils/getConfig'
+import { stripRule } from '@/utils/stripRule'
 
 interface ModalProps {
   rule: RulesType | null
@@ -34,6 +39,7 @@ interface ModalProps {
 export function Modal({ rule, setRule, onSave }: ModalProps) {
   const open = Boolean(rule)
   const runAction = rule?.actionType === 'runProgram'
+  const importInput = useRef<HTMLInputElement>(null)
 
   const updateRule = (updates: Partial<RulesType>) => {
     if (!rule) {
@@ -81,6 +87,59 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
       actionType,
       actionValue: '',
     })
+  }
+
+  const exportRule = () => {
+    if (!rule) {
+      return
+    }
+
+    const exportData = {
+      type: 'ntfy-app-rule',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      rule: stripRule(rule),
+    }
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    })
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+
+    link.href = url
+    link.download = `${rule.name || 'automation-rule'}.json`
+    link.click()
+
+    URL.revokeObjectURL(url)
+
+    toast.success('Rule exported.')
+  }
+
+  const importRule = async (file: File) => {
+    try {
+      const text = await file.text()
+      const json = JSON.parse(text)
+
+      const importedRule = json?.type === 'ntfy-app-rule' ? json.rule : json
+
+      if (!importedRule?.name || !importedRule?.topic || !importedRule?.matchType) {
+        throw new Error('Invalid rule file')
+      }
+
+      setRule({
+        ...rule,
+        ...stripRule(importedRule),
+        active: false,
+      } as RulesType)
+    } catch {
+      toast.error('Invalid automation file.')
+    } finally {
+      if (importInput.current) {
+        importInput.current.value = ''
+      }
+    }
   }
 
   return (
@@ -337,21 +396,55 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             ) : null}
           </div>
 
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              className="cursor-pointer transition-all duration-500"
-              onClick={() => setRule(null)}
-            >
-              Cancel
-            </Button>
+          <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-2">
+              <input
+                ref={importInput}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
 
-            <Button
-              className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
-              onClick={onSave}
-            >
-              Save
-            </Button>
+                  if (file) {
+                    void importRule(file)
+                  }
+                }}
+              />
+
+              <Button
+                variant="outline"
+                className="cursor-pointer transition-all duration-500"
+                onClick={() => importInput.current?.click()}
+              >
+                <SquareArrowUp className="size-4" />
+              </Button>
+
+              <Button
+                variant="outline"
+                className="cursor-pointer transition-all duration-500"
+                onClick={exportRule}
+              >
+                <SquareArrowDown className="size-4" />
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="cursor-pointer transition-all duration-500"
+                onClick={() => setRule(null)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
+                onClick={onSave}
+              >
+                Save
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       )}
