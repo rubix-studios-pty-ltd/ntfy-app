@@ -1,11 +1,34 @@
-use super::{sound, system};
+use super::{screen, sound, system};
 
 use crate::automation::matcher::MatchContext;
 use crate::automation::modules::ModuleField;
 use crate::db::models::AutomationRule;
 
+type Fields = fn(&str) -> Option<&'static [ModuleField]>;
+type Execute = fn(&str, &AutomationRule, &MatchContext) -> Result<(), String>;
+
+struct ModuleHandler {
+    fields: Fields,
+    execute: Execute,
+}
+
+const MODULES: &[ModuleHandler] = &[
+    ModuleHandler {
+        fields: sound::fields,
+        execute: sound::execute,
+    },
+    ModuleHandler {
+        fields: system::fields,
+        execute: system::execute,
+    },
+    ModuleHandler {
+        fields: screen::fields,
+        execute: screen::execute,
+    },
+];
+
 pub fn fields(module_id: &str) -> Option<&'static [ModuleField]> {
-    sound::fields(module_id).or_else(|| system::fields(module_id))
+    MODULES.iter().find_map(|module| (module.fields)(module_id))
 }
 
 pub fn execute(rule: &AutomationRule, context: &MatchContext) -> Result<(), String> {
@@ -16,13 +39,10 @@ pub fn execute(rule: &AutomationRule, context: &MatchContext) -> Result<(), Stri
         .filter(|value| !value.is_empty())
         .ok_or_else(|| "Module is required".to_string())?;
 
-    if sound::fields(module_id).is_some() {
-        return sound::execute(module_id, rule, context);
-    }
+    let module = MODULES
+        .iter()
+        .find(|module| (module.fields)(module_id).is_some())
+        .ok_or_else(|| format!("Unknown module: {module_id}"))?;
 
-    if system::fields(module_id).is_some() {
-        return system::execute(module_id, rule, context);
-    }
-
-    Err(format!("Unknown module: {module_id}"))
+    (module.execute)(module_id, rule, context)
 }
