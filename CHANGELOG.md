@@ -1,4 +1,17 @@
 
+
+## [0.1.3] - 2026-05-31
+
+### Added
+
+- add import/export functionality for automation rules in modal component
+- enhance automation rule matching with new message processing and add multiple application templates
+
+### Fixed
+
+- correct typo in matchValue for Netflix automation rule
+- add missing libpipewire dependency for Ubuntu build
+
 ## [0.1.2] - 2026-05-30
 
 ### Added
