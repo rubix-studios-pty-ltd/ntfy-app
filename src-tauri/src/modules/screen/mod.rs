@@ -11,6 +11,8 @@ use crate::automation::modules::{FieldKind, ModuleField};
 use crate::automation::tokens::replace_tokens;
 use crate::db::models::{ActionConfig, AutomationRule};
 
+mod config;
+
 const FIELDS: &[ModuleField] = &[
     ModuleField {
         key: "directory",
@@ -49,7 +51,7 @@ pub fn execute(
 }
 
 fn take_screenshot(config: Option<&ActionConfig>, context: &MatchContext) -> Result<(), String> {
-    let directory = text_config(config, "directory")
+    let directory = config::text_config(config, "directory")
         .map(|value| replace_tokens(&value, context))
         .filter(|value| !value.trim().is_empty())
         .map(PathBuf::from)
@@ -58,7 +60,7 @@ fn take_screenshot(config: Option<&ActionConfig>, context: &MatchContext) -> Res
     fs::create_dir_all(&directory)
         .map_err(|error| format!("Failed to create screenshot directory: {error}"))?;
 
-    let filename = text_config(config, "filename")
+    let filename = config::text_config(config, "filename")
         .map(|value| replace_tokens(&value, context))
         .filter(|value| !value.trim().is_empty())
         .unwrap_or_else(default_filename);
@@ -98,15 +100,6 @@ fn primary_monitor() -> Result<Monitor, String> {
     }
 
     fallback.ok_or_else(|| "No monitor available".to_string())
-}
-
-fn text_config(config: Option<&ActionConfig>, key: &str) -> Option<String> {
-    config?
-        .get(key)?
-        .as_str()
-        .map(str::trim)
-        .filter(|value| !value.is_empty())
-        .map(ToOwned::to_owned)
 }
 
 fn default_directory() -> PathBuf {

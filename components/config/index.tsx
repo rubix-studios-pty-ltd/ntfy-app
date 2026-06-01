@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { DaysOfWeek, defaultSchedule } from '@/constant/schedule'
 import { getSchedule, updateSchedule } from '@/lib/tauri/schedule'
 import { type DayKey, type Schedule, type ScheduleConfig } from '@/types/schedule'
-import { DaysOfWeek, defaultSchedule } from '@/utils/schedule'
 
 export function Config() {
   const [scheduleEnabled, setScheduleEnabled] = useState(false)

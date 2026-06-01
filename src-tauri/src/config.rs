@@ -10,7 +10,7 @@ pub struct AppConfig {
     pub instance_url: Option<String>,
 }
 
-fn get_config_path(app_handle: &tauri::AppHandle) -> PathBuf {
+fn get_config(app_handle: &tauri::AppHandle) -> PathBuf {
     app_handle
         .path()
         .app_config_dir()
@@ -19,7 +19,7 @@ fn get_config_path(app_handle: &tauri::AppHandle) -> PathBuf {
 }
 
 pub fn load_config(app_handle: &tauri::AppHandle) -> AppConfig {
-    let config_path = get_config_path(app_handle);
+    let config_path = get_config(app_handle);
 
     if !config_path.exists() {
         return AppConfig { instance_url: None };
@@ -34,7 +34,7 @@ pub fn load_config(app_handle: &tauri::AppHandle) -> AppConfig {
 }
 
 pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<(), String> {
-    let config_path = get_config_path(app_handle);
+    let config_path = get_config(app_handle);
 
     if let Some(parent) = config_path.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;

@@ -22,7 +22,7 @@ import { Switch } from '@/components/ui/switch'
 import {
   createRule,
   deleteRule,
-  listRules,
+  getRules,
   testRule,
   toggleRule,
   updateRule,
@@ -43,7 +43,7 @@ export function Automation() {
   useEffect(() => {
     const loadRules = async () => {
       try {
-        const storedRules = await listRules()
+        const storedRules = await getRules()
         setRules(storedRules)
       } catch {
         toast.error('Failed to load rules')

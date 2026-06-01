@@ -73,7 +73,7 @@ async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
     }
 
     let now = Local::now();
-    let day_key = day_key_from_weekday(now.weekday());
+    let day_key = day_of_week(now.weekday());
 
     let Some(day) = schedule.days.get(&day_key) else {
         return Ok(false);
@@ -94,8 +94,8 @@ async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
     Ok(current >= start && current < end)
 }
 
-fn day_key_from_weekday(weekday: Weekday) -> DayKey {
-    match weekday {
+fn day_of_week(days: Weekday) -> DayKey {
+    match days {
         Weekday::Mon => DayKey::Monday,
         Weekday::Tue => DayKey::Tuesday,
         Weekday::Wed => DayKey::Wednesday,

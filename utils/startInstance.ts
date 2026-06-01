@@ -1,4 +1,4 @@
-import { saveUrl } from '@/lib/tauri/saveUrl'
+import { saveUrl } from '@/lib/tauri/settings'
 import { normalizeUrl } from '@/utils/normalizeUrl'
 
 export const startInstance = async (instanceUrl: string | null) => {

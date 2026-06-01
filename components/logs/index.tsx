@@ -11,7 +11,7 @@ import {
   PaginationLink,
 } from '@/components/ui/pagination'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { listLogs } from '@/lib/tauri/automation'
+import { getLogs } from '@/lib/tauri/automation'
 import { type LogsList } from '@/types/logs'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
@@ -45,7 +45,7 @@ export function Logs() {
       notify?: boolean
     } = {}) => {
       try {
-        const result = await listLogs({ page, pageSize })
+        const result = await getLogs({ page, pageSize })
 
         currentPage.current = result.page
         setLogs(result)
