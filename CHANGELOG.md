@@ -1,6 +1,13 @@
 
 
 
+
+## [0.2.1] - 2026-06-01
+
+### Fixed
+
+- **listeners**: additional checks to ensure attached listeners are isolated to ntfy
+
 ## [0.2.0] - 2026-06-01
 
 ### Added
