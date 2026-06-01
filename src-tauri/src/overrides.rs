@@ -5,6 +5,20 @@ pub fn handle_page_load(window: &Webview) {
         r#"
         (() => {
           try {
+            const ntfyCheck = () => {
+              const ogUrl = document
+                .querySelector('meta[property="og:url"]')
+                ?.getAttribute('content')
+                ?.trim()
+                ?.replace(/\/$/, '');
+
+              return ogUrl === 'https://ntfy.sh';
+            };
+
+            if (!ntfyCheck()) {
+              return;
+            }
+
             const styleId = 'ntfy-style';
 
             if (!document.getElementById(styleId)) {
