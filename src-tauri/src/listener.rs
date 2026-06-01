@@ -32,7 +32,9 @@ pub fn listener(app_handle: &AppHandle) {
                     show_notification(&app, &notification);
                 }
 
-                Ok(false) => {}
+                Ok(false) => {
+                    // Notifications are disabled by schedule
+                }
 
                 Err(error) => {
                     eprintln!("Schedule check failed: {error}");
