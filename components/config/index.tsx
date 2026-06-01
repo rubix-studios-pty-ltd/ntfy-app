@@ -104,7 +104,7 @@ export function Config() {
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
           <Label className="font-semibold">Schedule</Label>
-          <p className="text-sm">Receive notifications during your working hours.</p>
+          <p className="text-sm">Restrict notification alerts to specific days and times.</p>
         </div>
         <Switch
           checked={scheduleEnabled}
