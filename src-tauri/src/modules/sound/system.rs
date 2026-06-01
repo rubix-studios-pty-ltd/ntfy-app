@@ -1,3 +1,5 @@
+pub use platform::{decrease_volume, increase_volume, set_volume, toggle_mute};
+
 #[cfg(target_os = "windows")]
 #[path = "windows.rs"]
 mod platform;
@@ -28,5 +30,3 @@ mod platform {
         Err("Volume control is not supported on this platform".to_string())
     }
 }
-
-pub use platform::{decrease_volume, increase_volume, set_volume, toggle_mute};

@@ -1,11 +1,18 @@
 use rusqlite::types::Type;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use std::time::{SystemTime, UNIX_EPOCH};
-use uuid::Uuid;
 
-use super::models::{
-    ActionConfig, AutomationInput, AutomationRule, LogsAutomation, LogsInput, LogsList,
+use super::models::{ActionConfig, AutomationRule, DayKey, ScheduleConfig, ScheduleInput};
+
+mod automation;
+mod logs;
+mod schedule;
+
+pub use automation::{
+    create_rule, delete_rule, get_rule, list_active_rules, list_rules, toggle_rule, update_rule,
 };
+pub use logs::{cleanup_logs, list_logs, record_execution};
+pub use schedule::{get_schedule, update_schedule};
 
 fn now_ms() -> String {
     SystemTime::now()
@@ -32,6 +39,85 @@ fn config_json(action_config: Option<ActionConfig>) -> Result<Option<String>, St
         .map(|config| serde_json::to_string(&config))
         .transpose()
         .map_err(|error| error.to_string())
+}
+
+fn parse_day_key(value: &str) -> Result<DayKey, String> {
+    match value {
+        "monday" => Ok(DayKey::Monday),
+        "tuesday" => Ok(DayKey::Tuesday),
+        "wednesday" => Ok(DayKey::Wednesday),
+        "thursday" => Ok(DayKey::Thursday),
+        "friday" => Ok(DayKey::Friday),
+        "saturday" => Ok(DayKey::Saturday),
+        "sunday" => Ok(DayKey::Sunday),
+        _ => Err(format!("Invalid day key: {value}")),
+    }
+}
+
+fn schedule_day_row(row: &Row<'_>) -> rusqlite::Result<(DayKey, ScheduleConfig)> {
+    let day_key: String = row.get("day_key")?;
+
+    let day_key = parse_day_key(&day_key).map_err(|error| {
+        rusqlite::Error::FromSqlConversionFailure(
+            0,
+            Type::Text,
+            Box::new(std::io::Error::other(error)),
+        )
+    })?;
+
+    Ok((
+        day_key,
+        ScheduleConfig {
+            enabled: row.get::<_, i64>("active")? != 0,
+            start_time: row.get("start_time")?,
+            end_time: row.get("end_time")?,
+        },
+    ))
+}
+
+fn default_schedule_config(day_key: DayKey) -> ScheduleConfig {
+    ScheduleConfig {
+        enabled: !matches!(day_key, DayKey::Saturday | DayKey::Sunday),
+        start_time: "09:00".to_string(),
+        end_time: "17:00".to_string(),
+    }
+}
+
+pub fn time_to_minutes(value: &str) -> Option<u16> {
+    let mut parts = value.split(':');
+
+    let hour = parts.next()?.parse::<u16>().ok()?;
+    let minute = parts.next()?.parse::<u16>().ok()?;
+
+    if parts.next().is_some() || hour > 23 || minute > 59 {
+        return None;
+    }
+
+    Some((hour * 60) + minute)
+}
+
+fn validate_schedule(input: &ScheduleInput) -> Result<(), String> {
+    for day_key in DayKey::ALL {
+        let config = input
+            .days
+            .get(&day_key)
+            .ok_or_else(|| format!("Schedule is missing {}", day_key.as_str()))?;
+
+        let start = time_to_minutes(&config.start_time)
+            .ok_or_else(|| format!("{} start time is invalid", day_key.as_str()))?;
+
+        let end = time_to_minutes(&config.end_time)
+            .ok_or_else(|| format!("{} end time is invalid", day_key.as_str()))?;
+
+        if config.enabled && end <= start {
+            return Err(format!(
+                "{} end time must be after start time",
+                day_key.as_str()
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 fn rule_row(row: &Row<'_>) -> rusqlite::Result<AutomationRule> {
@@ -85,447 +171,4 @@ fn rule_id(connection: &Connection, id: &str) -> Result<AutomationRule, String> 
         .optional()
         .map_err(|error| error.to_string())?
         .ok_or_else(|| "Rule not found".to_string())
-}
-
-pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String> {
-    let mut statement = connection
-        .prepare(
-            r#"
-            SELECT
-              id,
-              active,
-              name,
-              topic,
-              match_type,
-              match_value,
-              action_type,
-              action_value,
-              module_id,
-              action_config,
-              arguments,
-              working_directory,
-              created_at,
-              updated_at,
-              last_run_at,
-              status
-            FROM automation_rules
-            ORDER BY created_at DESC
-            "#,
-        )
-        .map_err(|error| error.to_string())?;
-
-    statement
-        .query_map([], rule_row)
-        .map_err(|error| error.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| error.to_string())
-}
-
-pub fn list_active_rules(
-    connection: &Connection,
-    topic: &str,
-) -> Result<Vec<AutomationRule>, String> {
-    let mut statement = connection
-        .prepare(
-            r#"
-            SELECT
-              id,
-              active,
-              name,
-              topic,
-              match_type,
-              match_value,
-              action_type,
-              action_value,
-              module_id,
-              action_config,
-              arguments,
-              working_directory,
-              created_at,
-              updated_at,
-              last_run_at,
-              status
-            FROM automation_rules
-            WHERE topic = ?1
-              AND active = 1
-            ORDER BY created_at DESC
-            "#,
-        )
-        .map_err(|error| error.to_string())?;
-
-    statement
-        .query_map(params![topic], rule_row)
-        .map_err(|error| error.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| error.to_string())
-}
-
-pub fn create_rule(
-    connection: &Connection,
-    rule: AutomationInput,
-) -> Result<AutomationRule, String> {
-    let now = now_ms();
-    let status = rule.status.clone().or_else(|| Some("never".to_string()));
-    let action_config = config_json(rule.action_config)?;
-
-    connection
-        .execute(
-            r#"
-            INSERT INTO automation_rules (
-              id,
-              active,
-              name,
-              topic,
-              match_type,
-              match_value,
-              action_type,
-              action_value,
-              module_id,
-              action_config,
-              arguments,
-              working_directory,
-              created_at,
-              updated_at,
-              last_run_at,
-              status
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
-            "#,
-            params![
-                rule.id,
-                i64::from(rule.active),
-                rule.name,
-                rule.topic,
-                rule.match_type,
-                rule.match_value,
-                rule.action_type,
-                rule.action_value,
-                rule.module_id,
-                action_config,
-                rule.arguments,
-                rule.working_directory,
-                now,
-                now,
-                rule.last_run,
-                status,
-            ],
-        )
-        .map_err(|error| error.to_string())?;
-
-    rule_id(connection, &rule.id)
-}
-
-pub fn update_rule(
-    connection: &Connection,
-    rule: AutomationInput,
-) -> Result<AutomationRule, String> {
-    let now = now_ms();
-    let existing = rule_id(connection, &rule.id)?;
-    let action_config = config_json(rule.action_config)?;
-
-    connection
-        .execute(
-            r#"
-            UPDATE automation_rules
-            SET active = ?2,
-                name = ?3,
-                topic = ?4,
-                match_type = ?5,
-                match_value = ?6,
-                action_type = ?7,
-                action_value = ?8,
-                module_id = ?9,
-                action_config = ?10,
-                arguments = ?11,
-                working_directory = ?12,
-                updated_at = ?13,
-                last_run_at = ?14,
-                status = ?15
-            WHERE id = ?1
-            "#,
-            params![
-                rule.id,
-                i64::from(rule.active),
-                rule.name,
-                rule.topic,
-                rule.match_type,
-                rule.match_value,
-                rule.action_type,
-                rule.action_value,
-                rule.module_id,
-                action_config,
-                rule.arguments,
-                rule.working_directory,
-                now,
-                rule.last_run.or(existing.last_run),
-                rule.status.or(existing.status),
-            ],
-        )
-        .map_err(|error| error.to_string())?;
-
-    rule_id(connection, &rule.id)
-}
-
-pub fn delete_rule(connection: &Connection, id: &str) -> Result<(), String> {
-    let affected = connection
-        .execute("DELETE FROM automation_rules WHERE id = ?1", params![id])
-        .map_err(|error| error.to_string())?;
-
-    if affected == 0 {
-        return Err("Rule not found".to_string());
-    }
-
-    Ok(())
-}
-
-pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    let current = rule_id(connection, id)?;
-
-    let updated = AutomationInput {
-        id: current.id.clone(),
-        active: !current.active,
-        name: current.name,
-        topic: current.topic,
-        match_type: current.match_type,
-        match_value: current.match_value,
-        action_type: current.action_type,
-        action_value: current.action_value,
-        module_id: current.module_id,
-        action_config: current.action_config,
-        arguments: current.arguments,
-        working_directory: current.working_directory,
-        last_run: current.last_run,
-        status: current.status,
-    };
-
-    update_rule(connection, updated)
-}
-
-pub fn get_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    rule_id(connection, id)
-}
-
-fn log_row(row: &Row<'_>) -> rusqlite::Result<LogsAutomation> {
-    Ok(LogsAutomation {
-        id: row.get("id")?,
-        rule_id: row.get("rule_id")?,
-        rule_name: row.get("rule_name")?,
-        topic: row.get("topic")?,
-        title: row.get("title")?,
-        message: row.get("message")?,
-        action_type: row.get("action_type")?,
-        action_value: row.get("action_value")?,
-        module_id: row.get("module_id")?,
-        status: row.get("status")?,
-        error: row.get("error")?,
-        created_at: row.get("created_at")?,
-    })
-}
-
-pub fn list_logs(connection: &Connection, input: LogsInput) -> Result<LogsList, String> {
-    let page = input.page.unwrap_or(1).max(1);
-    let page_size = input.page_size.unwrap_or(50).clamp(5, 100);
-    let offset = (page - 1) * page_size;
-
-    let limit = i64::from(page_size);
-    let offset = i64::from(offset);
-
-    let rule_id = input
-        .rule_id
-        .as_deref()
-        .map(str::trim)
-        .filter(|value| !value.is_empty());
-
-    let total = match rule_id {
-        Some(rule_id) => connection.query_row(
-            "SELECT COUNT(*) FROM automation_logs WHERE rule_id = ?1",
-            params![rule_id],
-            |row| row.get::<_, u32>(0),
-        ),
-
-        None => connection.query_row("SELECT COUNT(*) FROM automation_logs", [], |row| {
-            row.get::<_, u32>(0)
-        }),
-    }
-    .map_err(|error| error.to_string())?;
-
-    let items = match rule_id {
-        Some(rule_id) => {
-            let mut statement = connection
-                .prepare(
-                    r#"
-                    SELECT
-                        logs.id,
-                        logs.rule_id,
-                        logs.rule_name,
-                        logs.topic,
-                        logs.title,
-                        logs.message,
-                        logs.action_type,
-                        logs.action_value,
-                        logs.module_id,
-                        logs.status,
-                        logs.error,
-                        logs.created_at
-                    FROM automation_logs logs
-                    WHERE logs.rule_id = ?1
-                    ORDER BY logs.created_at DESC, logs.id DESC
-                    LIMIT ?2 OFFSET ?3
-                    "#,
-                )
-                .map_err(|error| error.to_string())?;
-
-            statement
-                .query_map(params![rule_id, limit, offset], log_row)
-                .map_err(|error| error.to_string())?
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|error| error.to_string())?
-        }
-
-        None => {
-            let mut statement = connection
-                .prepare(
-                    r#"
-                    SELECT
-                        logs.id,
-                        logs.rule_id,
-                        logs.rule_name,
-                        logs.topic,
-                        logs.title,
-                        logs.message,
-                        logs.action_type,
-                        logs.action_value,
-                        logs.module_id,
-                        logs.status,
-                        logs.error,
-                        logs.created_at
-                    FROM automation_logs logs
-                    ORDER BY logs.created_at DESC, logs.id DESC
-                    LIMIT ?1 OFFSET ?2
-                    "#,
-                )
-                .map_err(|error| error.to_string())?;
-
-            statement
-                .query_map(params![limit, offset], log_row)
-                .map_err(|error| error.to_string())?
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|error| error.to_string())?
-        }
-    };
-
-    let total_pages = if total == 0 {
-        1
-    } else {
-        total.div_ceil(page_size)
-    };
-
-    Ok(LogsList {
-        items,
-        page,
-        page_size,
-        total,
-        total_pages,
-    })
-}
-
-pub fn cleanup_logs(
-    connection: &Connection,
-    retention_days: u32,
-    max_logs: u32,
-) -> Result<(), String> {
-    let now = now_ms().parse::<i64>().map_err(|error| error.to_string())?;
-
-    let retention_ms = i64::from(retention_days) * 24 * 60 * 60 * 1000;
-    let cutoff = now.saturating_sub(retention_ms);
-
-    connection
-        .execute(
-            r#"
-            DELETE FROM automation_logs
-            WHERE CAST(created_at AS INTEGER) < ?1
-            "#,
-            params![cutoff],
-        )
-        .map_err(|error| error.to_string())?;
-
-    if max_logs > 0 {
-        connection
-            .execute(
-                r#"
-                DELETE FROM automation_logs
-                WHERE id IN (
-                    SELECT id
-                    FROM automation_logs
-                    ORDER BY CAST(created_at AS INTEGER) DESC, id DESC
-                    LIMIT -1 OFFSET ?1
-                )
-                "#,
-                params![i64::from(max_logs)],
-            )
-            .map_err(|error| error.to_string())?;
-    }
-
-    Ok(())
-}
-
-pub fn record_execution(
-    connection: &Connection,
-    rule: &AutomationRule,
-    title: Option<String>,
-    message: Option<String>,
-    status: &str,
-    error: Option<String>,
-) -> Result<AutomationRule, String> {
-    let now = now_ms();
-    let log_id = Uuid::new_v4().to_string();
-
-    connection
-        .execute(
-            r#"
-            INSERT INTO automation_logs (
-              id,
-              rule_id,
-              rule_name,
-              topic,
-              title,
-              message,
-              action_type,
-              action_value,
-              module_id,
-              status,
-              error,
-              created_at
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
-            "#,
-            params![
-                log_id,
-                rule.id,
-                rule.name,
-                rule.topic,
-                title,
-                message,
-                rule.action_type,
-                rule.action_value,
-                rule.module_id,
-                status,
-                error,
-                now.clone(),
-            ],
-        )
-        .map_err(|error| error.to_string())?;
-
-    connection
-        .execute(
-            r#"
-            UPDATE automation_rules
-            SET last_run_at = ?2,
-                status = ?3,
-                updated_at = ?4
-            WHERE id = ?1
-            "#,
-            params![rule.id, now.clone(), status, now],
-        )
-        .map_err(|error| error.to_string())?;
-
-    rule_id(connection, &rule.id)
 }

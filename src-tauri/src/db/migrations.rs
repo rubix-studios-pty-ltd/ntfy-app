@@ -38,6 +38,60 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
             FOREIGN KEY (rule_id) REFERENCES automation_rules(id) ON DELETE CASCADE
         );
 
+        CREATE TABLE IF NOT EXISTS schedule (
+            id TEXT PRIMARY KEY CHECK (id = 'default'),
+            active INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS schedule_days (
+            day_key TEXT PRIMARY KEY CHECK (
+                day_key IN (
+                    'monday',
+                    'tuesday',
+                    'wednesday',
+                    'thursday',
+                    'friday',
+                    'saturday',
+                    'sunday'
+                )
+            ),
+            active INTEGER NOT NULL DEFAULT 0,
+            start_time TEXT NOT NULL DEFAULT '09:00',
+            end_time TEXT NOT NULL DEFAULT '17:00',
+            updated_at TEXT NOT NULL
+        );
+
+        INSERT OR IGNORE INTO schedule (
+            id,
+            active,
+            created_at,
+            updated_at
+        )
+        VALUES (
+            'default',
+            0,
+            datetime('now'),
+            datetime('now')
+        );
+
+        INSERT OR IGNORE INTO schedule_days (
+            day_key,
+            active,
+            start_time,
+            end_time,
+            updated_at
+        )
+        VALUES
+            ('monday', 1, '09:00', '17:00', datetime('now')),
+            ('tuesday', 1, '09:00', '17:00', datetime('now')),
+            ('wednesday', 1, '09:00', '17:00', datetime('now')),
+            ('thursday', 1, '09:00', '17:00', datetime('now')),
+            ('friday', 1, '09:00', '17:00', datetime('now')),
+            ('saturday', 0, '09:00', '17:00', datetime('now')),
+            ('sunday', 0, '09:00', '17:00', datetime('now'));
+
         CREATE INDEX IF NOT EXISTS idx_automation_active
             ON automation_rules(topic, active);
 
