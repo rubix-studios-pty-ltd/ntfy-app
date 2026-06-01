@@ -14,6 +14,7 @@ Automatic updates are disabled by default to reduce background activity, externa
 
 - **Notifications**: Receive native desktop notifications from any ntfy topic
 - **Webhook Builder**: Generate authenticated webhook URLs for your topics
+- **Schedules**: Schedule working hours for notification alerts and suppression
 - **Self-hosted**: Connect to your own ntfy instance or use ntfy.sh
 - **Cross-platform**: Windows, Linux, and macOS (Intel & Apple Silicon)
 - **System Tray**: Runs quietly in the background with tray controls
