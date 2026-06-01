@@ -32,12 +32,13 @@ const logInitial: LogsList = {
 
 export function Logs() {
   const [logs, setLogs] = useState<LogsList>(logInitial)
+  const currentPage = useRef(1)
 
-  const pageRef = useRef(1)
+  const pages = useMemo(() => getPages(logs.page, logs.totalPages), [logs.page, logs.totalPages])
 
   const loadLogs = useCallback(
     async ({
-      page = pageRef.current,
+      page = currentPage.current,
       notify = false,
     }: {
       page?: number
@@ -46,7 +47,7 @@ export function Logs() {
       try {
         const result = await listLogs({ page, pageSize })
 
-        pageRef.current = result.page
+        currentPage.current = result.page
         setLogs(result)
 
         if (notify) {
@@ -76,8 +77,6 @@ export function Logs() {
       window.removeEventListener(refreshEvent, refreshLogs)
     }
   }, [loadLogs])
-
-  const pages = useMemo(() => getPages(logs.page, logs.totalPages), [logs.page, logs.totalPages])
 
   const changePage = (page: number) => {
     if (page < 1 || page > logs.totalPages || page === logs.page) {

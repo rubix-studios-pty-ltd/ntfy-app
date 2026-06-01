@@ -114,8 +114,7 @@ export function Automation() {
 
       setEditing(null)
       toast.success('Success')
-    } catch (error) {
-      console.error('Failed:', error)
+    } catch {
       toast.error('Save failed')
     }
   }
@@ -132,8 +131,7 @@ export function Automation() {
       setRemove(null)
 
       toast.success('Deleted')
-    } catch (error) {
-      console.error('Failed:', error)
+    } catch {
       toast.error('Delete failed')
     }
   }
