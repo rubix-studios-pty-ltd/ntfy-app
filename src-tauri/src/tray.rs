@@ -10,6 +10,7 @@ use crate::autostart::is_autostart_enabled;
 use crate::autostart::toggle_autostart;
 use crate::config::clear_instance;
 use crate::windows::automation::open_automation_window;
+use crate::windows::config::open_config_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::webhook::open_webhook_window;
 
@@ -33,6 +34,8 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         None::<&str>,
     )?;
 
+    let config = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
+
     let reset_instance = MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
 
     let check_updates = MenuItem::with_id(app, "check_updates", "Update", true, None::<&str>)?;
@@ -42,26 +45,25 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let tools_menu =
         Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook])?;
 
+    let separator = PredefinedMenuItem::separator(app)?;
+
     let settings_menu = Submenu::with_id_and_items(
         app,
         "settings",
         "Settings",
         true,
-        &[&autostart, &reset_instance],
+        &[&autostart, &config, &separator, &reset_instance],
     )?;
-
-    let separator_1 = PredefinedMenuItem::separator(app)?;
-    let separator_2 = PredefinedMenuItem::separator(app)?;
 
     let menu = Menu::with_items(
         app,
         &[
             &open,
-            &separator_1,
+            &separator,
             &tools_menu,
             &settings_menu,
             &logs,
-            &separator_2,
+            &separator,
             &check_updates,
             &exit,
         ],
@@ -97,6 +99,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
                     let _ = check_item.set_checked(enabled);
                 }
+            }
+            "config" => {
+                open_config_window(app.app_handle());
             }
             "logs" => {
                 open_logs_window(app.app_handle());

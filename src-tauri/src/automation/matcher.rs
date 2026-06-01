@@ -24,9 +24,7 @@ fn incoming_message(incoming: &str) -> Vec<&str> {
         .map(str::trim)
         .filter(|line| !line.is_empty())
     {
-        let already_added = message
-            .iter()
-            .any(|msg| same_text(msg, line));
+        let already_added = message.iter().any(|msg| same_text(msg, line));
 
         if !already_added {
             message.push(line);

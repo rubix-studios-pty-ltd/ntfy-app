@@ -1,4 +1,5 @@
 pub mod automation;
+pub mod schedule;
 pub mod settings;
 
 pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
@@ -12,5 +13,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         automation::toggle_rule,
         automation::test_rule,
         automation::list_logs,
+        schedule::get_schedule,
+        schedule::update_schedule
     ]
 }

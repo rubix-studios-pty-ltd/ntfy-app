@@ -54,22 +54,22 @@ fn run_fallbacks(
 }
 
 fn try_with_fallbacks(
-    rust_backend: impl FnOnce() -> Result<(), String>,
+    backend: impl FnOnce() -> Result<(), String>,
     commands: Vec<(&'static str, Vec<String>)>,
 ) -> Result<(), String> {
-    match rust_backend() {
+    match backend() {
         Ok(()) => Ok(()),
         Err(error) => run_fallbacks(error, commands),
     }
 }
 
-fn rust_set_volume(volume: f64) -> Result<(), String> {
+fn linux_set_volume(volume: f64) -> Result<(), String> {
     device()?
         .set_vol(percent(volume))
         .map_err(|error| format!("Failed to set volume: {error}"))
 }
 
-fn rust_increase_volume(amount: f64) -> Result<(), String> {
+fn linux_increase_volume(amount: f64) -> Result<(), String> {
     let device = device()?;
 
     let current = device
@@ -83,7 +83,7 @@ fn rust_increase_volume(amount: f64) -> Result<(), String> {
         .map_err(|error| format!("Failed to increase volume: {error}"))
 }
 
-fn rust_decrease_volume(amount: f64) -> Result<(), String> {
+fn linux_decrease_volume(amount: f64) -> Result<(), String> {
     let device = device()?;
 
     let current = device
@@ -97,7 +97,7 @@ fn rust_decrease_volume(amount: f64) -> Result<(), String> {
         .map_err(|error| format!("Failed to decrease volume: {error}"))
 }
 
-fn rust_toggle_mute() -> Result<(), String> {
+fn linux_toggle_mute() -> Result<(), String> {
     let device = device()?;
 
     let muted = device
@@ -114,7 +114,7 @@ pub fn set_volume(volume: f64) -> Result<(), String> {
     let volume_arg = percent_arg(clamped_volume);
 
     try_with_fallbacks(
-        || rust_set_volume(clamped_volume),
+        || linux_set_volume(clamped_volume),
         vec![
             (
                 "wpctl",
@@ -144,7 +144,7 @@ pub fn increase_volume(amount: f64) -> Result<(), String> {
     let pactl_amount = format!("+{amount}%");
 
     try_with_fallbacks(
-        || rust_increase_volume(amount as f64),
+        || linux_increase_volume(amount as f64),
         vec![
             (
                 "wpctl",
@@ -174,7 +174,7 @@ pub fn decrease_volume(amount: f64) -> Result<(), String> {
     let pactl_amount = format!("-{amount}%");
 
     try_with_fallbacks(
-        || rust_decrease_volume(amount as f64),
+        || linux_decrease_volume(amount as f64),
         vec![
             (
                 "wpctl",
@@ -194,7 +194,7 @@ pub fn decrease_volume(amount: f64) -> Result<(), String> {
 
 pub fn toggle_mute() -> Result<(), String> {
     try_with_fallbacks(
-        rust_toggle_mute,
+        linux_toggle_mute,
         vec![
             (
                 "wpctl",
