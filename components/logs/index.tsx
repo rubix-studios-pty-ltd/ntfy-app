@@ -115,16 +115,14 @@ export function Logs() {
                 <span className="truncate font-semibold">{log.ruleName}</span>
 
                 <div className="h-15 truncate">
-                  {log.topic ? (
+                  {log.topic && (
                     <span className="block text-muted-foreground">Topic: {log.topic}</span>
-                  ) : null}
-                  {log.title ? (
+                  )}
+                  {log.title && (
                     <span className="block text-muted-foreground">Title: {log.title}</span>
-                  ) : null}
-                  {log.message ? <span className="block">{log.message}</span> : null}
-                  {log.error ? (
-                    <span className="block text-red-500">Error: {log.error}</span>
-                  ) : null}
+                  )}
+                  {log.message && <span className="block">{log.message}</span>}
+                  {log.error && <span className="block text-red-500">Error: {log.error}</span>}
                 </div>
               </div>
 
