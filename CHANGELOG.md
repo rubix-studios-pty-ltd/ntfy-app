@@ -1,5 +1,19 @@
 
 
+
+## [0.2.0] - 2026-06-01
+
+### Added
+
+- add configuration window and related components
+
+### Fixed
+
+- update Ubuntu version in build workflow to 24.04
+- update Ubuntu dependencies in build workflows for improved compatibility
+- **schedule**: default consistency with backend tauri
+- **schedule**: expose time_to_minute to listeners
+
 ## [0.1.3] - 2026-05-31
 
 ### Added
