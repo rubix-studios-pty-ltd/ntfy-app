@@ -9,7 +9,7 @@ mod logs;
 mod schedule;
 
 pub use automation::{
-    create_rule, delete_rule, get_rule, list_active_rules, list_rules, toggle_rule, update_rule,
+    create_rule, delete_rule, get_active_rules, get_rule, get_rules, toggle_rule, update_rule,
 };
 pub use logs::{cleanup_logs, list_logs, record_execution};
 pub use schedule::{get_schedule, update_schedule};
@@ -19,6 +19,19 @@ fn now_ms() -> String {
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_millis().to_string())
         .unwrap_or_else(|_| "0".to_string())
+}
+
+pub fn time_to_minutes(value: &str) -> Option<u16> {
+    let mut parts = value.split(':');
+
+    let hour = parts.next()?.parse::<u16>().ok()?;
+    let minute = parts.next()?.parse::<u16>().ok()?;
+
+    if parts.next().is_some() || hour > 23 || minute > 59 {
+        return None;
+    }
+
+    Some((hour * 60) + minute)
 }
 
 fn config_row(row: &Row<'_>) -> rusqlite::Result<Option<ActionConfig>> {
@@ -41,16 +54,11 @@ fn config_json(action_config: Option<ActionConfig>) -> Result<Option<String>, St
         .map_err(|error| error.to_string())
 }
 
-fn parse_day_key(value: &str) -> Result<DayKey, String> {
-    match value {
-        "monday" => Ok(DayKey::Monday),
-        "tuesday" => Ok(DayKey::Tuesday),
-        "wednesday" => Ok(DayKey::Wednesday),
-        "thursday" => Ok(DayKey::Thursday),
-        "friday" => Ok(DayKey::Friday),
-        "saturday" => Ok(DayKey::Saturday),
-        "sunday" => Ok(DayKey::Sunday),
-        _ => Err(format!("Invalid day key: {value}")),
+fn schedule_config(day_key: DayKey) -> ScheduleConfig {
+    ScheduleConfig {
+        enabled: !matches!(day_key, DayKey::Saturday | DayKey::Sunday),
+        start_time: "09:00".to_string(),
+        end_time: "17:00".to_string(),
     }
 }
 
@@ -75,25 +83,17 @@ fn schedule_day_row(row: &Row<'_>) -> rusqlite::Result<(DayKey, ScheduleConfig)>
     ))
 }
 
-fn default_schedule_config(day_key: DayKey) -> ScheduleConfig {
-    ScheduleConfig {
-        enabled: !matches!(day_key, DayKey::Saturday | DayKey::Sunday),
-        start_time: "09:00".to_string(),
-        end_time: "17:00".to_string(),
+fn parse_day_key(value: &str) -> Result<DayKey, String> {
+    match value {
+        "monday" => Ok(DayKey::Monday),
+        "tuesday" => Ok(DayKey::Tuesday),
+        "wednesday" => Ok(DayKey::Wednesday),
+        "thursday" => Ok(DayKey::Thursday),
+        "friday" => Ok(DayKey::Friday),
+        "saturday" => Ok(DayKey::Saturday),
+        "sunday" => Ok(DayKey::Sunday),
+        _ => Err(format!("Invalid day key: {value}")),
     }
-}
-
-pub fn time_to_minutes(value: &str) -> Option<u16> {
-    let mut parts = value.split(':');
-
-    let hour = parts.next()?.parse::<u16>().ok()?;
-    let minute = parts.next()?.parse::<u16>().ok()?;
-
-    if parts.next().is_some() || hour > 23 || minute > 59 {
-        return None;
-    }
-
-    Some((hour * 60) + minute)
 }
 
 fn validate_schedule(input: &ScheduleInput) -> Result<(), String> {

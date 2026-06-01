@@ -4,10 +4,10 @@ use tauri::{AppHandle, State};
 use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
 use crate::automation::validation::validate_rule;
-use crate::db::models::{AutomationInput, AutomationRule, LogsInput, LogsList};
+use crate::db::models::{AutomationInput, AutomationRule};
 use crate::db::{DbState, repo, run};
 
-fn build_test_message(rule: &AutomationRule, input_message: &str) -> String {
+fn build_test(rule: &AutomationRule, input_message: &str) -> String {
     let input_message = input_message.trim();
 
     if input_message != rule.match_value.trim() {
@@ -31,8 +31,8 @@ pub struct TestRuleInput {
 }
 
 #[tauri::command]
-pub async fn list_rules(state: tauri::State<'_, DbState>) -> Result<Vec<AutomationRule>, String> {
-    run(state, repo::list_rules).await
+pub async fn get_rules(state: tauri::State<'_, DbState>) -> Result<Vec<AutomationRule>, String> {
+    run(state, repo::get_rules).await
 }
 
 #[tauri::command]
@@ -76,7 +76,7 @@ pub async fn test_rule(
 
     let rule = run(state.clone(), move |conn| repo::get_rule(conn, &rule_id)).await?;
 
-    let message = build_test_message(&rule, &input.message);
+    let message = build_test(&rule, &input.message);
 
     let event = AutomationEvent {
         topic: rule.topic.clone(),
@@ -102,12 +102,4 @@ pub async fn test_rule(
         Ok(()) => Ok(updated_rule),
         Err(error) => Err(error),
     }
-}
-
-#[tauri::command]
-pub async fn list_logs(
-    state: tauri::State<'_, DbState>,
-    input: LogsInput,
-) -> Result<LogsList, String> {
-    run(state, move |conn| repo::list_logs(conn, input)).await
 }

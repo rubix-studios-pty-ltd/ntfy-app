@@ -4,7 +4,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::db::models::{DayKey, Schedule, ScheduleInput};
 
-use super::{default_schedule_config, schedule_day_row, validate_schedule};
+use super::{schedule_config, schedule_day_row, validate_schedule};
 
 pub fn get_schedule(connection: &Connection) -> Result<Schedule, String> {
     let schedule_enabled = connection
@@ -21,7 +21,7 @@ pub fn get_schedule(connection: &Connection) -> Result<Schedule, String> {
     let mut days = BTreeMap::new();
 
     for day_key in DayKey::ALL {
-        days.insert(day_key, default_schedule_config(day_key));
+        days.insert(day_key, schedule_config(day_key));
     }
 
     let mut statement = connection

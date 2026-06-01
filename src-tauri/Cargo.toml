@@ -28,7 +28,7 @@ chrono = "0.4"
 rusqlite = { version = "0.40.0", features = ["bundled"] }
 sanitize-filename = "0.6"
 system_shutdown = "4.1.0"
-uuid = { version = "1.23.1", features = ["v4"] }
+uuid = { version = "1.23.2", features = ["v4"] }
 xcap = "0.9.6"
 
 [target.'cfg(windows)'.dependencies]

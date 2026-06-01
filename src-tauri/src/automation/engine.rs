@@ -19,7 +19,7 @@ pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Resu
     };
 
     let rules = run(app.state::<DbState>(), move |conn| {
-        repo::list_active_rules(conn, &topic)
+        repo::get_active_rules(conn, &topic)
     })
     .await?;
 

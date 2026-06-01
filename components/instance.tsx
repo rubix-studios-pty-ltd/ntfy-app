@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { readUrl } from '@/lib/tauri/readUrl'
+import { readUrl } from '@/lib/tauri/settings'
 import { useStore } from '@/store/instance'
 import { startInstance } from '@/utils/startInstance'
 

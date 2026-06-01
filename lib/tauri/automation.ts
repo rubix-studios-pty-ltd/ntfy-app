@@ -4,8 +4,8 @@ import { type RulesType } from '@/schema/automation'
 import { type TestRule } from '@/types/automation'
 import { type LogsInput, type LogsList } from '@/types/logs'
 
-export function listRules() {
-  return invoke<RulesType[]>('list_rules')
+export function getRules() {
+  return invoke<RulesType[]>('get_rules')
 }
 
 export function createRule(rule: RulesType) {
@@ -28,6 +28,6 @@ export function testRule(input: TestRule) {
   return invoke<RulesType>('test_rule', { input })
 }
 
-export function listLogs(input: LogsInput = {}) {
-  return invoke<LogsList>('list_logs', { input })
+export function getLogs(input: LogsInput = {}) {
+  return invoke<LogsList>('get_logs', { input })
 }

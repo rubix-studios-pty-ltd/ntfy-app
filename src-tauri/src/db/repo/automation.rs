@@ -4,7 +4,11 @@ use crate::db::models::{AutomationInput, AutomationRule};
 
 use super::{config_json, rule_id, rule_row};
 
-pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String> {
+pub fn get_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
+    rule_id(connection, id)
+}
+
+pub fn get_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String> {
     let mut statement = connection
         .prepare(
             r#"
@@ -38,7 +42,7 @@ pub fn list_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String
         .map_err(|error| error.to_string())
 }
 
-pub fn list_active_rules(
+pub fn get_active_rules(
     connection: &Connection,
     topic: &str,
 ) -> Result<Vec<AutomationRule>, String> {
@@ -215,8 +219,4 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
     };
 
     update_rule(connection, updated)
-}
-
-pub fn get_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {
-    rule_id(connection, id)
 }

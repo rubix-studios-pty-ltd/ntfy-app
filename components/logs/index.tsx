@@ -11,7 +11,7 @@ import {
   PaginationLink,
 } from '@/components/ui/pagination'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { listLogs } from '@/lib/tauri/automation'
+import { getLogs } from '@/lib/tauri/automation'
 import { type LogsList } from '@/types/logs'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
@@ -32,21 +32,22 @@ const logInitial: LogsList = {
 
 export function Logs() {
   const [logs, setLogs] = useState<LogsList>(logInitial)
+  const currentPage = useRef(1)
 
-  const pageRef = useRef(1)
+  const pages = useMemo(() => getPages(logs.page, logs.totalPages), [logs.page, logs.totalPages])
 
   const loadLogs = useCallback(
     async ({
-      page = pageRef.current,
+      page = currentPage.current,
       notify = false,
     }: {
       page?: number
       notify?: boolean
     } = {}) => {
       try {
-        const result = await listLogs({ page, pageSize })
+        const result = await getLogs({ page, pageSize })
 
-        pageRef.current = result.page
+        currentPage.current = result.page
         setLogs(result)
 
         if (notify) {
@@ -76,8 +77,6 @@ export function Logs() {
       window.removeEventListener(refreshEvent, refreshLogs)
     }
   }, [loadLogs])
-
-  const pages = useMemo(() => getPages(logs.page, logs.totalPages), [logs.page, logs.totalPages])
 
   const changePage = (page: number) => {
     if (page < 1 || page > logs.totalPages || page === logs.page) {
@@ -116,16 +115,14 @@ export function Logs() {
                 <span className="truncate font-semibold">{log.ruleName}</span>
 
                 <div className="h-15 truncate">
-                  {log.topic ? (
+                  {log.topic && (
                     <span className="block text-muted-foreground">Topic: {log.topic}</span>
-                  ) : null}
-                  {log.title ? (
+                  )}
+                  {log.title && (
                     <span className="block text-muted-foreground">Title: {log.title}</span>
-                  ) : null}
-                  {log.message ? <span className="block">{log.message}</span> : null}
-                  {log.error ? (
-                    <span className="block text-red-500">Error: {log.error}</span>
-                  ) : null}
+                  )}
+                  {log.message && <span className="block">{log.message}</span>}
+                  {log.error && <span className="block text-red-500">Error: {log.error}</span>}
                 </div>
               </div>
 
