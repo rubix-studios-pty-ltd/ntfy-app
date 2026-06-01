@@ -83,10 +83,10 @@ async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
 
     let current = (now.hour() as u16 * 60) + now.minute() as u16;
 
-    let start = time_to_minutes(&day.start_time)
+    let start = repo::time_to_minutes(&day.start_time)
         .ok_or_else(|| format!("Invalid start time for {}", day_key.as_str()))?;
 
-    let end = time_to_minutes(&day.end_time)
+    let end = repo::time_to_minutes(&day.end_time)
         .ok_or_else(|| format!("Invalid end time for {}", day_key.as_str()))?;
 
     Ok(current >= start && current < end)
@@ -102,17 +102,4 @@ fn day_key_from_weekday(weekday: Weekday) -> DayKey {
         Weekday::Sat => DayKey::Saturday,
         Weekday::Sun => DayKey::Sunday,
     }
-}
-
-fn time_to_minutes(value: &str) -> Option<u16> {
-    let mut parts = value.split(':');
-
-    let hour = parts.next()?.parse::<u16>().ok()?;
-    let minute = parts.next()?.parse::<u16>().ok()?;
-
-    if parts.next().is_some() || hour > 23 || minute > 59 {
-        return None;
-    }
-
-    Some((hour * 60) + minute)
 }

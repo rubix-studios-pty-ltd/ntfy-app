@@ -83,7 +83,7 @@ fn default_schedule_config(day_key: DayKey) -> ScheduleConfig {
     }
 }
 
-fn time_to_minutes(value: &str) -> Option<u16> {
+pub fn time_to_minutes(value: &str) -> Option<u16> {
     let mut parts = value.split(':');
 
     let hour = parts.next()?.parse::<u16>().ok()?;
