@@ -5,13 +5,13 @@ A cross-platform desktop client for [ntfy.sh](https://ntfy.sh) and self-hosted n
 Automatic updates are disabled by default to reduce background activity, external requests to GitHub, and unnecessary resource usage. Update checking and installation are user controlled through the system tray.
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
-[![Version][github-version-img]][github-version-uri]
-[![Build Status][github-build-img]][github-build-uri]
-[![Build Status][github-tests-img]][github-tests-uri]
-[![Downloads][github-downloads-img]][github-downloads-uri]
-[![Size][github-size-img]][github-size-img]
-[![Last Commit][github-commit-img]][github-commit-img]
-[![Contributors][contribs-all-img]](#contributors-)
+![Version][github-version-img][github-version-uri]
+![Build Status][github-build-img][github-build-uri]
+![Build Status][github-tests-img][github-tests-uri]
+![Downloads][github-downloads-img][github-downloads-uri]
+![Size][github-size-img][github-size-img]
+![Last Commit][github-commit-img][github-commit-img]
+![Contributors][contribs-all-img](#contributors-)
 
 ![Ntfy App](docs/screenshots/notifications.webp)
 ![Ntfy Main](docs/screenshots/main.webp)
