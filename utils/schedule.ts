@@ -40,12 +40,12 @@ export const defaultSchedule: ScheduleDays = {
     endTime: '17:00',
   },
   saturday: {
-    enabled: true,
+    enabled: false,
     startTime: '09:00',
     endTime: '17:00',
   },
   sunday: {
-    enabled: true,
+    enabled: false,
     startTime: '09:00',
     endTime: '17:00',
   },
