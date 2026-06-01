@@ -9,10 +9,10 @@ const MATCH_TYPES: &[&str] = &["equals", "contains", "startsWith"];
 const STATUSES: &[&str] = &["success", "failed", "never"];
 
 pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
-    required("id", &rule.id)?;
-    required("name", &rule.name)?;
-    required("topic", &rule.topic)?;
-    required("matchValue", &rule.match_value)?;
+    required_field("id", &rule.id)?;
+    required_field("name", &rule.name)?;
+    required_field("topic", &rule.topic)?;
+    required_field("matchValue", &rule.match_value)?;
 
     validate_match(&rule.match_value)?;
 
@@ -39,6 +39,7 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
 
         "openUrl" => {
             let url = required_option("url", &rule.action_value)?;
+
             validate_url(url)?;
         }
 
@@ -60,7 +61,7 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
     Ok(())
 }
 
-fn required(field: &str, value: &str) -> Result<(), String> {
+fn required_field(field: &str, value: &str) -> Result<(), String> {
     if value.trim().is_empty() {
         return Err(format!("{field} is required"));
     }
@@ -84,26 +85,6 @@ fn validate_match(value: &str) -> Result<(), String> {
     }
 
     Ok(())
-}
-
-fn validate_url(value: &str) -> Result<(), String> {
-    let url = Url::parse(value).map_err(|_| "Invalid URL".to_string())?;
-
-    match url.scheme() {
-        "http" | "https" => Ok(()),
-        _ => Err("Only http and https URLs are allowed".to_string()),
-    }
-}
-
-fn validate_module(rule: &AutomationInput) -> Result<(), String> {
-    let module_id = required_option("module", &rule.module_id)?;
-
-    let config = rule
-        .action_config
-        .as_ref()
-        .ok_or_else(|| "Module config is required".to_string())?;
-
-    validate_config(module_id, config, Validation::Save)
 }
 
 fn validate_program(
@@ -152,4 +133,24 @@ fn validate_file(field: &str, path: &Path) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+fn validate_url(value: &str) -> Result<(), String> {
+    let url = Url::parse(value).map_err(|_| "Invalid URL".to_string())?;
+
+    match url.scheme() {
+        "http" | "https" => Ok(()),
+        _ => Err("Only http and https URLs are allowed".to_string()),
+    }
+}
+
+fn validate_module(rule: &AutomationInput) -> Result<(), String> {
+    let module_id = required_option("module", &rule.module_id)?;
+
+    let config = rule
+        .action_config
+        .as_ref()
+        .ok_or_else(|| "Module config is required".to_string())?;
+
+    validate_config(module_id, config, Validation::Save)
 }
