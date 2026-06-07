@@ -2,6 +2,13 @@
 
 
 
+
+## [0.2.2] - 2026-06-07
+
+### Fixed
+
+- **ui**: schedule text and update readme.md
+
 ## [0.2.1] - 2026-06-01
 
 ### Fixed

@@ -1,6 +1,6 @@
 [package]
 name = "ntfy_app"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["rubixvi"]
 description = "Desktop client for ntfy.sh and self-hosted ntfy instances on Windows, Linux, and macOS. Built with Rust, Tauri, and Next.js."
 license = "MIT"
