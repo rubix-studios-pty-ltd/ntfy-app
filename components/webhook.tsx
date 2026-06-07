@@ -71,6 +71,10 @@ export function Webhook() {
 
         <Input
           className="border border-border"
+          spellCheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
           value={instance ?? ''}
           placeholder="No instance configured"
           readOnly
@@ -82,6 +86,10 @@ export function Webhook() {
 
         <Input
           className="border border-border"
+          spellCheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
         />
@@ -92,6 +100,10 @@ export function Webhook() {
 
         <Input
           className="border border-border"
+          spellCheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
           value={token}
           onChange={(e) => setToken(e.target.value)}
           type="password"
@@ -132,6 +144,10 @@ export function Webhook() {
 
           <Textarea
             readOnly
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
             className="resize-none border border-border bg-background text-foreground"
             value={result}
             rows={2}

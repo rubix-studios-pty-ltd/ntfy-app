@@ -165,6 +165,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <Label className="font-semibold">Name</Label>
               <Input
                 className="border border-border"
+                spellCheck={false}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
                 value={rule.name}
                 onChange={(event) => updateRule({ name: event.target.value })}
               />
@@ -175,6 +179,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                 <Label className="font-semibold">Topic</Label>
                 <Input
                   className="border border-border"
+                  spellCheck={false}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
                   value={rule.topic}
                   onChange={(event) => updateRule({ topic: event.target.value })}
                 />
@@ -220,6 +228,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <Label className="font-semibold">Value</Label>
               <Textarea
                 className="scrollbar h-24 resize-none overflow-y-auto border border-border"
+                spellCheck={false}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
                 rows={4}
                 value={rule.matchValue}
                 onChange={(event) => updateRule({ matchValue: event.target.value })}
@@ -313,6 +325,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                   <Label className="font-semibold">Arguments</Label>
                   <Input
                     className="border border-border"
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     value={rule.arguments ?? ''}
                     onChange={(event) => updateRule({ arguments: event.target.value })}
                   />
@@ -322,6 +338,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                   <Label className="font-semibold">Directory</Label>
                   <Input
                     className="border border-border"
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     value={rule.workingDirectory ?? ''}
                     onChange={(event) => updateRule({ workingDirectory: event.target.value })}
                   />
@@ -358,6 +378,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                           max={field.allowVariables ? undefined : field.max}
                           placeholder={field.placeholder}
                           className="border border-border col-span-2"
+                          spellCheck={false}
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="none"
                           value={getConfig(value)}
                           onChange={(event) =>
                             updateRule({
@@ -379,6 +403,10 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                       <Input
                         placeholder={field.placeholder}
                         className="border border-border"
+                        spellCheck={false}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="none"
                         value={typeof value === 'string' ? value : ''}
                         onChange={(event) =>
                           updateRule({

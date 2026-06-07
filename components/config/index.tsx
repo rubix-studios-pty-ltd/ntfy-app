@@ -143,6 +143,10 @@ export function Config() {
                     value={day.startTime}
                     disabled={!scheduleEnabled || !day.enabled || loading}
                     className="text-sm border border-border col-span-2"
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     onChange={(event) =>
                       updateConfig(key, {
                         startTime: event.target.value,
@@ -159,6 +163,10 @@ export function Config() {
                     value={day.endTime}
                     disabled={!scheduleEnabled || !day.enabled || loading}
                     className="text-sm border border-border col-span-2"
+                    spellCheck={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     onChange={(event) =>
                       updateConfig(key, {
                         endTime: event.target.value,
