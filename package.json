@@ -43,12 +43,14 @@
     "dev:ui": "next dev -p 5173",
     "build": "tauri build",
     "build:ui": "next build",
+    "clean": "pnpm biome migrate --write && pnpm run lint:fix && pnpm run format",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "release:new": "node scripts/release.mjs",
+    "tauri:update": "cd src-tauri && cargo update && cargo upgrade && cargo fmt",
     "typecheck": "tsc --noEmit",
-    "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe"
+    "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe && pnpm run clean && pnpm run tauri:update"
   },
   "packageManager": "pnpm@11.9.0",
   "engines": {
