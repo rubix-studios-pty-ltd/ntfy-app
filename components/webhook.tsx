@@ -8,10 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { readUrl } from '@/lib/tauri/settings'
+import { useStore } from '@/store/instance'
 import { buildUrl } from '@/utils/buildUrl'
 
 export function Webhook() {
-  const [instance, setInstance] = useState<string | null>(null)
+  const instance = useStore((state) => state.instance)
+  const setInstance = useStore((state) => state.setInstance)
+
   const [token, setToken] = useState('')
   const [topic, setTopic] = useState('')
   const [result, setResult] = useState('')
@@ -23,7 +26,7 @@ export function Webhook() {
 
       setInstance(url)
     })()
-  }, [])
+  }, [setInstance])
 
   const handleBuildUrl = () => {
     const webhook = buildUrl({
