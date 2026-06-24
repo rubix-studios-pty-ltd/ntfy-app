@@ -4,6 +4,13 @@
 
 
 
+
+## [0.2.4] - 2026-06-24
+
+### Fixed
+
+- instance url consistency with webhook ui
+
 ## [0.2.3] - 2026-06-18
 
 Maintenance release.
