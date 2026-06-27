@@ -17,7 +17,7 @@ pub fn open_automation_window(app: &AppHandle) {
         .fullscreen(false)
         .decorations(true)
         .center()
-        .skip_taskbar(true)
+        .skip_taskbar(false)
         .build()
     {
         Ok(window) => {
