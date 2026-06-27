@@ -56,5 +56,5 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("Error while building application");
 
-        app.run(|_app_handle, _event| {});
+    app.run(|_app_handle, _event| {});
 }
