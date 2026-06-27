@@ -5,6 +5,19 @@
 
 
 
+
+## [0.2.5] - 2026-06-27
+
+### Fixed
+
+- save all window states.
+- ntfy can now be opened from the system tray using the default click action.
+- tray control menus have been moved to secondary click actions.
+- the default window size has been increased.
+- window size and position are now remembered between sessions.
+- adjusted to support taskbar visibility.
+- window state is saved before the window is hidden to the tray.
+
 ## [0.2.4] - 2026-06-24
 
 ### Fixed
