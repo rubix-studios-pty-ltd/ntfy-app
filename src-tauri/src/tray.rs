@@ -1,10 +1,11 @@
 use tauri::{
     Manager,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
-    tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
 
 use tauri_plugin_updater::UpdaterExt;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 use crate::autostart::is_autostart_enabled;
 use crate::autostart::toggle_autostart;
@@ -75,6 +76,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         .icon(icon.unwrap())
         .tooltip("Ntfy")
         .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
                 if let Some(window) = app.get_webview_window("main") {
@@ -155,25 +157,27 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 app.restart();
             }
             "exit" => {
+                let _ = app
+                .app_handle()
+                .save_window_state(StateFlags::SIZE | StateFlags::POSITION);
+
                 std::process::exit(0);
             }
 
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {
-            if let TrayIconEvent::DoubleClick {
+            if let TrayIconEvent::Click {
                 button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
                 ..
             } = event
                 && let Some(window) = tray.app_handle().get_webview_window("main")
             {
                 let is_visible = window.is_visible().unwrap_or(false);
-
                 let is_minimized = window.is_minimized().unwrap_or(false);
-
-                let visible = is_visible && !is_minimized;
-
-                if visible {
+        
+                if is_visible && !is_minimized {
                     let _ = window.hide();
                 } else {
                     let _ = window.show();
