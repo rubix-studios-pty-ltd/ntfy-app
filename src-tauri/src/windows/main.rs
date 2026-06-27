@@ -11,7 +11,7 @@ pub fn setup_window_events(window: &tauri::Window, event: &WindowEvent) {
 
         let _ = window
             .app_handle()
-            .save_window_state(StateFlags::SIZE | StateFlags::POSITION);
+            .save_window_state(StateFlags::all());
 
         let window = window.clone();
 
