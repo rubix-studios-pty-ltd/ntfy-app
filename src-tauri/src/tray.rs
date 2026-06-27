@@ -15,17 +15,17 @@ use crate::windows::config::open_config_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::webhook::open_webhook_window;
 
-pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Open ntfy", true, None::<&str>)?;
+pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {    
+    let version = app.package_info().version.to_string();
+    let version_label = format!("ntfy {version}");
+    let version_item = MenuItem::with_id(app, "version", version_label, false, None::<&str>)?;
 
+    let open = MenuItem::with_id(app, "open", "Show/Hide", true, None::<&str>)?;
     let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
-
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
-
     let logs = MenuItem::with_id(app, "logs", "Logs", true, None::<&str>)?;
 
     let autostart_enabled = is_autostart_enabled();
-
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
@@ -36,17 +36,14 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     )?;
 
     let config = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
-
     let reset_instance = MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
-
     let check_updates = MenuItem::with_id(app, "check_updates", "Update", true, None::<&str>)?;
-
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
+
+    let separator = PredefinedMenuItem::separator(app)?;
 
     let tools_menu =
         Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook])?;
-
-    let separator = PredefinedMenuItem::separator(app)?;
 
     let settings_menu = Submenu::with_id_and_items(
         app,
@@ -59,6 +56,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let menu = Menu::with_items(
         app,
         &[
+            &version_item,
             &open,
             &separator,
             &tools_menu,
@@ -80,9 +78,16 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         .on_menu_event(|app, event| match event.id.as_ref() {
             "open" => {
                 if let Some(window) = app.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.unminimize();
-                    let _ = window.set_focus();
+                    let is_visible = window.is_visible().unwrap_or(false);
+                    let is_minimized = window.is_minimized().unwrap_or(false);
+
+                    if is_visible && !is_minimized {
+                        let _ = window.hide();
+                    } else {
+                        let _ = window.show();
+                        let _ = window.unminimize();
+                        let _ = window.set_focus();
+                    }
                 }
             }
             "automation" => {
