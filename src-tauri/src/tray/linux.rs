@@ -16,7 +16,7 @@ pub struct NtfyTray {
 
 impl ksni::Tray for NtfyTray {
     fn id(&self) -> String {
-        "ntfy".to_string()
+        "ntfy_app".to_string()
     }
 
     fn title(&self) -> String {
@@ -24,7 +24,7 @@ impl ksni::Tray for NtfyTray {
     }
 
     fn icon_name(&self) -> String {
-        "ntfy".to_string()
+        "ntfy_app".to_string()
     }
 
     fn category(&self) -> ksni::Category {
