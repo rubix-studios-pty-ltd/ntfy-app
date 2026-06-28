@@ -10,7 +10,7 @@ mod tray;
 mod windows;
 
 use overrides::handle_page_load;
-use tray::setup_tray;
+use tray::system::setup_tray;
 use windows::main::setup_window_events;
 
 use tauri::Manager;
@@ -19,6 +19,11 @@ const LOG_RETENTION_DAYS: u32 = 30;
 const LOG_MAX_ROWS: u32 = 1000;
 
 pub fn run() {
+    #[cfg(target_os = "linux")]
+    unsafe {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
+
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
