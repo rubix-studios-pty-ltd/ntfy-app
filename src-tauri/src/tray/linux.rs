@@ -1,12 +1,11 @@
 use ksni::TrayMethods;
-use tauri::Manager;
 
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
-use crate::tray::{check_updates, exit_app, reset_instance, window_tray_label};
+use crate::tray::{check_updates, exit_app, reset_instance};
 use crate::windows::automation::open_automation_window;
 use crate::windows::config::open_config_window;
 use crate::windows::logs::open_logs_window;
-use crate::windows::main::toggle_main_window;
+use crate::windows::main::{toggle_main_window, window_tray_label};
 use crate::windows::webhook::open_webhook_window;
 
 pub struct NtfyTray {
