@@ -10,7 +10,6 @@ use crate::windows::webhook::open_webhook_window;
 
 pub struct NtfyTray {
     app: tauri::AppHandle,
-    version: String,
     startup_enabled: bool,
 }
 
