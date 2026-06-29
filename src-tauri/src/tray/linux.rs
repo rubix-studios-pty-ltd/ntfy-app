@@ -38,13 +38,13 @@ impl ksni::Tray for NtfyTray {
         use ksni::menu::*;
 
         vec![
-            StandardItem {
+            StandardItem::<Self> {
                 label: format!("ntfy {}", self.version).into(),
                 enabled: false,
                 ..Default::default()
             }
             .into(),
-            StandardItem {
+            StandardItem::<Self> {
                 label: window_tray_label(&self.app).into(),
                 activate: Box::new(|tray| {
                     toggle_main_window(&tray.app);
@@ -54,10 +54,10 @@ impl ksni::Tray for NtfyTray {
             .into(),
             MenuItem::Separator,
 
-            SubMenu {
+            SubMenu::<Self> {
                 label: "Tools".into(),
                 submenu: vec![
-                    StandardItem {
+                    StandardItem::<Self> {
                         label: "Automation".into(),
                         activate: Box::new(|tray| {
                             open_automation_window(&tray.app);
@@ -65,7 +65,7 @@ impl ksni::Tray for NtfyTray {
                         ..Default::default()
                     }
                     .into(),
-                    StandardItem {
+                    StandardItem::<Self> {
                         label: "Webhook".into(),
                         activate: Box::new(|tray| {
                             open_webhook_window(&tray.app);
@@ -73,7 +73,7 @@ impl ksni::Tray for NtfyTray {
                         ..Default::default()
                     }
                     .into(),
-                    StandardItem {
+                    StandardItem::<Self> {
                         label: "Logs".into(),
                         activate: Box::new(|tray| {
                             open_logs_window(&tray.app);
@@ -86,10 +86,10 @@ impl ksni::Tray for NtfyTray {
             }
             .into(),
 
-            SubMenu {
+            SubMenu::<Self> {
                 label: "Settings".into(),
                 submenu: vec![
-                    CheckmarkItem {
+                    CheckmarkItem::<Self> {
                         label: "Startup".into(),
                         checked: is_autostart_enabled(),
                         activate: Box::new(|_| {
@@ -100,7 +100,7 @@ impl ksni::Tray for NtfyTray {
                         ..Default::default()
                     }
                     .into(),
-                    StandardItem {
+                    StandardItem::<Self> {
                         label: "Config".into(),
                         activate: Box::new(|tray| {
                             open_config_window(&tray.app);
@@ -109,7 +109,7 @@ impl ksni::Tray for NtfyTray {
                     }
                     .into(),
                     MenuItem::Separator,
-                    StandardItem {
+                    StandardItem::<Self> {
                         label: "Reset".into(),
                         activate: Box::new(|tray| {
                             reset_instance(&tray.app);
@@ -123,7 +123,7 @@ impl ksni::Tray for NtfyTray {
             .into(),
             MenuItem::Separator,
 
-            StandardItem {
+            StandardItem::<Self> {
                 label: "Update".into(),
                 activate: Box::new(|tray| {
                     check_updates(&tray.app);
@@ -131,7 +131,7 @@ impl ksni::Tray for NtfyTray {
                 ..Default::default()
             }
             .into(),
-            StandardItem {
+            StandardItem::<Self> {
                 label: "Exit".into(),
                 activate: Box::new(|tray| {
                     exit_app(&tray.app);
