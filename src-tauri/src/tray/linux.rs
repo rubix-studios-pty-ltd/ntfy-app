@@ -11,6 +11,7 @@ use crate::windows::webhook::open_webhook_window;
 pub struct NtfyTray {
     app: tauri::AppHandle,
     version: String,
+    startup_enabled: bool,
 }
 
 impl ksni::Tray for NtfyTray {
@@ -46,7 +47,7 @@ impl ksni::Tray for NtfyTray {
             .into(),
             StandardItem::<Self> {
                 label: window_tray_label(&self.app).into(),
-                activate: Box::new(|tray| {
+                activate: Box::new(|tray: &mut Self| {
                     toggle_main_window(&tray.app);
                 }),
                 ..Default::default()
@@ -59,7 +60,7 @@ impl ksni::Tray for NtfyTray {
                 submenu: vec![
                     StandardItem::<Self> {
                         label: "Automation".into(),
-                        activate: Box::new(|tray| {
+                        activate: Box::new(|tray: &mut Self| {
                             open_automation_window(&tray.app);
                         }),
                         ..Default::default()
@@ -67,7 +68,7 @@ impl ksni::Tray for NtfyTray {
                     .into(),
                     StandardItem::<Self> {
                         label: "Webhook".into(),
-                        activate: Box::new(|tray| {
+                        activate: Box::new(|tray: &mut Self| {
                             open_webhook_window(&tray.app);
                         }),
                         ..Default::default()
@@ -75,7 +76,7 @@ impl ksni::Tray for NtfyTray {
                     .into(),
                     StandardItem::<Self> {
                         label: "Logs".into(),
-                        activate: Box::new(|tray| {
+                        activate: Box::new(|tray: &mut Self| {
                             open_logs_window(&tray.app);
                         }),
                         ..Default::default()
@@ -91,18 +92,21 @@ impl ksni::Tray for NtfyTray {
                 submenu: vec![
                     CheckmarkItem::<Self> {
                         label: "Startup".into(),
-                        checked: is_autostart_enabled(),
-                        activate: Box::new(|_| {
+                        checked: self.startup_enabled,
+                        activate: Box::new(|tray: &mut Self| {
                             if let Err(error) = toggle_autostart() {
                                 eprintln!("Failed to toggle autostart: {error}");
+                                return;
                             }
+            
+                            tray.startup_enabled = is_autostart_enabled();
                         }),
                         ..Default::default()
                     }
                     .into(),
                     StandardItem::<Self> {
                         label: "Config".into(),
-                        activate: Box::new(|tray| {
+                        activate: Box::new(|tray: &mut Self| {
                             open_config_window(&tray.app);
                         }),
                         ..Default::default()
@@ -111,7 +115,7 @@ impl ksni::Tray for NtfyTray {
                     MenuItem::Separator,
                     StandardItem::<Self> {
                         label: "Reset".into(),
-                        activate: Box::new(|tray| {
+                        activate: Box::new(|tray: &mut Self| {
                             reset_instance(&tray.app);
                         }),
                         ..Default::default()
@@ -125,7 +129,7 @@ impl ksni::Tray for NtfyTray {
 
             StandardItem::<Self> {
                 label: "Update".into(),
-                activate: Box::new(|tray| {
+                activate: Box::new(|tray: &mut Self| {
                     check_updates(&tray.app);
                 }),
                 ..Default::default()
@@ -133,7 +137,7 @@ impl ksni::Tray for NtfyTray {
             .into(),
             StandardItem::<Self> {
                 label: "Exit".into(),
-                activate: Box::new(|tray| {
+                activate: Box::new(|tray: &mut Self| {
                     exit_app(&tray.app);
                 }),
                 ..Default::default()
@@ -147,6 +151,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let tray = NtfyTray {
         app: app.handle().clone(),
         version: app.package_info().version.to_string(),
+        startup_enabled: is_autostart_enabled(),
     };
 
     match tauri::async_runtime::block_on(tray.disable_dbus_name(true).spawn()) {
