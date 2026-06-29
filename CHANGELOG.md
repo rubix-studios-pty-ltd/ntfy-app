@@ -8,6 +8,13 @@
 
 
 
+
+## [0.2.8] - 2026-06-29
+
+### Changed
+
+- issues with submenu knis
+
 ## [0.2.7] - 2026-06-29
 
 ### Fixed
