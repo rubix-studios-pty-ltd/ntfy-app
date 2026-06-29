@@ -45,7 +45,7 @@ impl ksni::Tray for NtfyTray {
                 label: window_tray_label(&self.app).into(),
                 activate: Box::new(|tray: &mut Self| {
                     toggle_main_window(&tray.app);
-                    sync_tray_label(&self.app);
+                    sync_tray_label(&tray.app);
                 }),
                 ..Default::default()
             }
