@@ -82,14 +82,7 @@ impl ksni::Tray for NtfyTray {
                         ..Default::default()
                     }
                     .into(),
-                ],
-                ..Default::default()
-            }
-            .into(),
-
-            SubMenu::<Self> {
-                label: "Settings".into(),
-                submenu: vec![
+                    MenuItem::Separator,
                     CheckmarkItem::<Self> {
                         label: "Startup".into(),
                         checked: self.startup_enabled,
