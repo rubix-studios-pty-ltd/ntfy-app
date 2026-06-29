@@ -7,13 +7,21 @@
 
 
 
-## [0.2.6] - 2026-06-29
+
+## [0.2.7] - 2026-06-29
 
 ### Fixed
 
 - update tray identifiers for consistency
 - reorganize tray module imports for clarity
 - specify type parameters for tray menu items
+- update startup menu item display in tray
+
+## [0.2.6] - 2026-06-29
+
+### Fixed
+
+- skip
 
 ## [0.2.5] - 2026-06-27
 
