@@ -6,6 +6,15 @@
 
 
 
+
+## [0.2.6] - 2026-06-29
+
+### Fixed
+
+- update tray identifiers for consistency
+- reorganize tray module imports for clarity
+- specify type parameters for tray menu items
+
 ## [0.2.5] - 2026-06-27
 
 ### Fixed
