@@ -1,4 +1,5 @@
 use tauri::{
+    AppHandle, Manager, Wry,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
@@ -11,13 +12,25 @@ use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
 use crate::windows::webhook::open_webhook_window;
 
-pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
-    let version = app.package_info().version.to_string();
-    let version_label = format!("ntfy {version}");
-    let app_version = MenuItem::with_id(app, "version", version_label, false, None::<&str>)?;
+pub struct TrayMenuState {
+    open_item: MenuItem<Wry>,
+}
 
+pub fn sync_tray_label(app: &AppHandle) {
+    let label = window_tray_label(app);
+
+    if let Some(state) = app.try_state::<TrayMenuState>() {
+        let _ = state.open_item.set_text(label);
+    }
+}
+
+pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let window_status = window_tray_label(app.handle());
     let open = MenuItem::with_id(app, "open", window_status, true, None::<&str>)?;
+
+    app.manage(TrayMenuState {
+        open_item: open.clone(),
+    });
 
     let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
@@ -42,20 +55,19 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let separator = PredefinedMenuItem::separator(app)?;
 
     let tools_menu =
-        Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook, &logs])?;
+        Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook])?;
 
     let settings_menu = Submenu::with_id_and_items(
         app,
         "settings",
         "Settings",
         true,
-        &[&autostart, &config, &separator, &reset_instance_item],
+        &[&autostart, &config, &logs, &separator, &reset_instance_item],
     )?;
 
     let menu = Menu::with_items(
         app,
         &[
-            &app_version,
             &open,
             &separator,
             &tools_menu,
@@ -70,9 +82,6 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         return Ok(());
     };
 
-    let open_menu_item = open.clone();
-    let open_tray_item = open.clone();
-
     let _tray = TrayIconBuilder::new()
         .icon(icon)
         .tooltip("Ntfy")
@@ -81,8 +90,8 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         .on_menu_event(move |app, event| {
             match event.id.as_ref() {
             "open" => {
-                let label = toggle_main_window(app);
-                let _ = open_menu_item.set_text(label);
+                toggle_main_window(app);
+                sync_tray_label(app);
             }
 
             "automation" => {
@@ -91,10 +100,6 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
             "webhook" => {
                 open_webhook_window(app);
-            }
-
-            "logs" => {
-                open_logs_window(app);
             }
 
             "autostart" => {
@@ -110,6 +115,10 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
 
             "config" => {
                 open_config_window(app);
+            }
+
+            "logs" => {
+                open_logs_window(app);
             }
 
             "check_updates" => {
@@ -136,8 +145,8 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             {
                 let app = tray.app_handle();
 
-                let label = toggle_main_window(app);
-                let _ = open_tray_item.set_text(label);
+                toggle_main_window(app);
+                sync_tray_label(app);
             }
         })
         .build(app)?;

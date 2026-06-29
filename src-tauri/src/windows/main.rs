@@ -1,6 +1,8 @@
 use tauri::{AppHandle, Manager, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
+use crate::tray::system::sync_tray_label;
+
 pub fn setup_window_events(window: &tauri::Window, event: &WindowEvent) {
     if window.label() != "main" {
         return;
@@ -9,12 +11,11 @@ pub fn setup_window_events(window: &tauri::Window, event: &WindowEvent) {
     if let WindowEvent::CloseRequested { api, .. } = event {
         api.prevent_close();
 
-        let _ = window
-            .app_handle()
-            .save_window_state(StateFlags::SIZE | StateFlags::POSITION);
+        let app = window.app_handle().clone();
+        let _ = app.save_window_state(StateFlags::SIZE | StateFlags::POSITION);
 
-        let _ = window.set_skip_taskbar(true);
-        let _ = window.hide();
+        hide_main_window(&app);
+        sync_tray_label(&app);
     }
 }
 
@@ -37,18 +38,21 @@ pub fn window_tray_label(app: &AppHandle) -> &'static str {
     }
 }
 
-pub fn toggle_main_window(app: &AppHandle) -> &'static str {
+pub fn hide_main_window(app: &AppHandle) -> &'static str {
     let Some(window) = app.get_webview_window("main") else {
         return "Show";
     };
 
-    let is_shown = window_is_shown(app);
+    let _ = window.set_skip_taskbar(true);
+    let _ = window.hide();
 
-    if is_shown {
-        let _ = window.set_skip_taskbar(true);
-        let _ = window.hide();
+    "Show"
+}
+
+pub fn show_main_window(app: &AppHandle) -> &'static str {
+    let Some(window) = app.get_webview_window("main") else {
         return "Show";
-    }
+    };
 
     let _ = window.set_skip_taskbar(false);
     let _ = window.show();
@@ -56,4 +60,12 @@ pub fn toggle_main_window(app: &AppHandle) -> &'static str {
     let _ = window.set_focus();
 
     "Hide"
+}
+
+pub fn toggle_main_window(app: &AppHandle) -> &'static str {
+    if window_is_shown(app) {
+        hide_main_window(app)
+    } else {
+        show_main_window(app)
+    }
 }
