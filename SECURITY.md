@@ -14,6 +14,7 @@ We take the security of Ntfy App seriously. If you believe you have found a secu
 2. Contact us directly at one of the following:
    - X: [@rubixstory](https://x.com/rubixstory)
    - Email: [Contact Form](https://rubixstudios.com.au/contact)
+   - Facebook: [rubixstudios](https://www.facebook.com/rubixstudios)
 
 Please include the following details in your report:
 
