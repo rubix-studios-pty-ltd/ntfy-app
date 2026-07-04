@@ -9,6 +9,18 @@
 
 
 
+
+## [0.2.9] - 2026-07-04
+
+### Fixed
+
+- correct reference to app in tray label synchronization
+
+### Changed
+
+- enhance tray functionality and update postcss dependency
+- remove unused version field from NtfyTray struct
+
 ## [0.2.8] - 2026-06-29
 
 ### Changed
