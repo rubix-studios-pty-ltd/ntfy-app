@@ -8,7 +8,6 @@ Automatic updates are disabled by default to reduce background activity, externa
 [![GitHub Release](https://img.shields.io/github/v/release/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app/releases)
 [![GitHub Repo Size](https://img.shields.io/github/repo-size/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app/commits/main)
-[![GitHub Contributors](https://img.shields.io/github/contributors/rubix-studios-pty-ltd/ntfy-app)](#contributors-)
 
 ![Ntfy App](docs/screenshots/notifications.webp)
 ![Ntfy Main](docs/screenshots/main.webp)
@@ -38,7 +37,7 @@ Automatic updates are disabled by default to reduce background activity, externa
 
 macOS may block unsigned applications on first launch. Open Terminal and run the following command once before opening the app:
 
-```
+```bash
 xattr -cr "/Applications/Ntfy App.app"
 ```
 
@@ -55,17 +54,20 @@ Download the latest release for your operating system from the [releases page](h
 ### From Source
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/rubix-studios-pty-ltd/ntfy-app.git
    cd ntfy-app
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 3. **Build the application:**
+
    ```bash
    pnpm build
    ```
@@ -74,14 +76,16 @@ Download the latest release for your operating system from the [releases page](h
 
 ## Development
 
-### Prerequisites
+### Rust Tools
 
 Install Rust toolchain:
+
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 For macOS, also install additional targets:
+
 ```bash
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 ```
@@ -89,11 +93,13 @@ rustup target add aarch64-apple-darwin x86_64-apple-darwin
 ### Running Development
 
 Start the development server:
+
 ```bash
 pnpm dev
 ```
 
 This will:
+
 - Start the Next.js dev server on `http://localhost:5173`
 - Launch the Tauri development window with hot-reload
 
@@ -120,7 +126,7 @@ pnpm update       # Update dependencies interactively
 
 ## Structure
 
-```
+```text
 ntfy-app/
 ├── app/                    # Next.js app directory
 ├── components/             # React components
@@ -148,10 +154,12 @@ We welcome contributions! Please follow these guidelines:
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Run linting and type checking:
+
    ```bash
    pnpm lint:fix
    pnpm typecheck
    ```
+
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request

@@ -1,3 +1,4 @@
 allowBuilds:
   msw: true
   sharp: true
+minimumReleaseAge: 0
