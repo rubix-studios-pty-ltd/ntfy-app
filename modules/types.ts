@@ -6,20 +6,20 @@ export interface ModuleOptions {
 }
 
 export interface ModuleField {
+  allowVariables?: boolean
   key: string
   label: string
-  type: ModuleType
-  placeholder?: string
-  min?: number
   max?: number
-  allowVariables?: boolean
+  min?: number
   options?: ModuleOptions[]
+  placeholder?: string
+  type: ModuleType
 }
 
 export interface Module {
+  defaultConfig?: Record<string, unknown>
+  description?: string
+  fields?: ModuleField[]
   id: string
   label: string
-  description?: string
-  defaultConfig?: Record<string, unknown>
-  fields?: ModuleField[]
 }

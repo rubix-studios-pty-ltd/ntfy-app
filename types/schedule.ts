@@ -16,6 +16,6 @@ export type ScheduleConfig = {
 export type ScheduleDays = Record<DayKey, ScheduleConfig>
 
 export interface Schedule {
-  scheduleEnabled: boolean
   days: ScheduleDays
+  scheduleEnabled: boolean
 }
