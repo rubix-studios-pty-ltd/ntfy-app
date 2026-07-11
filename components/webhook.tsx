@@ -1,7 +1,7 @@
 'use client'
 
-import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { CheckIcon, CopyIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -73,14 +73,14 @@ export function Webhook() {
         <Label className="font-bold">Instance</Label>
 
         <Input
-          className="border border-border"
-          spellCheck={false}
+          autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          autoCapitalize="none"
-          value={instance ?? ''}
+          className="border border-border"
           placeholder="No instance configured"
           readOnly
+          spellCheck={false}
+          value={instance ?? ''}
         />
       </div>
 
@@ -88,13 +88,13 @@ export function Webhook() {
         <Label className="font-bold">Topic</Label>
 
         <Input
-          className="border border-border"
-          spellCheck={false}
+          autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          autoCapitalize="none"
-          value={topic}
+          className="border border-border"
           onChange={(e) => setTopic(e.target.value)}
+          spellCheck={false}
+          value={topic}
         />
       </div>
 
@@ -102,14 +102,14 @@ export function Webhook() {
         <Label className="font-bold">Token</Label>
 
         <Input
-          className="border border-border"
-          spellCheck={false}
+          autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          autoCapitalize="none"
-          value={token}
+          className="border border-border"
           onChange={(e) => setToken(e.target.value)}
+          spellCheck={false}
           type="password"
+          value={token}
         />
       </div>
 
@@ -122,9 +122,9 @@ export function Webhook() {
         </Button>
 
         <Button
-          variant="outline"
           className="cursor-pointer transition-all duration-500"
           onClick={handleClear}
+          variant="outline"
         >
           Clear
         </Button>
@@ -136,24 +136,24 @@ export function Webhook() {
             <Label className="font-bold">Webhook</Label>
 
             <Button
-              size="sm"
-              variant="ghost"
               className="cursor-pointer text-muted-foreground transition-all duration-500"
               onClick={handleCopy}
+              size="sm"
+              variant="ghost"
             >
               {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
             </Button>
           </div>
 
           <Textarea
-            readOnly
-            spellCheck={false}
+            autoCapitalize="none"
             autoComplete="off"
             autoCorrect="off"
-            autoCapitalize="none"
             className="resize-none border border-border bg-background text-foreground"
-            value={result}
+            readOnly
             rows={2}
+            spellCheck={false}
+            value={result}
           />
         </div>
       )}

@@ -1,7 +1,7 @@
 'use client'
 
-import { PencilIcon, PlayIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { PencilIcon, PlayIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Modal } from '@/components/automation/modal'
@@ -188,9 +188,9 @@ export function Automation() {
 
           <Input
             className="pl-9 border-border text-sm xs:text-sm"
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Search..."
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
           />
         </div>
 
@@ -220,13 +220,13 @@ export function Automation() {
         >
           {searchFilter.map((rule) => (
             <div
-              key={rule.id}
               className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b border-border/10 p-3 last:border-b-0"
+              key={rule.id}
             >
               <Switch
                 checked={rule.active}
-                onCheckedChange={() => handleToggleRule(rule.id)}
                 className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
+                onCheckedChange={() => handleToggleRule(rule.id)}
               />
 
               <span className="text-sm truncate">{rule.name}</span>
@@ -239,7 +239,7 @@ export function Automation() {
                     .map((value) => value.trim())
                     .filter((value) => value.length > 0)
                     .map((value, index) => (
-                      <span key={`${rule.id}-match-${index}`} className="block truncate">
+                      <span className="block truncate" key={`${rule.id}-match-${index}`}>
                         {matchType(rule.matchType)}: {value}
                       </span>
                     ))}
@@ -260,28 +260,28 @@ export function Automation() {
 
               <div className="flex justify-end gap-0.5">
                 <Button
-                  size="xs"
-                  variant="ghost"
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => handleTestRule(rule)}
+                  size="xs"
+                  variant="ghost"
                 >
                   <PlayIcon className="size-3.5" />
                 </Button>
 
                 <Button
-                  size="xs"
-                  variant="ghost"
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => handleEditRule(rule)}
+                  size="xs"
+                  variant="ghost"
                 >
                   <PencilIcon className="size-3.5" />
                 </Button>
 
                 <Button
-                  size="xs"
-                  variant="ghost"
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => setRemove(rule)}
+                  size="xs"
+                  variant="ghost"
                 >
                   <TrashIcon className="size-3.5" />
                 </Button>
@@ -295,7 +295,7 @@ export function Automation() {
         </ScrollArea>
       </div>
 
-      <AlertDialog open={remove !== null} onOpenChange={(open) => !open && setRemove(null)}>
+      <AlertDialog onOpenChange={(open) => !open && setRemove(null)} open={remove !== null}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete?</AlertDialogTitle>
@@ -321,7 +321,7 @@ export function Automation() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Modal rule={editing} setRule={setEditing} onSave={saveRule} />
+      <Modal onSave={saveRule} rule={editing} setRule={setEditing} />
     </div>
   )
 }

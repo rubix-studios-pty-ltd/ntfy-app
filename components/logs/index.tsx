@@ -106,8 +106,8 @@ export function Logs() {
         ) : (
           logs.items.map((log) => (
             <div
-              key={log.id}
               className="grid grid-cols-[130px_minmax(0,1.2fr)_minmax(0,1.2fr)_80px] gap-2 border-b border-border/10 p-3 last:border-b-0"
+              key={log.id}
             >
               <span className="text-sm">{formatDate(log.createdAt)}</span>
 

@@ -52,7 +52,7 @@
     "typecheck": "tsc --noEmit",
     "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe && pnpm run clean && pnpm run tauri:update"
   },
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@11.11.0",
   "engines": {
     "node": "24.x || 25.x",
     "pnpm": ">=10"
@@ -60,10 +60,10 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.23.0",
+    "lucide-react": "^1.24.0",
     "next": "^16.2.10",
     "next-themes": "^0.4.6",
-    "radix-ui": "^1.6.1",
+    "radix-ui": "^1.6.2",
     "react": "^19.2.7",
     "react-dom": "19.2.7",
     "sonner": "^2.0.7",
@@ -72,11 +72,11 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.2",
+    "@biomejs/biome": "^2.5.3",
     "@tailwindcss/postcss": "^4.3.2",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/cli": "^2.11.4",
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "shadcn": "^4.13.0",

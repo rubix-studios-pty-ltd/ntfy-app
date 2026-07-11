@@ -108,9 +108,9 @@ export function Config() {
         </div>
         <Switch
           checked={scheduleEnabled}
+          className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
           disabled={loading}
           onCheckedChange={setScheduleEnabled}
-          className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
         />
       </div>
 
@@ -120,15 +120,15 @@ export function Config() {
 
           return (
             <div
-              key={key}
               className="grid grid-cols-[1fr_auto] border-b border-border/10 py-3 last:border-b-0"
+              key={key}
             >
               <div className="flex items-center gap-3">
                 <Switch
                   checked={day.enabled}
+                  className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
                   disabled={!scheduleEnabled || loading}
                   onCheckedChange={(enabled) => updateConfig(key, { enabled })}
-                  className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
                 />
 
                 <Label className="font-medium">{label}</Label>
@@ -138,40 +138,40 @@ export function Config() {
                 <div className="space-y-2">
                   <Label className="font-semibold">Start</Label>
                   <Input
-                    id={`${key}-start`}
-                    type="time"
-                    value={day.startTime}
-                    disabled={!scheduleEnabled || !day.enabled || loading}
-                    className="text-sm border border-border col-span-2"
-                    spellCheck={false}
+                    autoCapitalize="none"
                     autoComplete="off"
                     autoCorrect="off"
-                    autoCapitalize="none"
+                    className="text-sm border border-border col-span-2"
+                    disabled={!scheduleEnabled || !day.enabled || loading}
+                    id={`${key}-start`}
                     onChange={(event) =>
                       updateConfig(key, {
                         startTime: event.target.value,
                       })
                     }
+                    spellCheck={false}
+                    type="time"
+                    value={day.startTime}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="font-semibold">End</Label>
                   <Input
-                    id={`${key}-end`}
-                    type="time"
-                    value={day.endTime}
-                    disabled={!scheduleEnabled || !day.enabled || loading}
-                    className="text-sm border border-border col-span-2"
-                    spellCheck={false}
+                    autoCapitalize="none"
                     autoComplete="off"
                     autoCorrect="off"
-                    autoCapitalize="none"
+                    className="text-sm border border-border col-span-2"
+                    disabled={!scheduleEnabled || !day.enabled || loading}
+                    id={`${key}-end`}
                     onChange={(event) =>
                       updateConfig(key, {
                         endTime: event.target.value,
                       })
                     }
+                    spellCheck={false}
+                    type="time"
+                    value={day.endTime}
                   />
                 </div>
               </div>
@@ -182,9 +182,9 @@ export function Config() {
 
       <div className="flex justify-end">
         <Button
-          onClick={saveConfig}
-          disabled={loading}
           className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
+          disabled={loading}
+          onClick={saveConfig}
         >
           Save
         </Button>

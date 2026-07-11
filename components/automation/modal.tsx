@@ -1,7 +1,7 @@
 'use client'
 
-import { SquareArrowDown, SquareArrowUp } from 'lucide-react'
 import { useRef } from 'react'
+import { SquareArrowDown, SquareArrowUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -31,9 +31,9 @@ import { getConfig, parseConfig } from '@/utils/getConfig'
 import { stripRule } from '@/utils/stripRule'
 
 interface ModalProps {
+  onSave: () => void | Promise<void>
   rule: RulesType | null
   setRule: (rule: RulesType | null) => void
-  onSave: () => void | Promise<void>
 }
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
@@ -144,12 +144,12 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
 
   return (
     <Dialog
-      open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           setRule(null)
         }
       }}
+      open={open}
     >
       {rule && (
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto shadow-2xl">
@@ -164,13 +164,13 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             <div className="grid gap-2">
               <Label className="font-semibold">Name</Label>
               <Input
-                className="border border-border"
-                spellCheck={false}
+                autoCapitalize="none"
                 autoComplete="off"
                 autoCorrect="off"
-                autoCapitalize="none"
-                value={rule.name}
+                className="border border-border"
                 onChange={(event) => updateRule({ name: event.target.value })}
+                spellCheck={false}
+                value={rule.name}
               />
             </div>
 
@@ -178,44 +178,44 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <div className="grid gap-2">
                 <Label className="font-semibold">Topic</Label>
                 <Input
-                  className="border border-border"
-                  spellCheck={false}
+                  autoCapitalize="none"
                   autoComplete="off"
                   autoCorrect="off"
-                  autoCapitalize="none"
-                  value={rule.topic}
+                  className="border border-border"
                   onChange={(event) => updateRule({ topic: event.target.value })}
+                  spellCheck={false}
+                  value={rule.topic}
                 />
               </div>
 
               <div className="grid gap-2">
                 <Label className="font-semibold">Match</Label>
                 <Select
-                  value={rule.matchType}
                   onValueChange={(value) => updateRule({ matchType: value as MatchType })}
+                  value={rule.matchType}
                 >
                   <SelectTrigger className="w-full border border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent
-                    position="popper"
                     className="border bg-foreground text-primary-foreground"
+                    position="popper"
                   >
                     <SelectItem
-                      value="equals"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="equals"
                     >
                       Equals
                     </SelectItem>
                     <SelectItem
-                      value="contains"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="contains"
                     >
                       Contains
                     </SelectItem>
                     <SelectItem
-                      value="startsWith"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="startsWith"
                     >
                       Starts with
                     </SelectItem>
@@ -227,14 +227,14 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
             <div className="grid gap-2">
               <Label className="font-semibold">Value</Label>
               <Textarea
-                className="scrollbar h-24 resize-none overflow-y-auto border border-border"
-                spellCheck={false}
+                autoCapitalize="none"
                 autoComplete="off"
                 autoCorrect="off"
-                autoCapitalize="none"
-                rows={4}
-                value={rule.matchValue}
+                className="scrollbar h-24 resize-none overflow-y-auto border border-border"
                 onChange={(event) => updateRule({ matchValue: event.target.value })}
+                rows={4}
+                spellCheck={false}
+                value={rule.matchValue}
               />
             </div>
 
@@ -242,34 +242,34 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
               <div className="grid gap-2">
                 <Label className="font-semibold">Action</Label>
                 <Select
-                  value={rule.actionType}
                   onValueChange={(value) => updateAction(value as ActionType)}
+                  value={rule.actionType}
                 >
                   <SelectTrigger className="w-full border border-border">
                     <SelectValue />
                   </SelectTrigger>
 
                   <SelectContent
-                    position="popper"
                     className="border bg-foreground text-primary-foreground"
+                    position="popper"
                   >
                     <SelectItem
-                      value="runProgram"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="runProgram"
                     >
                       Run program
                     </SelectItem>
 
                     <SelectItem
-                      value="openUrl"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="openUrl"
                     >
                       Open URL
                     </SelectItem>
 
                     <SelectItem
-                      value="module"
                       className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
+                      value="module"
                     >
                       Module
                     </SelectItem>
@@ -282,27 +282,27 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
 
                 {rule.actionType === 'module' ? (
                   <Select
-                    value={rule.moduleId}
                     onValueChange={(value) =>
                       updateRule({
                         moduleId: value,
                         actionConfig: getDefault(value),
                       } as Partial<RulesType>)
                     }
+                    value={rule.moduleId}
                   >
                     <SelectTrigger className="w-full border border-border">
                       <SelectValue placeholder="Select module" />
                     </SelectTrigger>
 
                     <SelectContent
-                      position="popper"
                       className="border bg-foreground text-primary-foreground"
+                      position="popper"
                     >
                       {moduleOptions.map((module) => (
                         <SelectItem
+                          className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
                           key={module.id}
                           value={module.id}
-                          className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
                         >
                           {module.label}
                         </SelectItem>
@@ -312,8 +312,8 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                 ) : (
                   <Input
                     className="border border-border"
-                    value={rule.actionValue}
                     onChange={(event) => updateRule({ actionValue: event.target.value })}
+                    value={rule.actionValue}
                   />
                 )}
               </div>
@@ -324,26 +324,26 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                 <div className="grid gap-2">
                   <Label className="font-semibold">Arguments</Label>
                   <Input
-                    className="border border-border"
-                    spellCheck={false}
+                    autoCapitalize="none"
                     autoComplete="off"
                     autoCorrect="off"
-                    autoCapitalize="none"
-                    value={rule.arguments ?? ''}
+                    className="border border-border"
                     onChange={(event) => updateRule({ arguments: event.target.value })}
+                    spellCheck={false}
+                    value={rule.arguments ?? ''}
                   />
                 </div>
 
                 <div className="grid gap-2">
                   <Label className="font-semibold">Directory</Label>
                   <Input
-                    className="border border-border"
-                    spellCheck={false}
+                    autoCapitalize="none"
                     autoComplete="off"
                     autoCorrect="off"
-                    autoCapitalize="none"
-                    value={rule.workingDirectory ?? ''}
+                    className="border border-border"
                     onChange={(event) => updateRule({ workingDirectory: event.target.value })}
+                    spellCheck={false}
+                    value={rule.workingDirectory ?? ''}
                   />
                 </div>
               </>
@@ -366,23 +366,17 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
 
                   if (field.type === 'number') {
                     return (
-                      <div key={field.key} className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-2" key={field.key}>
                         <Label className="font-semibold">{field.label}</Label>
 
                         <Input
-                          type={
-                            field.type === 'number' && !field.allowVariables ? 'number' : 'text'
-                          }
-                          inputMode={field.type === 'number' ? 'numeric' : undefined}
-                          min={field.allowVariables ? undefined : field.min}
-                          max={field.allowVariables ? undefined : field.max}
-                          placeholder={field.placeholder}
-                          className="border border-border col-span-2"
-                          spellCheck={false}
+                          autoCapitalize="none"
                           autoComplete="off"
                           autoCorrect="off"
-                          autoCapitalize="none"
-                          value={getConfig(value)}
+                          className="border border-border col-span-2"
+                          inputMode={field.type === 'number' ? 'numeric' : undefined}
+                          max={field.allowVariables ? undefined : field.max}
+                          min={field.allowVariables ? undefined : field.min}
                           onChange={(event) =>
                             updateRule({
                               actionConfig: {
@@ -391,23 +385,26 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                               },
                             } as Partial<RulesType>)
                           }
+                          placeholder={field.placeholder}
+                          spellCheck={false}
+                          type={
+                            field.type === 'number' && !field.allowVariables ? 'number' : 'text'
+                          }
+                          value={getConfig(value)}
                         />
                       </div>
                     )
                   }
 
                   return (
-                    <div key={field.key} className="grid gap-2">
+                    <div className="grid gap-2" key={field.key}>
                       <Label className="font-semibold">{field.label}</Label>
 
                       <Input
-                        placeholder={field.placeholder}
-                        className="border border-border"
-                        spellCheck={false}
+                        autoCapitalize="none"
                         autoComplete="off"
                         autoCorrect="off"
-                        autoCapitalize="none"
-                        value={typeof value === 'string' ? value : ''}
+                        className="border border-border"
                         onChange={(event) =>
                           updateRule({
                             actionConfig: {
@@ -416,6 +413,9 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                             },
                           } as Partial<RulesType>)
                         }
+                        placeholder={field.placeholder}
+                        spellCheck={false}
+                        value={typeof value === 'string' ? value : ''}
                       />
                     </div>
                   )
@@ -427,8 +427,6 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
           <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2">
               <input
-                ref={importInput}
-                type="file"
                 accept="application/json,.json"
                 className="hidden"
                 onChange={(event) => {
@@ -438,20 +436,22 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
                     void importRule(file)
                   }
                 }}
+                ref={importInput}
+                type="file"
               />
 
               <Button
-                variant="outline"
                 className="cursor-pointer transition-all duration-500"
                 onClick={() => importInput.current?.click()}
+                variant="outline"
               >
                 <SquareArrowUp className="size-4" />
               </Button>
 
               <Button
-                variant="outline"
                 className="cursor-pointer transition-all duration-500"
                 onClick={exportRule}
+                variant="outline"
               >
                 <SquareArrowDown className="size-4" />
               </Button>
@@ -459,9 +459,9 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
 
             <div className="flex gap-2">
               <Button
-                variant="outline"
                 className="cursor-pointer transition-all duration-500"
                 onClick={() => setRule(null)}
+                variant="outline"
               >
                 Cancel
               </Button>

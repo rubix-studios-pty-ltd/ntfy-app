@@ -33,16 +33,16 @@ export function Instance() {
     >
       <Label className="font-bold">Instance</Label>
       <Input
-        className="border border-border"
-        name="instanceUrl"
-        type="url"
-        inputMode="url"
         autoComplete="url"
-        spellCheck={false}
-        value={instance || ''}
+        className="border border-border"
+        inputMode="url"
+        name="instanceUrl"
+        onChange={(event) => setInstance(event.target.value.trim())}
         placeholder="https://ntfy.sh"
         required
-        onChange={(event) => setInstance(event.target.value.trim())}
+        spellCheck={false}
+        type="url"
+        value={instance || ''}
       />
 
       <Button
