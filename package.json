@@ -52,7 +52,6 @@
     "typecheck": "tsc --noEmit",
     "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe && pnpm run clean && pnpm run tauri:update"
   },
-  "packageManager": "pnpm@11.11.0",
   "engines": {
     "node": "24.x || 25.x",
     "pnpm": ">=10"
@@ -82,6 +81,7 @@
     "shadcn": "^4.13.0",
     "tailwindcss": "^4.3.2",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^6.0.3"
-  }
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@11.12.0"
 }
