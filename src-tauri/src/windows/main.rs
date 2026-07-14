@@ -31,11 +31,7 @@ pub fn window_is_shown(app: &AppHandle) -> bool {
 }
 
 pub fn window_tray_label(app: &AppHandle) -> &'static str {
-    if window_is_shown(app) {
-        "Hide"
-    } else {
-        "Show"
-    }
+    if window_is_shown(app) { "Hide" } else { "Show" }
 }
 
 pub fn hide_main_window(app: &AppHandle) -> &'static str {

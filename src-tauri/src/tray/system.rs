@@ -8,4 +8,4 @@ mod platform;
 #[path = "native.rs"]
 mod platform;
 
-pub use platform::{sync_tray_label};
+pub use platform::sync_tray_label;
