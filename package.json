@@ -1,7 +1,7 @@
 {
   "name": "ntfy-app",
   "title": "Ntfy App",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Desktop client for ntfy.sh and self-hosted ntfy instances on Windows, Linux, and macOS. Built with Rust, Tauri, and Next.js.",
   "license": "MIT",
   "private": true,

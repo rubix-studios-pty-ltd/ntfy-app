@@ -10,6 +10,13 @@
 
 
 
+
+## [0.2.10] - 2026-07-14
+
+### Fixed
+
+- update class names for consistency in Select component
+
 ## [0.2.9] - 2026-07-04
 
 ### Fixed
