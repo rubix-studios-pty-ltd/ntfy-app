@@ -78,7 +78,7 @@ impl ksni::Tray for NtfyTray {
                                 eprintln!("Failed to toggle autostart: {error}");
                                 return;
                             }
-            
+
                             tray.startup_enabled = is_autostart_enabled();
                         }),
                         ..Default::default()
