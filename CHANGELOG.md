@@ -11,6 +11,14 @@
 
 
 
+
+## [0.2.11] - 2026-07-21
+
+### Fixed
+
+- adjust Windows subsystem configuration in main.rs
+- replace auto launch with autostart crate
+
 ## [0.2.10] - 2026-07-14
 
 ### Fixed
