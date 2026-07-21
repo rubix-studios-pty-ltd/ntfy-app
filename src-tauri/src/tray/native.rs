@@ -36,7 +36,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
     let logs = MenuItem::with_id(app, "logs", "Logs", true, None::<&str>)?;
 
-    let autostart_enabled = is_autostart_enabled();
+    let autostart_enabled = is_autostart_enabled(app.handle());
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
@@ -102,12 +102,12 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             }
 
             "autostart" => {
-                if let Err(error) = toggle_autostart() {
+                if let Err(error) = toggle_autostart(app) {
                     eprintln!("Failed to toggle autostart: {error}");
                 } else if let Some(item) = app.menu().and_then(|menu| menu.get("autostart"))
                     && let Some(check_item) = item.as_check_menuitem()
                 {
-                    let enabled = is_autostart_enabled();
+                    let enabled = is_autostart_enabled(app);
                     let _ = check_item.set_checked(enabled);
                 }
             }
