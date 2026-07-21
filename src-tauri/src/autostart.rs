@@ -1,36 +1,30 @@
-use auto_launch::AutoLaunchBuilder;
 use std::io;
 
-const APP_NAME: &str = "Ntfy";
+use tauri::AppHandle;
+use tauri_plugin_autostart::ManagerExt;
 
-fn autolaunch() -> auto_launch::AutoLaunch {
-    let exe = std::env::current_exe().expect("Failed to get current executable");
-
-    AutoLaunchBuilder::new()
-        .set_app_name(APP_NAME)
-        .set_app_path(exe.to_string_lossy().as_ref())
-        .build()
-        .unwrap()
+pub fn is_autostart_enabled(app: &AppHandle) -> bool {
+    app.autolaunch().is_enabled().unwrap_or(false)
 }
 
-pub fn is_autostart_enabled() -> bool {
-    autolaunch().is_enabled().unwrap_or(false)
+pub fn enable_autostart(app: &AppHandle) -> io::Result<()> {
+    app.autolaunch()
+        .enable()
+        .map_err(|error| io::Error::other(error.to_string()))
 }
 
-pub fn enable_autostart() -> io::Result<()> {
-    autolaunch().enable().map_err(io::Error::other)
+pub fn disable_autostart(app: &AppHandle) -> io::Result<()> {
+    app.autolaunch()
+        .disable()
+        .map_err(|error| io::Error::other(error.to_string()))
 }
 
-pub fn disable_autostart() -> io::Result<()> {
-    autolaunch().disable().map_err(io::Error::other)
-}
-
-pub fn toggle_autostart() -> io::Result<bool> {
-    if is_autostart_enabled() {
-        disable_autostart()?;
+pub fn toggle_autostart(app: &AppHandle) -> io::Result<bool> {
+    if is_autostart_enabled(app) {
+        disable_autostart(app)?;
         Ok(false)
     } else {
-        enable_autostart()?;
+        enable_autostart(app)?;
         Ok(true)
     }
 }
