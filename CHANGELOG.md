@@ -13,6 +13,11 @@
 
 
 
+
+## [0.2.13] - 2026-07-27
+
+Maintenance release.
+
 ## [0.2.12] - 2026-07-21
 
 - Nextjs security dependency update
