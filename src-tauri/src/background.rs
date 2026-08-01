@@ -142,12 +142,12 @@ pub fn complete_websocket(app_handle: AppHandle, page_url: String) -> Result<boo
         inner.sync_complete = true;
     }
 
-    try_unload_main_webview(&app_handle);
+    try_unload_webview(&app_handle);
 
     Ok(true)
 }
 
-pub fn request_main_webview_unload(app: &AppHandle) {
+pub fn request_webview_unload(app: &AppHandle) {
     if load_config(app).instance_url.is_none()
         && let Ok(mut inner) = app.state::<ListenerState>().inner.lock()
     {
@@ -158,10 +158,10 @@ pub fn request_main_webview_unload(app: &AppHandle) {
         inner.unload_requested = true;
     }
 
-    try_unload_main_webview(app);
+    try_unload_webview(app);
 }
 
-pub fn cancel_main_webview_unload(app: &AppHandle) {
+pub fn cancel_webview_unload(app: &AppHandle) {
     if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
         inner.unload_requested = false;
     }
@@ -231,7 +231,7 @@ async fn run_connection(
 
                     match result {
                         Ok(Message::Text(message)) => {
-                            handle_websocket_message(&app, message.as_ref(), &mut last_id).await;
+                            handle_message(&app, message.as_ref(), &mut last_id).await;
                         }
 
                         Ok(Message::Close(_)) => break,
@@ -262,7 +262,7 @@ async fn run_connection(
     }
 }
 
-async fn handle_websocket_message(app: &AppHandle, message: &str, last_id: &mut Option<String>) {
+async fn handle_message(app: &AppHandle, message: &str, last_id: &mut Option<String>) {
     let Ok(event) = serde_json::from_str::<WebSocketEvent>(message) else {
         return;
     };
@@ -334,7 +334,7 @@ fn mark_connection_ready(app: &AppHandle, key: &str, generation: &str) {
     };
 
     if changed {
-        try_unload_main_webview(app);
+        try_unload_webview(app);
     }
 }
 
@@ -350,7 +350,7 @@ fn is_current_connection(app: &AppHandle, key: &str, generation: &str) -> bool {
         .is_some_and(|connection| connection.generation == generation)
 }
 
-fn try_unload_main_webview(app: &AppHandle) {
+fn try_unload_webview(app: &AppHandle) {
     let should_schedule = {
         let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {

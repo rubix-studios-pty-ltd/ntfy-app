@@ -72,7 +72,7 @@ pub fn run() {
 
     app.run(|app_handle, event| {
         if matches!(event, tauri::RunEvent::Ready) {
-            background::request_main_webview_unload(app_handle);
+            background::request_webview_unload(app_handle);
         }
     });
 }

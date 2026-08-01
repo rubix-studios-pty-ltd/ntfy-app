@@ -4,7 +4,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 use url::Url;
 
-use crate::background::{cancel_main_webview_unload, request_main_webview_unload};
+use crate::background::{cancel_webview_unload, request_webview_unload};
 use crate::config::load_config;
 use crate::tray::system::sync_tray_label;
 
@@ -61,13 +61,13 @@ pub fn hide_main_window(app: &AppHandle) -> &'static str {
     let _ = window.set_skip_taskbar(true);
     let _ = window.hide();
 
-    request_main_webview_unload(app);
+    request_webview_unload(app);
 
     "Show"
 }
 
 pub fn show_main_window(app: &AppHandle) -> &'static str {
-    cancel_main_webview_unload(app);
+    cancel_webview_unload(app);
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_skip_taskbar(false);
