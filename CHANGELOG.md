@@ -1,4 +1,15 @@
 
+
+## [0.3.0] - 2026-08-01
+
+### Fixed
+
+- destroy webview and attach websocket listener
+
+### Changed
+
+- rename webview unload functions for consistency
+
 ## [0.2.13] - 2026-07-27
 
 Maintenance release.

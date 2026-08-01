@@ -2688,7 +2688,7 @@ dependencies = [
 
 [[package]]
 name = "ntfy_app"
-version = "0.2.13"
+version = "0.3.0"
 dependencies = [
  "chrono",
  "futures-util",
