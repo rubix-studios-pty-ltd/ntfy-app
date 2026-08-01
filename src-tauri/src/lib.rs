@@ -41,7 +41,7 @@ pub fn run() {
             setup_window_events(window, event);
         })
         .setup(|app| {
-            app.manage(background::BackgroundListenerState::default());
+            app.manage(background::ListenerState::default());
             app.manage(listener::NotificationState::default());
 
             let db_state = db::init(app.handle())?;

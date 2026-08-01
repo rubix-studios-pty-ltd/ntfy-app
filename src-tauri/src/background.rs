@@ -19,12 +19,12 @@ use crate::listener::{Payload, process_notification};
 const RETRY_BACKOFF_SECONDS: [u64; 6] = [5, 10, 20, 30, 60, 120];
 
 #[derive(Default)]
-pub struct BackgroundListenerState {
-    inner: Mutex<BackgroundListenerInner>,
+pub struct ListenerState {
+    inner: Mutex<BackgroundListener>,
 }
 
 #[derive(Default)]
-struct BackgroundListenerInner {
+struct BackgroundListener {
     connections: HashMap<String, BackgroundConnection>,
     sync_complete: bool,
     unload_requested: bool,
@@ -82,7 +82,7 @@ pub fn sync_websocket(app_handle: AppHandle, url: String) -> Result<(), String> 
     };
 
     let previous = {
-        let state = app_handle.state::<BackgroundListenerState>();
+        let state = app_handle.state::<ListenerState>();
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
         inner.sync_complete = false;
@@ -115,7 +115,7 @@ pub fn unsync_websocket(app_handle: AppHandle, url: String) -> Result<(), String
     let parsed = parse_connection(&app_handle, &url)?;
 
     let removed = {
-        let state = app_handle.state::<BackgroundListenerState>();
+        let state = app_handle.state::<ListenerState>();
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
         inner.sync_complete = false;
@@ -136,7 +136,7 @@ pub fn complete_websocket(app_handle: AppHandle, page_url: String) -> Result<boo
     }
 
     {
-        let state = app_handle.state::<BackgroundListenerState>();
+        let state = app_handle.state::<ListenerState>();
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
         inner.sync_complete = true;
@@ -149,12 +149,12 @@ pub fn complete_websocket(app_handle: AppHandle, page_url: String) -> Result<boo
 
 pub fn request_main_webview_unload(app: &AppHandle) {
     if load_config(app).instance_url.is_none()
-        && let Ok(mut inner) = app.state::<BackgroundListenerState>().inner.lock()
+        && let Ok(mut inner) = app.state::<ListenerState>().inner.lock()
     {
         inner.sync_complete = true;
     }
 
-    if let Ok(mut inner) = app.state::<BackgroundListenerState>().inner.lock() {
+    if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
         inner.unload_requested = true;
     }
 
@@ -162,14 +162,14 @@ pub fn request_main_webview_unload(app: &AppHandle) {
 }
 
 pub fn cancel_main_webview_unload(app: &AppHandle) {
-    if let Ok(mut inner) = app.state::<BackgroundListenerState>().inner.lock() {
+    if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
         inner.unload_requested = false;
     }
 }
 
 pub fn stop_all(app: &AppHandle) {
     let connections = {
-        let state = app.state::<BackgroundListenerState>();
+        let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
@@ -316,7 +316,7 @@ fn clean_message(message: &str) -> String {
 
 fn mark_connection_ready(app: &AppHandle, key: &str, generation: &str) {
     let changed = {
-        let state = app.state::<BackgroundListenerState>();
+        let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
@@ -339,7 +339,7 @@ fn mark_connection_ready(app: &AppHandle, key: &str, generation: &str) {
 }
 
 fn is_current_connection(app: &AppHandle, key: &str, generation: &str) -> bool {
-    let state = app.state::<BackgroundListenerState>();
+    let state = app.state::<ListenerState>();
     let Ok(inner) = state.inner.lock() else {
         return false;
     };
@@ -352,7 +352,7 @@ fn is_current_connection(app: &AppHandle, key: &str, generation: &str) -> bool {
 
 fn try_unload_main_webview(app: &AppHandle) {
     let should_schedule = {
-        let state = app.state::<BackgroundListenerState>();
+        let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
@@ -381,7 +381,7 @@ fn try_unload_main_webview(app: &AppHandle) {
         tokio::task::yield_now().await;
 
         let unloaded = {
-            let state = app.state::<BackgroundListenerState>();
+            let state = app.state::<ListenerState>();
             let Ok(mut inner) = state.inner.lock() else {
                 return;
             };
