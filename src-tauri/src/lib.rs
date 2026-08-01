@@ -1,5 +1,6 @@
 mod automation;
 mod autostart;
+mod background;
 mod commands;
 mod config;
 mod db;
@@ -40,6 +41,9 @@ pub fn run() {
             setup_window_events(window, event);
         })
         .setup(|app| {
+            app.manage(background::BackgroundListenerState::default());
+            app.manage(listener::NotificationState::default());
+
             let db_state = db::init(app.handle())?;
             app.manage(db_state);
 
@@ -66,5 +70,9 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("Error while building application");
 
-    app.run(|_app_handle, _event| {});
+    app.run(|app_handle, event| {
+        if matches!(event, tauri::RunEvent::Ready) {
+            background::request_main_webview_unload(app_handle);
+        }
+    });
 }

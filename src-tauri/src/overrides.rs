@@ -5,6 +5,21 @@ pub fn handle_page_load(window: &Webview) {
         r#"
         (() => {
           try {
+            const invoke = (command, args = {}) =>
+              window.__TAURI_INTERNALS__?.invoke(command, args);
+
+            const scheduleSyncComplete = (delay = 750) => {
+              clearTimeout(window.__NTFY_SYNC_COMPLETE_TIMER__);
+
+              window.__NTFY_SYNC_COMPLETE_TIMER__ = setTimeout(() => {
+                invoke('complete_websocket', {
+                  pageUrl: window.location.href,
+                })?.catch((error) => {
+                  console.error('ntfy: Failed to complete WebSocket sync', error);
+                });
+              }, delay);
+            };
+
             const ntfyCheck = () => {
               const ogUrl = document
                 .querySelector('meta[property="og:url"]')
@@ -15,94 +30,100 @@ pub fn handle_page_load(window: &Webview) {
               return ogUrl === 'https://ntfy.sh';
             };
 
-            if (!ntfyCheck()) {
-              return;
-            }
+            const isNtfyPage = ntfyCheck();
 
-            const styleId = 'ntfy-style';
+            if (isNtfyPage) {
+              const styleId = 'ntfy-style';
 
-            if (!document.getElementById(styleId)) {
-              const style = document.createElement('style');
+              if (!document.getElementById(styleId)) {
+                const style = document.createElement('style');
 
-              style.id = styleId;
-              style.textContent = `
-                .MuiAlert-root,
-                .MuiListSubheader-root {
-                  display: none !important;
-                }
-              `;
-
-              document.head.appendChild(style);
-            }
-
-            if (!window.__NTFY_EXTERNAL_LINKS__) {
-              window.__NTFY_EXTERNAL_LINKS__ = true;
-
-              document.addEventListener(
-                'click',
-                async (e) => {
-                  const link = e.target?.closest?.('a[href]');
-
-                  if (!link) return;
-
-                  try {
-                    const url = new URL(link.href);
-
-                    if (url.host === window.location.host) {
-                      return;
-                    }
-
-                    e.preventDefault();
-
-                    await window.__TAURI_INTERNALS__.invoke(
-                      'plugin:opener|open_url',
-                      {
-                        url: url.href,
-                      }
-                    );
-                  } catch (error) {
-                    console.error('ntfy: Failed to open external link', error);
+                style.id = styleId;
+                style.textContent = `
+                  .MuiAlert-root,
+                  .MuiListSubheader-root {
+                    display: none !important;
                   }
-                },
-                true
-              );
+                `;
+
+                document.head.appendChild(style);
+              }
+
+              if (!window.__NTFY_EXTERNAL_LINKS__) {
+                window.__NTFY_EXTERNAL_LINKS__ = true;
+
+                document.addEventListener(
+                  'click',
+                  async (event) => {
+                    const link = event.target?.closest?.('a[href]');
+
+                    if (!link) return;
+
+                    try {
+                      const url = new URL(link.href);
+
+                      if (url.host === window.location.host) {
+                        return;
+                      }
+
+                      event.preventDefault();
+
+                      await invoke('plugin:opener|open_url', {
+                        url: url.href,
+                      });
+                    } catch (error) {
+                      console.error('ntfy: Failed to open external link', error);
+                    }
+                  },
+                  true
+                );
+              }
+
+              const fixText = () => {
+                const elements = document.querySelectorAll('.MuiTypography-root');
+
+                elements.forEach((element) => {
+                  const text = element.textContent?.trim();
+
+                  if (text === 'All notifications') {
+                    element.textContent = 'Notifications';
+                  }
+
+                  if (text === 'Publish notification') {
+                    element.textContent = 'Publish';
+                  }
+
+                  if (text === 'Subscribe to topic') {
+                    element.textContent = 'Subscribe';
+                  }
+
+                  if (text === 'Documentation') {
+                    element
+                      .closest('.MuiListItemButton-root')
+                      ?.style.setProperty('display', 'none', 'important');
+                  }
+                });
+              };
+
+              fixText();
+
+              setTimeout(fixText, 500);
+              setTimeout(fixText, 1500);
+              setTimeout(fixText, 3000);
             }
 
-            const fixText = () => {
-              const elements = document.querySelectorAll('.MuiTypography-root');
-
-              elements.forEach((el) => {
-                const text = el.textContent?.trim();
-
-                if (text === 'All notifications') {
-                  el.textContent = 'Notifications';
-                }
-
-                if (text === 'Publish notification') {
-                  el.textContent = 'Publish';
-                }
-
-                if (text === 'Subscribe to topic') {
-                  el.textContent = 'Subscribe';
-                }
-
-                if (text === 'Documentation') {
-                  el.closest('.MuiListItemButton-root')
-                    ?.style.setProperty('display', 'none', 'important');
-                }
-              });
-            };
-
-            fixText();
-
-            setTimeout(fixText, 500);
-            setTimeout(fixText, 1500);
-            setTimeout(fixText, 3000);
-
-            if (!window.__NTFY_PATCH__) {
+            if (!window.__NTFY_PATCH__ && window.WebSocket) {
               window.__NTFY_PATCH__ = true;
-
+              window.__NTFY_UNLOADING__ = false;
               window.__NTFY_SEEN__ ??= new Set();
+
+              window.addEventListener(
+                'beforeunload',
+                () => {
+                  window.__NTFY_UNLOADING__ = true;
+                },
+                { once: true }
+              );
 
               const seen = window.__NTFY_SEEN__;
 
@@ -132,46 +153,96 @@ pub fn handle_page_load(window: &Webview) {
                     seen.clear();
                   }
 
-                  const clean = (msg) =>
-                    msg
+                  const clean = (message) =>
+                    message
                       ?.replace(/\n\n+/g, '\n')
                       .replace(/â¯/g, ' ')
                       .trim();
 
                   window.__TAURI__.event.emit('ntfy_notification', {
-                    topic: data.topic || '',
-                    title: data.title || data.topic || 'ntfy',
+                    id: data.id || null,
                     message: clean(data.message),
+                    time: data.time || null,
+                    title: data.title || data.topic || 'ntfy',
+                    topic: data.topic || '',
                   });
                 } catch (error) {
                   console.error('ntfy: Failed to emit notification', error);
                 }
               };
 
-              if (window.WebSocket) {
-                const OriginalWebSocket = window.WebSocket;
+              const isNtfySocket = (value) => {
+                try {
+                  const socketUrl = new URL(value, window.location.href);
+                  const protocolValid =
+                    socketUrl.protocol === 'ws:' || socketUrl.protocol === 'wss:';
 
-                window.WebSocket = class extends OriginalWebSocket {
-                  constructor(url, protocols) {
-                    super(url, protocols);
+                  const topicPath = socketUrl.pathname.endsWith('/ws')
+                    ? socketUrl.pathname.slice(0, -3)
+                    : '';
 
-                    this.addEventListener('message', (event) => {
-                      if (typeof event.data !== 'string') {
-                        return;
-                      }
+                  return protocolValid && topicPath.split('/').some(Boolean);
+                } catch {
+                  return false;
+                }
+              };
 
-                      try {
-                        const data = JSON.parse(event.data);
+              const OriginalWebSocket = window.WebSocket;
 
-                        emitNotification(data);
-                      } catch {}
-                    });
+              window.WebSocket = class extends OriginalWebSocket {
+                constructor(url, protocols) {
+                  super(url, protocols);
+
+                  if (!isNtfySocket(this.url)) {
+                    return;
                   }
-                };
-              }
 
-              console.log('ntfy: Listeners attached');
+                  this.__NTFY_BACKGROUND_URL__ = this.url;
+
+                  invoke('sync_websocket', { url: this.url })
+                    ?.then(() => scheduleSyncComplete())
+                    .catch((error) => {
+                      console.error('ntfy: Failed to sync WebSocket with Rust', error);
+                    });
+
+                  this.addEventListener('message', (event) => {
+                    if (typeof event.data !== 'string') {
+                      return;
+                    }
+
+                    try {
+                      const data = JSON.parse(event.data);
+
+                      emitNotification(data);
+                    } catch {}
+                  });
+                }
+
+                close(code, reason) {
+                  if (
+                    !window.__NTFY_UNLOADING__ &&
+                    this.__NTFY_BACKGROUND_URL__
+                  ) {
+                    invoke('unsync_websocket', {
+                      url: this.__NTFY_BACKGROUND_URL__,
+                    })
+                      ?.then(() => scheduleSyncComplete())
+                      .catch((error) => {
+                        console.error(
+                          'ntfy: Failed to remove Rust WebSocket sync',
+                          error
+                        );
+                      });
+                  }
+
+                  return super.close(code, reason);
+                }
+              };
+
+              console.log('ntfy: WebSocket handover attached');
             }
+
+            scheduleSyncComplete(1500);
           } catch (error) {
             console.error('ntfy: Failed to attach listeners', error);
           }
