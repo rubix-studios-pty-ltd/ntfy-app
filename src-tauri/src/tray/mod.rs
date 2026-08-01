@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_updater::UpdaterExt;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
@@ -43,18 +43,44 @@ pub fn check_updates(handle: &AppHandle) {
 }
 
 pub fn reset_instance(app: &tauri::AppHandle) {
+    crate::background::stop_all(app);
+
     if let Err(error) = clear_instance(app) {
         eprintln!("Failed to reset instance URL: {error}");
     }
 
-    if let Some(window) = app.get_webview_window("main") {
+    let existing_window = app.get_webview_window("main");
+
+    if let Some(window) = existing_window {
         let _ = window.clear_all_browsing_data();
+
+        app.restart();
     }
 
-    app.restart();
+    let app = app.clone();
+
+    tauri::async_runtime::spawn(async move {
+        match WebviewWindowBuilder::new(&app, "main", WebviewUrl::App("/".into()))
+            .title("Ntfy")
+            .visible(false)
+            .build()
+        {
+            Ok(window) => {
+                let _ = window.clear_all_browsing_data();
+                let _ = window.destroy();
+            }
+
+            Err(error) => {
+                eprintln!("Failed to create a webview for instance reset: {error}");
+            }
+        }
+
+        app.restart();
+    });
 }
 
 pub fn exit_app(app: &tauri::AppHandle) {
     let _ = app.save_window_state(StateFlags::SIZE | StateFlags::POSITION);
+    crate::background::stop_all(app);
     std::process::exit(0);
 }
