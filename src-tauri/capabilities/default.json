@@ -4,7 +4,7 @@
   "description": "Capability for the main window",
   "windows": ["main", "webhook"],
   "remote": {
-    "urls": ["https://*", "http://*"]
+    "urls": ["https://*", "http://*", "wss://*"]
   },
   "permissions": [
     "core:default",
