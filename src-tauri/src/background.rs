@@ -17,7 +17,6 @@ use crate::config::load_config;
 use crate::listener::{Payload, process_notification};
 
 const RETRY_BACKOFF_SECONDS: [u64; 6] = [5, 10, 20, 30, 60, 120];
-const REBUILD_DEBOUNCE_MS: u64 = 400;
 
 #[derive(Default)]
 pub struct ListenerState {
@@ -29,7 +28,6 @@ struct BackgroundListener {
     topics: HashSet<String>,
     auth: Option<String>,
     connection: Option<BackgroundConnection>,
-    rebuild_generation: u64,
     sync_complete: bool,
     unload_requested: bool,
     unload_scheduled: bool,
@@ -38,7 +36,6 @@ struct BackgroundListener {
 struct BackgroundConnection {
     abort_handle: AbortHandle,
     generation: String,
-    ready: bool,
 }
 
 struct ParsedTopic {
@@ -76,8 +73,6 @@ pub(crate) fn sync_websocket(app_handle: &AppHandle, url: &str) -> Result<(), St
         inner.sync_complete = false;
     }
 
-    schedule_rebuild(app_handle);
-
     Ok(())
 }
 
@@ -93,10 +88,13 @@ pub(crate) fn unsync_websocket(app_handle: &AppHandle, url: &str) -> Result<(), 
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
         inner.topics.remove(&parsed.topic_path);
+
+        if inner.topics.is_empty() {
+            inner.auth = None;
+        }
+
         inner.sync_complete = false;
     }
-
-    schedule_rebuild(app_handle);
 
     Ok(())
 }
@@ -133,8 +131,18 @@ pub fn request_webview_unload(app: &AppHandle) {
 }
 
 pub fn cancel_webview_unload(app: &AppHandle) {
-    if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
+    let connection = {
+        let state = app.state::<ListenerState>();
+        let Ok(mut inner) = state.inner.lock() else {
+            return;
+        };
+
         inner.unload_requested = false;
+        inner.connection.take()
+    };
+
+    if let Some(connection) = connection {
+        connection.abort_handle.abort();
     }
 }
 
@@ -145,6 +153,7 @@ pub fn stop_all(app: &AppHandle) {
             return;
         };
 
+        inner.unload_requested = false;
         inner.connection.take()
     };
 
@@ -153,64 +162,16 @@ pub fn stop_all(app: &AppHandle) {
     }
 }
 
-fn schedule_rebuild(app: &AppHandle) {
-    let generation = {
-        let state = app.state::<ListenerState>();
-        let Ok(mut inner) = state.inner.lock() else {
-            return;
-        };
-
-        inner.rebuild_generation = inner.rebuild_generation.wrapping_add(1);
-        inner.rebuild_generation
-    };
-
-    let app = app.clone();
-
-    tauri::async_runtime::spawn(async move {
-        tokio::time::sleep(Duration::from_millis(REBUILD_DEBOUNCE_MS)).await;
-
-        let is_current = {
-            let state = app.state::<ListenerState>();
-            let Ok(inner) = state.inner.lock() else {
-                return;
-            };
-
-            inner.rebuild_generation == generation
-        };
-
-        if is_current {
-            rebuild_connection(&app);
-        }
-    });
-}
-
 fn rebuild_connection(app: &AppHandle) {
-    let Some(instance_url) = load_config(app).instance_url else {
-        return;
-    };
-
-    let Ok(instance) = Url::parse(&instance_url) else {
-        return;
-    };
-
-    let previous = {
-        let state = app.state::<ListenerState>();
-        let Ok(mut inner) = state.inner.lock() else {
-            return;
-        };
-
-        inner.connection.take()
-    };
-
-    if let Some(previous) = previous {
-        previous.abort_handle.abort();
-    }
-
     let (topics, auth) = {
         let state = app.state::<ListenerState>();
         let Ok(inner) = state.inner.lock() else {
             return;
         };
+
+        if !inner.unload_requested {
+            return;
+        }
 
         let mut topics = inner.topics.iter().cloned().collect::<Vec<_>>();
         topics.sort();
@@ -219,9 +180,16 @@ fn rebuild_connection(app: &AppHandle) {
     };
 
     if topics.is_empty() {
-        try_unload_webview(app);
         return;
     }
+
+    let Some(instance_url) = load_config(app).instance_url else {
+        return;
+    };
+
+    let Ok(instance) = Url::parse(&instance_url) else {
+        return;
+    };
 
     let Some(websocket_url) = build_combined_url(&instance, &topics, auth.as_deref()) else {
         return;
@@ -236,17 +204,24 @@ fn rebuild_connection(app: &AppHandle) {
         start_receiver,
     );
 
-    {
+    let previous = {
         let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
 
-        inner.connection = Some(BackgroundConnection {
+        if !inner.unload_requested {
+            return;
+        }
+
+        inner.connection.replace(BackgroundConnection {
             abort_handle: task.inner().abort_handle(),
             generation,
-            ready: false,
-        });
+        })
+    };
+
+    if let Some(previous) = previous {
+        previous.abort_handle.abort();
     }
 
     let _ = start_sender.send(());
@@ -280,7 +255,6 @@ async fn run_connection(app: AppHandle, generation: String, websocket_url: Url) 
 
         match connect_async(request_url.as_str()).await {
             Ok((mut websocket, _response)) => {
-                mark_connection_ready(&app, &generation);
                 retry_count = 0;
 
                 while let Some(result) = websocket.next().await {
@@ -304,8 +278,8 @@ async fn run_connection(app: AppHandle, generation: String, websocket_url: Url) 
                 }
             }
 
-            Err(_error) => {
-                eprintln!("Failed to connect ntfy background WebSocket");
+            Err(error) => {
+                eprintln!("Failed to connect ntfy background WebSocket: {error}");
             }
         }
 
@@ -364,34 +338,16 @@ async fn handle_message(app: &AppHandle, message: &str, last_id: &mut Option<Str
 }
 
 fn clean_message(message: &str) -> String {
-    let mut message = message.replace("â¯", " ");
+    let mut message = message
+        .replace('\u{202f}', " ")
+        .replace("\u{00e2}\u{0080}\u{00af}", " ")
+        .replace("\u{00e2}\u{20ac}\u{00af}", " ");
 
     while message.contains("\n\n") {
         message = message.replace("\n\n", "\n");
     }
 
     message.trim().to_string()
-}
-
-fn mark_connection_ready(app: &AppHandle, generation: &str) {
-    let changed = {
-        let state = app.state::<ListenerState>();
-        let Ok(mut inner) = state.inner.lock() else {
-            return;
-        };
-
-        match inner.connection.as_mut() {
-            Some(connection) if connection.generation == generation && !connection.ready => {
-                connection.ready = true;
-                true
-            }
-            _ => false,
-        }
-    };
-
-    if changed {
-        try_unload_webview(app);
-    }
 }
 
 fn is_current_connection(app: &AppHandle, generation: &str) -> bool {
@@ -407,19 +363,17 @@ fn is_current_connection(app: &AppHandle, generation: &str) -> bool {
 }
 
 fn try_unload_webview(app: &AppHandle) {
+    if app.get_webview_window("main").is_none() {
+        return;
+    }
+
     let should_schedule = {
         let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
 
-        let ready = inner.sync_complete
-            && inner
-                .connection
-                .as_ref()
-                .is_none_or(|connection| connection.ready);
-
-        if !inner.unload_requested || !ready || inner.unload_scheduled {
+        if !inner.unload_requested || !inner.sync_complete || inner.unload_scheduled {
             false
         } else {
             inner.unload_scheduled = true;
@@ -442,15 +396,8 @@ fn try_unload_webview(app: &AppHandle) {
                 return;
             };
 
-            inner.unload_scheduled = false;
-
-            let ready = inner.sync_complete
-                && inner
-                    .connection
-                    .as_ref()
-                    .is_none_or(|connection| connection.ready);
-
-            if !inner.unload_requested || !ready {
+            if !inner.unload_requested || !inner.sync_complete {
+                inner.unload_scheduled = false;
                 return;
             }
 
@@ -458,14 +405,13 @@ fn try_unload_webview(app: &AppHandle) {
                 .get_webview_window("main")
                 .is_none_or(|window| window.destroy().is_ok());
 
-            if unloaded {
-                inner.unload_requested = false;
-            }
+            inner.unload_scheduled = false;
 
             unloaded
         };
 
         if unloaded {
+            rebuild_connection(&app);
             crate::tray::system::sync_tray_label(&app);
         }
     });
@@ -575,10 +521,15 @@ fn build_combined_url(instance: &Url, topics: &[String], auth: Option<&str>) -> 
     };
 
     let host = instance.host_str()?;
+    let host = if host.contains(':') {
+        format!("[{host}]")
+    } else {
+        host.to_string()
+    };
     let authority = instance
         .port()
         .map(|port| format!("{host}:{port}"))
-        .unwrap_or_else(|| host.to_string());
+        .unwrap_or(host);
 
     let base_path = instance.path().trim_end_matches('/');
     let joined_topics = topics.join(",");
