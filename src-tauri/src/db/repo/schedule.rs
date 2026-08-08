@@ -1,9 +1,7 @@
+use rusqlite::{Connection, OptionalExtension, params};
 use std::collections::BTreeMap;
 
-use rusqlite::{Connection, OptionalExtension, params};
-
 use crate::db::models::{DayKey, Schedule, ScheduleInput};
-
 use super::{schedule_config, schedule_day_row, validate_schedule};
 
 pub fn get_schedule(connection: &Connection) -> Result<Schedule, String> {

@@ -1,3 +1,8 @@
+use overrides::handle_page_load;
+use tauri::Manager;
+use tray::system::setup_tray;
+use windows::main::setup_window_events;
+
 mod automation;
 mod autostart;
 mod background;
@@ -9,12 +14,6 @@ mod modules;
 mod overrides;
 mod tray;
 mod windows;
-
-use overrides::handle_page_load;
-use tray::system::setup_tray;
-use windows::main::setup_window_events;
-
-use tauri::Manager;
 
 const LOG_RETENTION_DAYS: u32 = 30;
 const LOG_MAX_ROWS: u32 = 1000;

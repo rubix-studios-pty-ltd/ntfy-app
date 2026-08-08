@@ -1,9 +1,6 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
-
 use chrono::Local;
+use std::fs;
+use std::path::{Path, PathBuf};
 use xcap::Monitor;
 
 use crate::automation::matcher::MatchContext;

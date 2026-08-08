@@ -2,7 +2,6 @@ use rusqlite::{Connection, params};
 use uuid::Uuid;
 
 use crate::db::models::{AutomationRule, LogsAutomation, LogsInput, LogsList};
-
 use super::{now_ms, rule_id};
 
 fn log_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<LogsAutomation> {

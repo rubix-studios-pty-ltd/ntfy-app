@@ -1,7 +1,6 @@
 use rusqlite::{Connection, params};
 
 use crate::db::models::{AutomationInput, AutomationRule};
-
 use super::{config_json, rule_id, rule_row};
 
 pub fn get_rule(connection: &Connection, id: &str) -> Result<AutomationRule, String> {

@@ -1,8 +1,7 @@
-use super::{screen, sound, system};
-
 use crate::automation::matcher::MatchContext;
 use crate::automation::modules::ModuleField;
 use crate::db::models::AutomationRule;
+use super::{screen, sound, system};
 
 type Fields = fn(&str) -> Option<&'static [ModuleField]>;
 type Execute = fn(&str, &AutomationRule, &MatchContext) -> Result<(), String>;

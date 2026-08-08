@@ -1,8 +1,7 @@
-use std::collections::{HashSet, VecDeque};
-use std::sync::Mutex;
-
 use chrono::{Datelike, Local, Timelike, Weekday};
 use serde::Deserialize;
+use std::collections::{HashSet, VecDeque};
+use std::sync::Mutex;
 use tauri::{AppHandle, Listener, Manager};
 use tauri_plugin_notification::NotificationExt;
 

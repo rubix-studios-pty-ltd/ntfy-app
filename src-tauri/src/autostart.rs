@@ -1,5 +1,4 @@
 use std::io;
-
 use tauri::AppHandle;
 use tauri_plugin_autostart::ManagerExt;
 
