@@ -27,7 +27,7 @@ tauri-plugin-process = "2"
 tauri-plugin-window-state = "2.4.1"
 tokio = { version = "1.53.1", features = ["sync", "time"] }
 chrono = "0.4"
-rusqlite = { version = "0.40.1", features = ["bundled"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 sanitize-filename = "0.6"
 system_shutdown = "4.1.0"
 tokio-tungstenite = { version = "0.30.0", features = ["rustls-tls-native-roots"] }
