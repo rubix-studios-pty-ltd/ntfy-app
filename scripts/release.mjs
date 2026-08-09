@@ -197,21 +197,21 @@ console.log('')
       { title: 'Fixed', items: fixed },
       { title: 'Changed', items: changed },
     ]
-    
+
     const content = sections
       .filter(({ items }) => items.length > 0)
-      .map(({ title, items }) => `### ${title}\n${items.map((e) => `- ${e}`).join('\n')}`)
+      .map(({ title, items }) => `### ${title}\n\n${items.map((e) => `- ${e}`).join('\n')}`)
       .join('\n\n')
-    
+
     const entry = `## [${newVersion}] - ${today}\n\n${content || 'Maintenance release.'}`
-    
+
     const changelogPath = path.join(ROOT_DIR, 'CHANGELOG.md')
     const changelog = fs.readFileSync(changelogPath, 'utf-8')
     const marker = '\n## ['
     const idx = changelog.indexOf(marker)
-    
+
     let updatedChangelog = ''
-    
+
     if (idx !== -1) {
       const before = changelog.slice(0, idx).trimEnd()
       const after = changelog.slice(idx).trimStart()
@@ -219,7 +219,7 @@ console.log('')
     } else {
       updatedChangelog = `${changelog.trimEnd()}\n\n${entry}\n`
     }
-    
+
     fs.writeFileSync(changelogPath, updatedChangelog)
     ok('CHANGELOG.md')
 
