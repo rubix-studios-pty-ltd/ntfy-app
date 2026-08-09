@@ -87,3 +87,4 @@ docker-compose.override.yml
 
 # custom
 debug/
+scripts/

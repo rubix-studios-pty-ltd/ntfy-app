@@ -79,7 +79,6 @@ console.log('')
 
 ;(async () => {
   try {
-    // Pre-flight checks
     step('Running pre-flight checks')
 
     const status = execSync('git status --porcelain', { encoding: 'utf-8' })
@@ -193,39 +192,35 @@ console.log('')
       }
     }
 
-    let entry = `## [${newVersion}] - ${today}`
-    let hasContent = false
-
-    if (added.length) {
-      entry += `\n\n### Added\n\n${added.map((e) => `- ${e}`).join('\n')}`
-      hasContent = true
-    }
-    if (fixed.length) {
-      entry += `\n\n### Fixed\n\n${fixed.map((e) => `- ${e}`).join('\n')}`
-      hasContent = true
-    }
-    if (changed.length) {
-      entry += `\n\n### Changed\n\n${changed.map((e) => `- ${e}`).join('\n')}`
-      hasContent = true
-    }
-    if (!hasContent) {
-      entry += '\n\nMaintenance release.'
-    }
-
+    const sections = [
+      { title: 'Added', items: added },
+      { title: 'Fixed', items: fixed },
+      { title: 'Changed', items: changed },
+    ]
+    
+    const content = sections
+      .filter(({ items }) => items.length > 0)
+      .map(({ title, items }) => `### ${title}\n${items.map((e) => `- ${e}`).join('\n')}`)
+      .join('\n\n')
+    
+    const entry = `## [${newVersion}] - ${today}\n\n${content || 'Maintenance release.'}`
+    
     const changelogPath = path.join(ROOT_DIR, 'CHANGELOG.md')
-    let changelog = fs.readFileSync(changelogPath, 'utf-8')
+    const changelog = fs.readFileSync(changelogPath, 'utf-8')
     const marker = '\n## ['
     const idx = changelog.indexOf(marker)
-
+    
+    let updatedChangelog = ''
+    
     if (idx !== -1) {
-      const before = changelog.slice(0, idx)
-      const after = changelog.slice(idx)
-      changelog = `${before}\n\n${entry}\n${after}`
+      const before = changelog.slice(0, idx).trimEnd()
+      const after = changelog.slice(idx).trimStart()
+      updatedChangelog = `${before}\n\n${entry}\n\n${after}`
     } else {
-      changelog = `${changelog.trimEnd()}\n\n${entry}\n`
+      updatedChangelog = `${changelog.trimEnd()}\n\n${entry}\n`
     }
-
-    fs.writeFileSync(changelogPath, changelog)
+    
+    fs.writeFileSync(changelogPath, updatedChangelog)
     ok('CHANGELOG.md')
 
     console.log('')
