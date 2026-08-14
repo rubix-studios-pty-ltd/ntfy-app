@@ -19,7 +19,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "2"
-futures-util = "0.3.33"
+futures-util = "0.3.34"
 tauri = { version = "2.11.5", features = ["tray-icon"] }
 tauri-plugin-notification = "2"
 tauri-plugin-opener = "2"
