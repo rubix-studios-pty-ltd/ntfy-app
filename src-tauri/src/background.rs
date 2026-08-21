@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -25,7 +25,9 @@ pub struct ListenerState {
 
 #[derive(Default)]
 struct BackgroundListener {
-    connections: HashMap<String, BackgroundConnection>,
+    topics: HashSet<String>,
+    auth: Option<String>,
+    connection: Option<BackgroundConnection>,
     sync_complete: bool,
     unload_requested: bool,
     unload_scheduled: bool,
@@ -33,16 +35,12 @@ struct BackgroundListener {
 
 struct BackgroundConnection {
     abort_handle: AbortHandle,
-    fingerprint: String,
     generation: String,
-    ready: bool,
 }
 
-struct ParsedConnection {
-    fingerprint: String,
-    initial_since: Option<String>,
-    key: String,
-    websocket_url: Url,
+struct ParsedTopic {
+    topic_path: String,
+    auth: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -55,83 +53,54 @@ struct WebSocketEvent {
     topic: Option<String>,
 }
 
-#[tauri::command]
-pub fn sync_websocket(app_handle: AppHandle, url: String) -> Result<(), String> {
-    if !is_ntfy_websocket(&url) {
+pub(crate) fn sync_websocket(app_handle: &AppHandle, url: &str) -> Result<(), String> {
+    if !is_ntfy_websocket(url) {
         return Ok(());
     }
 
-    let parsed = parse_connection(&app_handle, &url)?;
-    let generation = Uuid::new_v4().to_string();
-    let (start_sender, start_receiver) = oneshot::channel();
+    let parsed = parse_topic(app_handle, url)?;
 
-    let task = spawn_connection(
-        app_handle.clone(),
-        parsed.key.clone(),
-        generation.clone(),
-        parsed.websocket_url,
-        parsed.initial_since,
-        start_receiver,
-    );
-
-    let new_connection = BackgroundConnection {
-        abort_handle: task.inner().abort_handle(),
-        fingerprint: parsed.fingerprint.clone(),
-        generation,
-        ready: false,
-    };
-
-    let previous = {
+    {
         let state = app_handle.state::<ListenerState>();
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
-        inner.sync_complete = false;
+        inner.topics.insert(parsed.topic_path);
 
-        if let Some(existing) = inner.connections.get(&parsed.key)
-            && existing.fingerprint == parsed.fingerprint
-        {
-            task.abort();
-            return Ok(());
+        if parsed.auth.is_some() {
+            inner.auth = parsed.auth;
         }
 
-        inner.connections.insert(parsed.key, new_connection)
-    };
-
-    if let Some(previous) = previous {
-        previous.abort_handle.abort();
+        inner.sync_complete = false;
     }
-
-    let _ = start_sender.send(());
 
     Ok(())
 }
 
-#[tauri::command]
-pub fn unsync_websocket(app_handle: AppHandle, url: String) -> Result<(), String> {
-    if !is_ntfy_websocket(&url) {
+pub(crate) fn unsync_websocket(app_handle: &AppHandle, url: &str) -> Result<(), String> {
+    if !is_ntfy_websocket(url) {
         return Ok(());
     }
 
-    let parsed = parse_connection(&app_handle, &url)?;
+    let parsed = parse_topic(app_handle, url)?;
 
-    let removed = {
+    {
         let state = app_handle.state::<ListenerState>();
         let mut inner = state.inner.lock().map_err(|error| error.to_string())?;
 
-        inner.sync_complete = false;
-        inner.connections.remove(&parsed.key)
-    };
+        inner.topics.remove(&parsed.topic_path);
 
-    if let Some(removed) = removed {
-        removed.abort_handle.abort();
+        if inner.topics.is_empty() {
+            inner.auth = None;
+        }
+
+        inner.sync_complete = false;
     }
 
     Ok(())
 }
 
-#[tauri::command]
-pub fn complete_websocket(app_handle: AppHandle, page_url: String) -> Result<bool, String> {
-    if validate_page_url(&app_handle, &page_url).is_err() {
+pub(crate) fn complete_websocket(app_handle: &AppHandle, page_url: &str) -> Result<bool, String> {
+    if validate_page_url(app_handle, page_url).is_err() {
         return Ok(false);
     }
 
@@ -142,7 +111,7 @@ pub fn complete_websocket(app_handle: AppHandle, page_url: String) -> Result<boo
         inner.sync_complete = true;
     }
 
-    try_unload_webview(&app_handle);
+    try_unload_webview(app_handle);
 
     Ok(true)
 }
@@ -162,36 +131,106 @@ pub fn request_webview_unload(app: &AppHandle) {
 }
 
 pub fn cancel_webview_unload(app: &AppHandle) {
-    if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
-        inner.unload_requested = false;
-    }
-}
-
-pub fn stop_all(app: &AppHandle) {
-    let connections = {
+    let connection = {
         let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
 
-        inner
-            .connections
-            .drain()
-            .map(|(_, value)| value)
-            .collect::<Vec<_>>()
+        inner.unload_requested = false;
+        inner.connection.take()
     };
 
-    for connection in connections {
+    if let Some(connection) = connection {
         connection.abort_handle.abort();
     }
 }
 
+pub fn stop_all(app: &AppHandle) {
+    let connection = {
+        let state = app.state::<ListenerState>();
+        let Ok(mut inner) = state.inner.lock() else {
+            return;
+        };
+
+        inner.unload_requested = false;
+        inner.connection.take()
+    };
+
+    if let Some(connection) = connection {
+        connection.abort_handle.abort();
+    }
+}
+
+fn rebuild_connection(app: &AppHandle) {
+    let (topics, auth) = {
+        let state = app.state::<ListenerState>();
+        let Ok(inner) = state.inner.lock() else {
+            return;
+        };
+
+        if !inner.unload_requested {
+            return;
+        }
+
+        let mut topics = inner.topics.iter().cloned().collect::<Vec<_>>();
+        topics.sort();
+
+        (topics, inner.auth.clone())
+    };
+
+    if topics.is_empty() {
+        return;
+    }
+
+    let Some(instance_url) = load_config(app).instance_url else {
+        return;
+    };
+
+    let Ok(instance) = Url::parse(&instance_url) else {
+        return;
+    };
+
+    let Some(websocket_url) = build_combined_url(&instance, &topics, auth.as_deref()) else {
+        return;
+    };
+
+    let generation = Uuid::new_v4().to_string();
+    let (start_sender, start_receiver) = oneshot::channel();
+    let task = spawn_connection(
+        app.clone(),
+        generation.clone(),
+        websocket_url,
+        start_receiver,
+    );
+
+    let previous = {
+        let state = app.state::<ListenerState>();
+        let Ok(mut inner) = state.inner.lock() else {
+            return;
+        };
+
+        if !inner.unload_requested {
+            return;
+        }
+
+        inner.connection.replace(BackgroundConnection {
+            abort_handle: task.inner().abort_handle(),
+            generation,
+        })
+    };
+
+    if let Some(previous) = previous {
+        previous.abort_handle.abort();
+    }
+
+    let _ = start_sender.send(());
+}
+
 fn spawn_connection(
     app: AppHandle,
-    key: String,
     generation: String,
     websocket_url: Url,
-    initial_since: Option<String>,
     start_receiver: oneshot::Receiver<()>,
 ) -> JoinHandle<()> {
     tauri::async_runtime::spawn(async move {
@@ -199,21 +238,16 @@ fn spawn_connection(
             return;
         }
 
-        run_connection(app, key, generation, websocket_url, initial_since).await;
+        run_connection(app, generation, websocket_url).await;
     })
 }
 
-async fn run_connection(
-    app: AppHandle,
-    key: String,
-    generation: String,
-    websocket_url: Url,
-    mut last_id: Option<String>,
-) {
+async fn run_connection(app: AppHandle, generation: String, websocket_url: Url) {
     let mut retry_count = 0usize;
+    let mut last_id: Option<String> = None;
 
     loop {
-        if !is_current_connection(&app, &key, &generation) {
+        if !is_current_connection(&app, &generation) {
             return;
         }
 
@@ -221,11 +255,10 @@ async fn run_connection(
 
         match connect_async(request_url.as_str()).await {
             Ok((mut websocket, _response)) => {
-                mark_connection_ready(&app, &key, &generation);
                 retry_count = 0;
 
                 while let Some(result) = websocket.next().await {
-                    if !is_current_connection(&app, &key, &generation) {
+                    if !is_current_connection(&app, &generation) {
                         return;
                     }
 
@@ -238,19 +271,19 @@ async fn run_connection(
                         Ok(_) => {}
 
                         Err(_error) => {
-                            eprintln!("ntfy background WebSocket ended for {key}");
+                            eprintln!("ntfy background WebSocket ended");
                             break;
                         }
                     }
                 }
             }
 
-            Err(_error) => {
-                eprintln!("Failed to connect ntfy background WebSocket for {key}");
+            Err(error) => {
+                eprintln!("Failed to connect ntfy background WebSocket: {error}");
             }
         }
 
-        if !is_current_connection(&app, &key, &generation) {
+        if !is_current_connection(&app, &generation) {
             return;
         }
 
@@ -305,7 +338,10 @@ async fn handle_message(app: &AppHandle, message: &str, last_id: &mut Option<Str
 }
 
 fn clean_message(message: &str) -> String {
-    let mut message = message.replace("â¯", " ");
+    let mut message = message
+        .replace('\u{202f}', " ")
+        .replace("\u{00e2}\u{0080}\u{00af}", " ")
+        .replace("\u{00e2}\u{20ac}\u{00af}", " ");
 
     while message.contains("\n\n") {
         message = message.replace("\n\n", "\n");
@@ -314,56 +350,30 @@ fn clean_message(message: &str) -> String {
     message.trim().to_string()
 }
 
-fn mark_connection_ready(app: &AppHandle, key: &str, generation: &str) {
-    let changed = {
-        let state = app.state::<ListenerState>();
-        let Ok(mut inner) = state.inner.lock() else {
-            return;
-        };
-
-        let Some(connection) = inner.connections.get_mut(key) else {
-            return;
-        };
-
-        if connection.generation != generation || connection.ready {
-            false
-        } else {
-            connection.ready = true;
-            true
-        }
-    };
-
-    if changed {
-        try_unload_webview(app);
-    }
-}
-
-fn is_current_connection(app: &AppHandle, key: &str, generation: &str) -> bool {
+fn is_current_connection(app: &AppHandle, generation: &str) -> bool {
     let state = app.state::<ListenerState>();
     let Ok(inner) = state.inner.lock() else {
         return false;
     };
 
     inner
-        .connections
-        .get(key)
+        .connection
+        .as_ref()
         .is_some_and(|connection| connection.generation == generation)
 }
 
 fn try_unload_webview(app: &AppHandle) {
+    if app.get_webview_window("main").is_none() {
+        return;
+    }
+
     let should_schedule = {
         let state = app.state::<ListenerState>();
         let Ok(mut inner) = state.inner.lock() else {
             return;
         };
 
-        let ready = inner.sync_complete
-            && inner
-                .connections
-                .values()
-                .all(|connection| connection.ready);
-
-        if !inner.unload_requested || !ready || inner.unload_scheduled {
+        if !inner.unload_requested || !inner.sync_complete || inner.unload_scheduled {
             false
         } else {
             inner.unload_scheduled = true;
@@ -386,15 +396,8 @@ fn try_unload_webview(app: &AppHandle) {
                 return;
             };
 
-            inner.unload_scheduled = false;
-
-            let ready = inner.sync_complete
-                && inner
-                    .connections
-                    .values()
-                    .all(|connection| connection.ready);
-
-            if !inner.unload_requested || !ready {
+            if !inner.unload_requested || !inner.sync_complete {
+                inner.unload_scheduled = false;
                 return;
             }
 
@@ -402,25 +405,24 @@ fn try_unload_webview(app: &AppHandle) {
                 .get_webview_window("main")
                 .is_none_or(|window| window.destroy().is_ok());
 
-            if unloaded {
-                inner.unload_requested = false;
-            }
+            inner.unload_scheduled = false;
 
             unloaded
         };
 
         if unloaded {
+            rebuild_connection(&app);
             crate::tray::system::sync_tray_label(&app);
         }
     });
 }
 
-fn parse_connection(app: &AppHandle, source: &str) -> Result<ParsedConnection, String> {
+fn parse_topic(app: &AppHandle, source: &str) -> Result<ParsedTopic, String> {
     let instance = load_config(app)
         .instance_url
         .ok_or_else(|| "No ntfy instance is configured".to_string())?;
 
-    parse_connection_urls(&instance, source)
+    parse_topic_url(&instance, source)
 }
 
 fn validate_page_url(app: &AppHandle, source: &str) -> Result<(), String> {
@@ -463,9 +465,9 @@ fn is_ntfy_websocket(source: &str) -> bool {
         .is_some_and(|topic_path| !topic_path.trim_matches('/').is_empty())
 }
 
-fn parse_connection_urls(instance: &str, source: &str) -> Result<ParsedConnection, String> {
+fn parse_topic_url(instance: &str, source: &str) -> Result<ParsedTopic, String> {
     let instance = Url::parse(instance).map_err(|error| error.to_string())?;
-    let mut websocket_url = Url::parse(source).map_err(|error| error.to_string())?;
+    let websocket_url = Url::parse(source).map_err(|error| error.to_string())?;
 
     let expected_websocket_scheme = match instance.scheme() {
         "https" => "wss",
@@ -494,49 +496,54 @@ fn parse_connection_urls(instance: &str, source: &str) -> Result<ParsedConnectio
         .strip_suffix("/ws")
         .filter(|path| !path.trim_matches('/').is_empty())
         .ok_or_else(|| "The ntfy WebSocket URL does not contain a topic".to_string())?
+        .strip_prefix(base_path)
+        .unwrap_or(websocket_url.path())
+        .trim_matches('/')
         .to_string();
 
-    let query = websocket_url
-        .query_pairs()
-        .map(|(key, value)| (key.into_owned(), value.into_owned()))
-        .collect::<Vec<_>>();
-
-    let initial_since = query
-        .iter()
-        .find(|(key, _)| key.eq_ignore_ascii_case("since"))
-        .map(|(_, value)| value.clone());
-    let retained_query = query
-        .into_iter()
-        .filter(|(key, _)| !key.eq_ignore_ascii_case("since"))
-        .collect::<Vec<_>>();
-
-    websocket_url.set_fragment(None);
-    websocket_url.set_query(None);
-
-    if !retained_query.is_empty() {
-        let mut pairs = websocket_url.query_pairs_mut();
-
-        for (key, value) in retained_query {
-            pairs.append_pair(&key, &value);
-        }
+    if topic_path.is_empty() {
+        return Err("The ntfy WebSocket URL does not contain a topic".to_string());
     }
 
-    let host = websocket_url
-        .host_str()
-        .ok_or_else(|| "The ntfy WebSocket URL has no host".to_string())?;
-    let authority = websocket_url
+    let auth = websocket_url
+        .query_pairs()
+        .find(|(key, _)| key.eq_ignore_ascii_case("auth"))
+        .map(|(_, value)| value.into_owned());
+
+    Ok(ParsedTopic { topic_path, auth })
+}
+
+fn build_combined_url(instance: &Url, topics: &[String], auth: Option<&str>) -> Option<Url> {
+    let scheme = match instance.scheme() {
+        "https" => "wss",
+        "http" => "ws",
+        _ => return None,
+    };
+
+    let host = instance.host_str()?;
+    let host = if host.contains(':') {
+        format!("[{host}]")
+    } else {
+        host.to_string()
+    };
+    let authority = instance
         .port()
         .map(|port| format!("{host}:{port}"))
-        .unwrap_or_else(|| host.to_string());
-    let key = format!("{}://{authority}{topic_path}", instance.scheme());
-    let fingerprint = websocket_url.as_str().to_string();
+        .unwrap_or(host);
 
-    Ok(ParsedConnection {
-        fingerprint,
-        initial_since,
-        key,
-        websocket_url,
-    })
+    let base_path = instance.path().trim_end_matches('/');
+    let joined_topics = topics.join(",");
+
+    let mut url = Url::parse(&format!(
+        "{scheme}://{authority}{base_path}/{joined_topics}/ws"
+    ))
+    .ok()?;
+
+    if let Some(auth) = auth {
+        url.query_pairs_mut().append_pair("auth", auth);
+    }
+
+    Some(url)
 }
 
 fn with_since(base_url: &Url, since: Option<&str>) -> Url {

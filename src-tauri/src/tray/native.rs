@@ -1,8 +1,6 @@
-use tauri::{
-    AppHandle, Manager, Wry,
-    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
-    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-};
+use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::{AppHandle, Manager, Wry};
 
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
 use crate::tray::{check_updates, exit_app, reset_instance};

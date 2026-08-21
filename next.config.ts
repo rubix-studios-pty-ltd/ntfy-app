@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
     turbopackRemoveUnusedExports: isProduction,
     turbopackSourceMaps: !isProduction,
     useTypeScriptCli: true,
-    viewTransition: true,
     webpackMemoryOptimizations: isProduction,
   },
   images: { unoptimized: true },

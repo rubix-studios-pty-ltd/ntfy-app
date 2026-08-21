@@ -1,5 +1,4 @@
 use std::sync::atomic::{AtomicBool, Ordering};
-
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 use url::Url;

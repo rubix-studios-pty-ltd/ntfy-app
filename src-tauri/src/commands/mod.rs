@@ -1,9 +1,8 @@
 pub mod automation;
+pub mod background;
 pub mod logs;
 pub mod schedule;
 pub mod settings;
-
-use crate::background;
 
 pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
     tauri::generate_handler![
@@ -13,13 +12,13 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         automation::delete_rule,
         automation::toggle_rule,
         automation::test_rule,
+        background::sync_websocket,
+        background::unsync_websocket,
+        background::complete_websocket,
         logs::get_logs,
         schedule::get_schedule,
         schedule::update_schedule,
         settings::get_url,
         settings::set_url,
-        background::sync_websocket,
-        background::unsync_websocket,
-        background::complete_websocket,
     ]
 }
