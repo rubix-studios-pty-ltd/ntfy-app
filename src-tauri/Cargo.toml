@@ -1,6 +1,6 @@
 [package]
 name = "ntfy_app"
-version = "0.2.13"
+version = "0.3.0"
 authors = ["rubixvi"]
 description = "Desktop client for ntfy.sh and self-hosted ntfy instances on Windows, Linux, and macOS. Built with Rust, Tauri, and Next.js."
 license = "MIT"
@@ -19,7 +19,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 url = "2"
-futures-util = "0.3.33"
+futures-util = "0.3.34"
 tauri = { version = "2.11.5", features = ["tray-icon"] }
 tauri-plugin-notification = "2"
 tauri-plugin-opener = "2"
@@ -27,7 +27,7 @@ tauri-plugin-process = "2"
 tauri-plugin-window-state = "2.4.1"
 tokio = { version = "1.53.1", features = ["sync", "time"] }
 chrono = "0.4"
-rusqlite = { version = "0.40.1", features = ["bundled"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 sanitize-filename = "0.6"
 system_shutdown = "4.1.0"
 tokio-tungstenite = { version = "0.30.0", features = ["rustls-tls-native-roots"] }

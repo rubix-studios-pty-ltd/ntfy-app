@@ -4,7 +4,6 @@ use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
 mod migrations;
-
 pub mod models;
 pub mod repo;
 

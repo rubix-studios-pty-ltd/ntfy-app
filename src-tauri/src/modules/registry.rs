@@ -1,5 +1,4 @@
 use super::{screen, sound, system};
-
 use crate::automation::matcher::MatchContext;
 use crate::automation::modules::ModuleField;
 use crate::db::models::AutomationRule;

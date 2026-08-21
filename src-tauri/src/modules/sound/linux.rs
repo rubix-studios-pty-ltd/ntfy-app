@@ -1,5 +1,4 @@
 use std::process::Command;
-
 use volumecontrol::AudioDevice;
 
 fn percent(value: f64) -> u8 {

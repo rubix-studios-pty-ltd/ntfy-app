@@ -3,9 +3,6 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main", "webhook"],
-  "remote": {
-    "urls": ["https://*", "http://*"]
-  },
   "permissions": [
     "core:default",
     "core:window:default",
