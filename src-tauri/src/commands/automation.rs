@@ -31,13 +31,13 @@ pub struct TestRuleInput {
 }
 
 #[tauri::command]
-pub async fn get_rules(state: tauri::State<'_, DbState>) -> Result<Vec<AutomationRule>, String> {
+pub async fn get_rules(state: State<'_, DbState>) -> Result<Vec<AutomationRule>, String> {
     run(state, repo::get_rules).await
 }
 
 #[tauri::command]
 pub async fn create_rule(
-    state: tauri::State<'_, DbState>,
+    state: State<'_, DbState>,
     rule: AutomationInput,
 ) -> Result<AutomationRule, String> {
     validate_rule(&rule)?;
@@ -46,7 +46,7 @@ pub async fn create_rule(
 
 #[tauri::command]
 pub async fn update_rule(
-    state: tauri::State<'_, DbState>,
+    state: State<'_, DbState>,
     rule: AutomationInput,
 ) -> Result<AutomationRule, String> {
     validate_rule(&rule)?;
@@ -54,13 +54,13 @@ pub async fn update_rule(
 }
 
 #[tauri::command]
-pub async fn delete_rule(state: tauri::State<'_, DbState>, rule_id: String) -> Result<(), String> {
+pub async fn delete_rule(state: State<'_, DbState>, rule_id: String) -> Result<(), String> {
     run(state, move |conn| repo::delete_rule(conn, &rule_id)).await
 }
 
 #[tauri::command]
 pub async fn toggle_rule(
-    state: tauri::State<'_, DbState>,
+    state: State<'_, DbState>,
     rule_id: String,
 ) -> Result<AutomationRule, String> {
     run(state, move |conn| repo::toggle_rule(conn, &rule_id)).await
