@@ -1,5 +1,20 @@
 
 
+## [0.3.1] - 2026-08-30
+
+### Added
+
+- enhance capabilities and refactor command imports
+
+### Fixed
+
+- improve changelog formatting in release script
+- **security**: nextjs update patch
+
+### Changed
+
+- clean up unused imports across multiple modules
+
 ## [0.3.0] - 2026-08-01
 
 ### Fixed
