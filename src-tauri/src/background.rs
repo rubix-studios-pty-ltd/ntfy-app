@@ -15,6 +15,7 @@ use uuid::Uuid;
 
 use crate::config::load_config;
 use crate::listener::{Payload, process_notification};
+use crate::tray;
 
 const RETRY_BACKOFF_SECONDS: [u64; 6] = [5, 10, 20, 30, 60, 120];
 
@@ -390,7 +391,7 @@ fn try_unload_webview(app: &AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::task::yield_now().await;
 
-        let unloaded = {
+        {
             let state = app.state::<ListenerState>();
             let Ok(mut inner) = state.inner.lock() else {
                 return;
@@ -400,19 +401,19 @@ fn try_unload_webview(app: &AppHandle) {
                 inner.unload_scheduled = false;
                 return;
             }
+        }
 
-            let unloaded = app
-                .get_webview_window("main")
-                .is_none_or(|window| window.destroy().is_ok());
+        let unloaded = app
+            .get_webview_window("main")
+            .is_none_or(|window| window.destroy().is_ok());
 
+        if let Ok(mut inner) = app.state::<ListenerState>().inner.lock() {
             inner.unload_scheduled = false;
-
-            unloaded
-        };
+        }
 
         if unloaded {
             rebuild_connection(&app);
-            crate::tray::system::sync_tray_label(&app);
+            tray::system::sync_tray_label(&app);
         }
     });
 }

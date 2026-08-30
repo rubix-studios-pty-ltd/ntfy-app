@@ -2,6 +2,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_updater::UpdaterExt;
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
+use crate::background;
 use crate::config::clear_instance;
 
 pub mod system;
@@ -43,7 +44,7 @@ pub fn check_updates(handle: &AppHandle) {
 }
 
 pub fn reset_instance(app: &tauri::AppHandle) {
-    crate::background::stop_all(app);
+    background::stop_all(app);
 
     if let Err(error) = clear_instance(app) {
         eprintln!("Failed to reset instance URL: {error}");
@@ -81,6 +82,6 @@ pub fn reset_instance(app: &tauri::AppHandle) {
 
 pub fn exit_app(app: &tauri::AppHandle) {
     let _ = app.save_window_state(StateFlags::SIZE | StateFlags::POSITION);
-    crate::background::stop_all(app);
+    background::stop_all(app);
     std::process::exit(0);
 }
