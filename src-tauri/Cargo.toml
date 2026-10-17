@@ -21,8 +21,8 @@ serde_json = "1.0.154"
 url = "2.5.8"
 futures-util = "0.3.34"
 tauri = { version = "2.12.4", features = ["tray-icon"] }
-tauri-plugin-notification = "2.6.0"
-tauri-plugin-opener = "2.7.1"
+tauri-plugin-notification = "2.7.0"
+tauri-plugin-opener = "2.7.2"
 tauri-plugin-process = "2.4.0"
 tauri-plugin-window-state = "2.5.0"
 tokio = { version = "1.53.3", features = ["sync", "time"] }
@@ -53,7 +53,7 @@ volumecontrol = "0.1.4"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2.7.0"
-tauri-plugin-updater = "2.13.3"
+tauri-plugin-updater = "2.14.0"
 
 [profile.dev]
 incremental = true
