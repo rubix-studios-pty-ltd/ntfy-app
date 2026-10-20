@@ -25,7 +25,7 @@ tauri-plugin-notification = "2.7.0"
 tauri-plugin-opener = "2.7.2"
 tauri-plugin-process = "2.4.0"
 tauri-plugin-window-state = "2.5.0"
-tokio = { version = "1.53.3", features = ["sync", "time"] }
+tokio = { version = "1.54.0", features = ["sync", "time"] }
 chrono = "0.4.45"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 sanitize-filename = "0.6"
