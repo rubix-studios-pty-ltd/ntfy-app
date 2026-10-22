@@ -149,7 +149,7 @@ export function Sidebar({
         )}
       </nav>
 
-      <div className="border-t border-border pt-3 gap-2 flex flex-row">
+      <div className="border-t border-border pt-3 gap-1.5 flex flex-row">
         <Button
           className="cursor-pointer duration-500 transition-all rounded"
           onClick={addServer}
