@@ -13,7 +13,7 @@ mod windows;
 use windows::main::{setup_window_events, show_main_window};
 
 pub fn run() {
-    let app = tauri::Builder::default()
+    tauri::Builder::default()
         .plugin(tauri::plugin::Builder::<tauri::Wry>::new("local-navigation")
             .on_navigation(|_webview,url| {
                 (url.scheme() == "tauri" && url.host_str() == Some("localhost")) ||
@@ -23,7 +23,10 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             show_main_window(app);
         }))
-        .plugin(tauri_plugin_autostart::Builder::new().app_name("Ntfy").build())
+        .plugin(tauri_plugin_autostart::Builder::new()
+            .app_name("Ntfy")
+            .build(),
+        )
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
@@ -55,7 +58,6 @@ pub fn run() {
             });
             Ok(())
         })
-        .build(tauri::generate_context!())
-        .expect("Cannot start Ntfy. Check the operating system credential store and encrypted database.");
-    app.run(|_, _| {});
+        .run(tauri::generate_context!())
+        .expect("Error while building application");
 }
