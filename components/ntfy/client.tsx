@@ -76,6 +76,7 @@ export function Client() {
     <main className="flex min-h-dvh text-sm">
       <Sidebar
         addServer={() => setDialog({ kind: 'server' })}
+        addTopic={() => setDialog({ kind: 'topic' })}
         editServer={(id) =>
           setDialog({ kind: 'server', server: snapshot.servers.find((item) => item.id === id) })
         }
@@ -88,7 +89,7 @@ export function Client() {
       <section className="flex min-w-0 flex-1 flex-col p-6">
         <header className="flex items-center justify-end pb-2">
           <div className="flex items-center gap-2.25">
-            {topic ? (
+            {topic && (
               <>
                 <Button
                   className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
@@ -121,17 +122,6 @@ export function Client() {
                   <Unplug className="size-3.5" />
                 </Button>
               </>
-            ) : (
-              <Button
-                aria-label="Subscribe to a topic"
-                className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
-                disabled={!snapshot.servers.some((item) => item.enabled)}
-                onClick={() => setDialog({ kind: 'topic' })}
-                size="icon-sm"
-                variant="outline"
-              >
-                <Plus className="size-3.5" />
-              </Button>
             )}
 
             <Button

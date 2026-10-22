@@ -10,6 +10,7 @@ import {
   ScrollText,
   Settings,
   SlidersHorizontal,
+  SquareText,
   Webhook,
   Workflow,
 } from 'lucide-react'
@@ -24,11 +25,20 @@ type Props = {
   selected: string | null
   select: (id: string | null) => void
   addServer: () => void
+  addTopic: () => void
   editServer: (id: string) => void
   preferences: () => void
 }
 
-export function Sidebar({ snapshot, selected, select, addServer, editServer, preferences }: Props) {
+export function Sidebar({
+  snapshot,
+  selected,
+  select,
+  addServer,
+  editServer,
+  addTopic,
+  preferences,
+}: Props) {
   const unread = snapshot.topics.reduce((total, topic) => total + topic.unread, 0)
   const topicStatus = (topic: Topic) =>
     snapshot.statuses.find((status) => status.topicId === topic.id)
@@ -147,6 +157,15 @@ export function Sidebar({ snapshot, selected, select, addServer, editServer, pre
           variant="outline"
         >
           <Plus className="size-3" />
+        </Button>
+
+        <Button
+          className="cursor-pointer duration-500 transition-all rounded"
+          onClick={addTopic}
+          size="icon-xs"
+          variant="outline"
+        >
+          <SquareText className="size-3" />
         </Button>
 
         <Button
