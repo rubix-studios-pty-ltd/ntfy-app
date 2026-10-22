@@ -36,7 +36,7 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
     <article className="border-border bg-card relative flex gap-3.25 rounded-[9px] border px-4.25 py-5 shadow-xs max-[700px]:gap-2.25 max-[700px]:px-3 max-[700px]:py-4">
       <div
         className={cn(
-          'grid size-8.5 shrink-0 place-items-center rounded-[9px] text-[13px] font-semibold',
+          'relative grid size-8.5 shrink-0 place-items-center rounded-[9px] text-[13px] font-semibold',
           message.priority === 5
             ? 'bg-danger-soft text-danger-foreground'
             : message.priority === 4
@@ -45,6 +45,12 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
         )}
       >
         <span>{message.topic.slice(0, 1).toUpperCase()}</span>
+
+        {!item.isRead && (
+          <span className="absolute right-0 bottom-0 size-1.25 animate-pulse rounded-full bg-success motion-reduce:animate-none">
+            <span className="sr-only">Unread</span>
+          </span>
+        )}
       </div>
 
       <div className="min-w-0 flex-1">
@@ -65,21 +71,15 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
         </div>
 
         <div className="mt-2.5 flex items-center gap-2">
-          <h2 className="text-xs font-semibold truncate text-foreground">
-            {message.title || message.topic}
-          </h2>
-
-          {!item.isRead && (
-            <span className="size-1.25 shrink-0 rounded-full bg-success">
-              <span className="sr-only">Unread</span>
-            </span>
-          )}
-
           {(message.priority ?? 3) >= 4 && (
             <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
               {message.priority === 5 ? 'Urgent' : 'High'}
             </span>
           )}
+
+          <h2 className="text-xs font-semibold truncate text-foreground">
+            {message.title || message.topic}
+          </h2>
         </div>
 
         <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">
