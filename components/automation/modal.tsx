@@ -403,6 +403,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
           <Button
             className="cursor-pointer transition-all duration-500"
             onClick={() => importInput.current?.click()}
+            type="button"
             variant="outline"
           >
             <SquareArrowUp className="size-4" />
@@ -411,6 +412,7 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
           <Button
             className="cursor-pointer transition-all duration-500"
             onClick={exportRule}
+            type="button"
             variant="outline"
           >
             <SquareArrowDown className="size-4" />
@@ -421,14 +423,16 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
           <Button
             className="cursor-pointer transition-all duration-500"
             onClick={() => setRule(null)}
+            type="button"
             variant="outline"
           >
             Cancel
           </Button>
 
           <Button
-            className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
+            className="cursor-pointer duration-500 transition-all"
             onClick={onSave}
+            type="submit"
           >
             Save
           </Button>

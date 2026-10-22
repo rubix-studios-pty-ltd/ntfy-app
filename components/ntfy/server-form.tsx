@@ -60,7 +60,13 @@ export function ServerForm({ server, close, saved, remove }: Props) {
       saved()
       close()
     } catch (failure) {
-      setError(String(failure))
+      const message = String(failure)
+
+      setError(
+        message.includes('UNIQUE constraint failed: ntfy_servers.url')
+          ? 'A server with this URL is already connected.'
+          : message
+      )
     } finally {
       setBusy(false)
     }
@@ -218,6 +224,7 @@ export function ServerForm({ server, close, saved, remove }: Props) {
             disabled={busy}
             onClick={close}
             size="sm"
+            type="button"
             variant="outline"
           >
             Cancel

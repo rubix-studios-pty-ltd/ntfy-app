@@ -93,7 +93,7 @@ export function Schedule() {
         ...updated.days,
       })
 
-      toast.success('Config saved')
+      toast.success('Schedule saved')
     } catch {
       toast.error('Failed to save config')
     }

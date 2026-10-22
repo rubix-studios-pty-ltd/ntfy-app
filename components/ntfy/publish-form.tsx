@@ -197,6 +197,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
             disabled={busy}
             onClick={close}
             size="sm"
+            type="button"
             variant="outline"
           >
             Cancel

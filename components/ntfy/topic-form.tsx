@@ -52,7 +52,13 @@ export function TopicForm({ servers, close, saved }: Props) {
             saved()
             close()
           } catch (failure) {
-            setError(String(failure))
+            const message = String(failure)
+
+            setError(
+              message.includes('UNIQUE constraint failed: ntfy_topics.server_id, ntfy_topics.topic')
+                ? 'You are already subscribed to this topic on this server.'
+                : message
+            )
           } finally {
             setBusy(false)
           }
@@ -131,6 +137,7 @@ export function TopicForm({ servers, close, saved }: Props) {
             disabled={busy}
             onClick={close}
             size="sm"
+            type="button"
             variant="outline"
           >
             Cancel
