@@ -159,14 +159,16 @@ export function Sidebar({
           <Plus className="size-3" />
         </Button>
 
-        <Button
-          className="cursor-pointer duration-500 transition-all rounded"
-          onClick={addTopic}
-          size="icon-xs"
-          variant="outline"
-        >
-          <SquareText className="size-3" />
-        </Button>
+        {snapshot.topics.length > 0 && (
+          <Button
+            className="cursor-pointer duration-500 transition-all rounded"
+            onClick={addTopic}
+            size="icon-xs"
+            variant="outline"
+          >
+            <SquareText className="size-3" />
+          </Button>
+        )}
 
         <Button
           asChild
