@@ -110,7 +110,7 @@ export function Logs() {
                 className="grid grid-cols-[130px_minmax(0,1.2fr)_minmax(0,1.2fr)_80px] gap-2 border-b border-border/40 p-3 last:border-b-0"
                 key={log.id}
               >
-                <span className="text-sm">{formatDate(log.createdAt)}</span>
+                <span className="text-xs">{formatDate(log.createdAt)}</span>
 
                 <div className="flex flex-col gap-0.5 text-sm">
                   <span className="truncate font-semibold text-xs">{log.ruleName}</span>
