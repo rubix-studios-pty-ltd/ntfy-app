@@ -48,7 +48,7 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="flex justify-between gap-2.5 pr-12.25 text-[9px] leading-normal text-muted-foreground max-[700px]:flex-col max-[700px]:gap-0.5">
+        <div className="flex justify-between gap-2.5 pr-13 text-[9px] leading-normal text-muted-foreground max-[700px]:flex-col max-[700px]:gap-0.5">
           <span>
             {serverName} <span className="px-1 text-muted-foreground">/</span>{' '}
             <b className="font-[550] text-success-foreground">{message.topic}</b>
@@ -64,8 +64,8 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
           </time>
         </div>
 
-        <div className="mt-1.5 flex items-center gap-2">
-          <h2 className="text-[13px] font-[650] wrap-anywhere text-foreground">
+        <div className="mt-2.5 flex items-center gap-2">
+          <h2 className="text-xs font-semibold truncate text-foreground">
             {message.title || message.topic}
           </h2>
 
@@ -76,7 +76,7 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
           )}
 
           {(message.priority ?? 3) >= 4 && (
-            <span className="rounded-[3px] bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
+            <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
               {message.priority === 5 ? 'Urgent' : 'High'}
             </span>
           )}
