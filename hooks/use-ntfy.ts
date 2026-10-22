@@ -75,6 +75,8 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
 
             if (cancelled) return
 
+            setSnapshot(nextSnapshot)
+
             const nextMessages: StoredMessage[] = []
 
             let before: number | null = null
@@ -98,7 +100,6 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
               if (!fullPage) break
             } while (nextMessages.length < limit)
 
-            setSnapshot(nextSnapshot)
             setMessages(nextMessages)
             setHasMore(fullPage)
             setError(null)
