@@ -1,5 +1,6 @@
 use super::http;
 use super::models::{ConnectionStatus, Credentials, Message, Server, Topic};
+use super::notifications;
 
 use crate::db::{DbState, repo::ntfy as repository, run};
 
@@ -305,7 +306,7 @@ async fn stream(
                         if message.id.is_empty() || message.time < topic.subscribed_at {
                             continue;
                         }
-                        super::notifications::process_notification(app, topic, &message).await?;
+                        notifications::process_notification(app, topic, &message).await?;
                     }
                 }
             } else {
