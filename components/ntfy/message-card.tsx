@@ -108,7 +108,7 @@ export function MessageCard({ item, serverName, refresh, remove }: Props) {
                 variant="link"
               >
                 <ExternalLink className="size-3.25" />
-                Open link
+                Link
               </Button>
             )}
 
