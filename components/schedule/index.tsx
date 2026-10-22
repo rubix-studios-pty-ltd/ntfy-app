@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { DaysOfWeek, defaultSchedule } from '@/constant/schedule'
 import { getSchedule, updateSchedule } from '@/lib/tauri/schedule'
-import { type DayKey, type Schedule, type ScheduleConfig } from '@/types/schedule'
+import { type DayKey, type ScheduleConfig, type Schedule as ScheduleType } from '@/types/schedule'
 
-export function Config() {
+export function Schedule() {
   const [scheduleEnabled, setScheduleEnabled] = useState(false)
   const [days, setDays] = useState(defaultSchedule)
   const [loading, setLoading] = useState(true)
@@ -79,7 +79,7 @@ export function Config() {
       }
     }
 
-    const config: Schedule = {
+    const config: ScheduleType = {
       scheduleEnabled,
       days,
     }
@@ -100,15 +100,18 @@ export function Config() {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border p-4">
+    <div className="border-border bg-card relative rounded-[9px] border shadow-xs p-6 gap-4 flex flex-col">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
-          <Label className="font-semibold">Schedule</Label>
-          <p className="text-sm">Restrict notification alerts to specific days and times.</p>
+          <Label className="text-xs font-semibold">Enable</Label>
+          <p className="text-[11px] text-muted-foreground select-none">
+            Restrict notification alerts to specific days and times.
+          </p>
         </div>
+
         <Switch
           checked={scheduleEnabled}
-          className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
+          className="cursor-pointer border border-white/10 bg-card/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
           disabled={loading}
           onCheckedChange={setScheduleEnabled}
         />
@@ -120,23 +123,23 @@ export function Config() {
 
           return (
             <div
-              className="grid grid-cols-[1fr_auto] border-b border-border/10 py-3 last:border-b-0"
+              className="grid grid-cols-[1fr_auto] border-b border-border/10 py-2 last:border-b-0"
               key={key}
             >
               <div className="flex items-center gap-3">
                 <Switch
                   checked={day.enabled}
-                  className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
+                  className="cursor-pointer border border-white/10 bg-card/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
                   disabled={!scheduleEnabled || loading}
                   onCheckedChange={(enabled) => updateConfig(key, { enabled })}
                 />
 
-                <Label className="font-medium">{label}</Label>
+                <Label className="text-xs">{label}</Label>
               </div>
 
               <div className="flex flex-row space-x-3">
                 <div className="space-y-2">
-                  <Label className="font-semibold">Start</Label>
+                  <Label className="text-[11px]">Start</Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="off"
@@ -156,7 +159,7 @@ export function Config() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="font-semibold">End</Label>
+                  <Label className="text-[11px]">End</Label>
                   <Input
                     autoCapitalize="none"
                     autoComplete="off"
@@ -182,9 +185,11 @@ export function Config() {
 
       <div className="flex justify-end">
         <Button
-          className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
+          className="cursor-pointer duration-500 transition-all"
           disabled={loading}
           onClick={saveConfig}
+          size="sm"
+          type="submit"
         >
           Save
         </Button>

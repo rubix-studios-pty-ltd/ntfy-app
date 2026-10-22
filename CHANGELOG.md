@@ -1,12 +1,12 @@
-## [0.3.4] - 2026-10-11
-
-Maintenance release.
-
 ## [0.4.0] - 2026-10-22
 
 ### Fixed
 
 - **sec**: update security dep - add biome
+
+## [0.3.4] - 2026-10-11
+
+Maintenance release.
 
 ## [0.3.3] - 2026-10-01
 

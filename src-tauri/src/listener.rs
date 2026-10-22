@@ -1,130 +1,90 @@
 use chrono::{Datelike, Local, Timelike, Weekday};
-use serde::Deserialize;
-use std::collections::{HashSet, VecDeque};
-use std::sync::Mutex;
-use tauri::{AppHandle, Listener, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
 
 use crate::automation::engine::handle_notification;
-use crate::db::models::DayKey;
-use crate::db::{DbState, repo, run};
+use crate::db::{DbState, models::DayKey, repo, run};
+use crate::ntfy::models::{Message, Topic};
 
-const SEEN_NOTIFICATION_LIMIT: usize = 1000;
-
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Clone)]
 pub(crate) struct Payload {
-    #[serde(default)]
-    pub(crate) id: Option<String>,
-    #[serde(default)]
-    pub(crate) time: Option<i64>,
     pub(crate) topic: String,
     pub(crate) title: Option<String>,
     pub(crate) message: String,
 }
 
-#[derive(Default)]
-pub struct NotificationState {
-    seen: Mutex<SeenNotifications>,
-}
+pub(crate) async fn process_notification(
+    app: &AppHandle,
+    topic: &Topic,
+    message: &Message,
+) -> Result<(), String> {
+    let id = topic.id.clone();
 
-#[derive(Default)]
-struct SeenNotifications {
-    keys: HashSet<String>,
-    order: VecDeque<String>,
-}
+    let stored = message.clone();
 
-pub fn listener(app_handle: &AppHandle) {
-    let app_handle_clone = app_handle.clone();
+    let fresh = run(app.state::<DbState>(), move |connection| {
+        repo::ntfy::receive(connection, &id, &stored)
+    })
+    .await?;
 
-    app_handle.listen("ntfy_notification", move |event| {
-        let payload = event.payload();
-
-        let Ok(notification) = serde_json::from_str::<Payload>(payload) else {
-            return;
-        };
-
-        let app = app_handle_clone.clone();
-
-        tauri::async_runtime::spawn(async move {
-            process_notification(&app, notification).await;
-        });
-    });
-}
-
-pub(crate) async fn process_notification(app: &AppHandle, notification: Payload) {
-    if notification.message.trim().is_empty() || !mark_seen(app, &notification) {
-        return;
+    if !fresh {
+        return Ok(());
     }
 
-    match should_show_notification(app).await {
-        Ok(true) => {
-            show_notification(app, &notification);
-        }
+    let _ = app.emit("ntfy:changed", ());
 
-        Ok(false) => {
-            // Notifications are disabled by schedule
-        }
-
-        Err(error) => {
-            eprintln!("Schedule check failed: {error}");
-
-            show_notification(app, &notification);
-        }
+    if message.event != "message" {
+        return Ok(());
     }
 
-    if let Err(error) = handle_notification(app, notification).await {
-        eprintln!("Automation execution failed: {error}");
-    }
-}
+    if !topic.muted && should_show_notification(app).await? {
+        let title = message
+            .title
+            .as_deref()
+            .filter(|title| !title.is_empty())
+            .unwrap_or(&message.topic);
 
-fn mark_seen(app: &AppHandle, notification: &Payload) -> bool {
-    let key = notification
-        .id
-        .as_deref()
-        .filter(|id| !id.trim().is_empty())
-        .map(|id| format!("id:{}:{id}", notification.topic))
-        .unwrap_or_else(|| {
-            format!(
-                "fallback:{}:{}:{}",
-                notification.time.unwrap_or_default(),
-                notification.topic,
-                notification.message
-            )
+        let preview = run(app.state::<DbState>(), |connection| {
+            Ok(repo::ntfy::meta(connection, "notification_preview")?.as_deref() == Some("1"))
+        })
+        .await?;
+
+        let mut builder = app
+            .notification()
+            .builder()
+            .title(if preview { title } else { "Ntfy" });
+
+        builder = builder.body(if preview {
+            &message.message
+        } else {
+            "New notification. Open Ntfy to view it."
         });
 
-    let state = app.state::<NotificationState>();
-    let Ok(mut seen) = state.seen.lock() else {
-        return true;
-    };
-
-    if !seen.keys.insert(key.clone()) {
-        return false;
-    }
-
-    seen.order.push_back(key);
-
-    while seen.order.len() > SEEN_NOTIFICATION_LIMIT {
-        if let Some(expired) = seen.order.pop_front() {
-            seen.keys.remove(&expired);
+        if builder.show().is_err() {
+            let _ = app.emit(
+                "ntfy:delivery-error",
+                "Native notification delivery failed. Check operating system permissions.",
+            );
         }
     }
 
-    true
-}
+    if let Err(_error) = handle_notification(
+        app,
+        Payload {
+            topic: message.topic.clone(),
+            title: message.title.clone(),
+            message: message.message.clone(),
+        },
+    )
+    .await
+    {
+        let _ = app.emit(
+            "ntfy:delivery-error",
+            "An automation failed. Review the encrypted automation logs.",
+        );
+    }
 
-fn show_notification(app: &AppHandle, notification: &Payload) {
-    let title = notification
-        .title
-        .as_deref()
-        .filter(|value| !value.trim().is_empty())
-        .unwrap_or("ntfy");
-
-    let _ = app
-        .notification()
-        .builder()
-        .title(title)
-        .body(&notification.message)
-        .show();
+    Ok(())
 }
 
 async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
@@ -135,7 +95,16 @@ async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
     }
 
     let now = Local::now();
-    let day_key = day_of_week(now.weekday());
+
+    let day_key = match now.weekday() {
+        Weekday::Mon => DayKey::Monday,
+        Weekday::Tue => DayKey::Tuesday,
+        Weekday::Wed => DayKey::Wednesday,
+        Weekday::Thu => DayKey::Thursday,
+        Weekday::Fri => DayKey::Friday,
+        Weekday::Sat => DayKey::Saturday,
+        Weekday::Sun => DayKey::Sunday,
+    };
 
     let Some(day) = schedule.days.get(&day_key) else {
         return Ok(false);
@@ -145,25 +114,13 @@ async fn should_show_notification(app: &AppHandle) -> Result<bool, String> {
         return Ok(false);
     }
 
-    let current = (now.hour() as u16 * 60) + now.minute() as u16;
+    let current = now.hour() * 60 + now.minute();
 
     let start = repo::time_to_minutes(&day.start_time)
-        .ok_or_else(|| format!("Invalid start time for {}", day_key.as_str()))?;
+        .ok_or_else(|| "Invalid schedule start time".to_string())?;
 
     let end = repo::time_to_minutes(&day.end_time)
-        .ok_or_else(|| format!("Invalid end time for {}", day_key.as_str()))?;
-
-    Ok(current >= start && current < end)
-}
-
-fn day_of_week(days: Weekday) -> DayKey {
-    match days {
-        Weekday::Mon => DayKey::Monday,
-        Weekday::Tue => DayKey::Tuesday,
-        Weekday::Wed => DayKey::Wednesday,
-        Weekday::Thu => DayKey::Thursday,
-        Weekday::Fri => DayKey::Friday,
-        Weekday::Sat => DayKey::Saturday,
-        Weekday::Sun => DayKey::Sunday,
-    }
+        .ok_or_else(|| "Invalid schedule end time".to_string())?;
+    
+    Ok(current >= u32::from(start) && current < u32::from(end))
 }

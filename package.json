@@ -50,13 +50,15 @@
     "release:new": "node scripts/release.mjs",
     "tauri:update": "cd src-tauri && cargo update && cargo upgrade && cargo fmt",
     "typecheck": "tsc --noEmit",
-    "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe && pnpm run clean && pnpm run tauri:update"
+    "update": "pnpm self-update && pnpm update --latest --recursive && pnpm install && pnpm prune && pnpm dedupe && pnpm run clean && pnpm run tauri:update",
+    "check:native": "cd src-tauri && cargo check --locked"
   },
   "engines": {
     "node": "24.x || 25.x",
     "pnpm": ">=10"
   },
   "dependencies": {
+    "@tauri-apps/plugin-notification": "^2.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.61.0",

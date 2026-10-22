@@ -10,6 +10,7 @@ pub fn open_automation_window(app: &AppHandle) {
     }
 
     match WebviewWindowBuilder::new(app, "automation", WebviewUrl::App("/automation".into()))
+        .incognito(true)
         .title("Ntfy")
         .inner_size(800.0, 800.0)
         .min_inner_size(800.0, 800.0)

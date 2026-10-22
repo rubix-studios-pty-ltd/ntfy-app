@@ -8,12 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { readUrl } from '@/lib/tauri/settings'
-import { useStore } from '@/store/instance'
 import { buildUrl } from '@/utils/buildUrl'
 
 export function Webhook() {
-  const instance = useStore((state) => state.instance)
-  const setInstance = useStore((state) => state.setInstance)
+  const [instance, setInstance] = useState<string | null>(null)
 
   const [token, setToken] = useState('')
   const [topic, setTopic] = useState('')
@@ -22,11 +20,13 @@ export function Webhook() {
 
   useEffect(() => {
     void (async () => {
-      const url = await readUrl()
-
-      setInstance(url)
+      try {
+        setInstance(await readUrl())
+      } catch {
+        setInstance(null)
+      }
     })()
-  }, [setInstance])
+  }, [])
 
   const handleBuildUrl = () => {
     const webhook = buildUrl({
@@ -68,15 +68,15 @@ export function Webhook() {
   }
 
   return (
-    <>
+    <div className="border-border bg-card relative rounded-[9px] border shadow-xs p-6 gap-4 flex flex-col">
       <div className="flex flex-col gap-2">
-        <Label className="font-bold">Instance</Label>
+        <Label className="text-[11px]">Instance</Label>
 
         <Input
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          className="border border-border"
+          className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
           placeholder="No instance configured"
           readOnly
           spellCheck={false}
@@ -85,13 +85,13 @@ export function Webhook() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label className="font-bold">Topic</Label>
+        <Label className="text-[11px]">Topic</Label>
 
         <Input
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          className="border border-border"
+          className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
           onChange={(e) => setTopic(e.target.value)}
           spellCheck={false}
           value={topic}
@@ -99,13 +99,13 @@ export function Webhook() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label className="font-bold">Token</Label>
+        <Label className="text-[11px]">Token</Label>
 
         <Input
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          className="border border-border"
+          className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
           onChange={(e) => setToken(e.target.value)}
           spellCheck={false}
           type="password"
@@ -118,7 +118,7 @@ export function Webhook() {
           className="flex-1 cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500 text-primary-foreground font-semibold"
           onClick={handleBuildUrl}
         >
-          Build URL
+          Build
         </Button>
 
         <Button
@@ -132,9 +132,7 @@ export function Webhook() {
 
       {result && (
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <Label className="font-bold">Webhook</Label>
-
+          <div className="flex items-center justify-end">
             <Button
               className="cursor-pointer text-muted-foreground transition-all duration-500"
               onClick={handleCopy}
@@ -157,6 +155,6 @@ export function Webhook() {
           />
         </div>
       )}
-    </>
+    </div>
   )
 }

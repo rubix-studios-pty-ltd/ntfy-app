@@ -1,10 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
-use url::Url;
 
-use crate::background::{cancel_webview_unload, request_webview_unload};
-use crate::config::load_config;
 use crate::tray::system::sync_tray_label;
 
 static MAIN_WINDOW_BUILDING: AtomicBool = AtomicBool::new(false);
@@ -60,14 +57,10 @@ pub fn hide_main_window(app: &AppHandle) -> &'static str {
     let _ = window.set_skip_taskbar(true);
     let _ = window.hide();
 
-    request_webview_unload(app);
-
     "Show"
 }
 
 pub fn show_main_window(app: &AppHandle) -> &'static str {
-    cancel_webview_unload(app);
-
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_skip_taskbar(false);
         let _ = window.show();
@@ -105,17 +98,18 @@ pub fn show_main_window(app: &AppHandle) -> &'static str {
 }
 
 fn create_main_window(app: &AppHandle) -> tauri::Result<tauri::WebviewWindow> {
-    let url = main_window_url(app);
+    let url = WebviewUrl::App("/".into());
 
     WebviewWindowBuilder::new(app, "main", url)
         .title("Ntfy")
-        .inner_size(1000.0, 600.0)
-        .min_inner_size(400.0, 530.0)
+        .inner_size(1180.0, 760.0)
+        .min_inner_size(700.0, 540.0)
         .resizable(true)
         .fullscreen(false)
         .decorations(true)
         .center()
         .skip_taskbar(false)
+        .incognito(true)
         .visible(false)
         .build()
 }
@@ -126,14 +120,4 @@ pub fn toggle_main_window(app: &AppHandle) -> &'static str {
     } else {
         show_main_window(app)
     }
-}
-
-fn main_window_url(app: &AppHandle) -> WebviewUrl {
-    let config = load_config(app);
-
-    config
-        .instance_url
-        .and_then(|instance| Url::parse(&instance).ok())
-        .map(WebviewUrl::External)
-        .unwrap_or_else(|| WebviewUrl::App("/".into()))
 }

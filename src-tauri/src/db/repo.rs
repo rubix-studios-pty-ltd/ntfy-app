@@ -1,3 +1,4 @@
+pub mod ntfy;
 use rusqlite::types::Type;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use std::time::{SystemTime, UNIX_EPOCH};

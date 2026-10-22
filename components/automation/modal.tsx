@@ -4,15 +4,8 @@ import { useRef } from 'react'
 import { SquareArrowDown, SquareArrowUp } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Modal as SharedModal } from '@/components/ntfy/modal'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -37,7 +30,6 @@ interface ModalProps {
 }
 
 export function Modal({ rule, setRule, onSave }: ModalProps) {
-  const open = Boolean(rule)
   const runAction = rule?.actionType === 'runProgram'
   const importInput = useRef<HTMLInputElement>(null)
 
@@ -142,340 +134,306 @@ export function Modal({ rule, setRule, onSave }: ModalProps) {
     }
   }
 
-  return (
-    <Dialog
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          setRule(null)
-        }
-      }}
-      open={open}
-    >
-      {rule && (
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="sr-only">Rule</DialogTitle>
-            <DialogDescription className="sr-only">
-              Configure triggers and actions.
-            </DialogDescription>
-          </DialogHeader>
+  if (!rule) return null
 
-          <div className="grid gap-4">
+  return (
+    <SharedModal
+      close={() => setRule(null)}
+      description="Configure triggers and actions."
+      title="Trigger"
+    >
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label className="text-[11px]">Name</Label>
+          <Input
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+            onChange={(event) => updateRule({ name: event.target.value })}
+            spellCheck={false}
+            value={rule.name}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <Label className="text-[11px]">Topic</Label>
+            <Input
+              autoCapitalize="none"
+              autoComplete="off"
+              autoCorrect="off"
+              className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+              onChange={(event) => updateRule({ topic: event.target.value })}
+              spellCheck={false}
+              value={rule.topic}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="text-[11px]">Match</Label>
+            <Select
+              onValueChange={(value) => updateRule({ matchType: value as MatchType })}
+              value={rule.matchType}
+            >
+              <SelectTrigger className="cursor-pointer duration-500 transition-all w-full border-border bg-card text-xs text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent position="popper">
+                <SelectItem className="cursor-pointer duration-500 transition-all" value="equals">
+                  Equals
+                </SelectItem>
+                <SelectItem className="cursor-pointer duration-500 transition-all" value="contains">
+                  Contains
+                </SelectItem>
+                <SelectItem
+                  className="cursor-pointer duration-500 transition-all"
+                  value="startsWith"
+                >
+                  Starts with
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid gap-2">
+          <Label className="font-semibold">Value</Label>
+          <Textarea
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-24 resize-none overflow-y-auto border border-border"
+            onChange={(event) => updateRule({ matchValue: event.target.value })}
+            rows={4}
+            spellCheck={false}
+            value={rule.matchValue}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <Label className="font-semibold">Action</Label>
+            <Select
+              onValueChange={(value) => updateAction(value as ActionType)}
+              value={rule.actionType}
+            >
+              <SelectTrigger className="cursor-pointer duration-500 transition-all w-full border-border bg-card text-xs text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent position="popper">
+                <SelectItem
+                  className="cursor-pointer duration-500 transition-all"
+                  value="runProgram"
+                >
+                  Run program
+                </SelectItem>
+
+                <SelectItem className="cursor-pointer duration-500 transition-all" value="openUrl">
+                  Open URL
+                </SelectItem>
+
+                <SelectItem className="cursor-pointer duration-500 transition-all" value="module">
+                  Module
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label className="font-semibold">{actionLabels[rule.actionType]}</Label>
+
+            {rule.actionType === 'module' ? (
+              <Select
+                onValueChange={(value) =>
+                  updateRule({
+                    moduleId: value,
+                    actionConfig: getDefault(value),
+                  } as Partial<RulesType>)
+                }
+                value={rule.moduleId}
+              >
+                <SelectTrigger className="cursor-pointer duration-500 transition-all w-full border-border bg-card text-xs text-foreground">
+                  <SelectValue placeholder="Select module" />
+                </SelectTrigger>
+
+                <SelectContent position="popper">
+                  {moduleOptions.map((module) => (
+                    <SelectItem
+                      className="cursor-pointer duration-500 transition-all"
+                      key={module.id}
+                      value={module.id}
+                    >
+                      {module.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+                onChange={(event) => updateRule({ actionValue: event.target.value })}
+                value={rule.actionValue}
+              />
+            )}
+          </div>
+        </div>
+
+        {runAction && (
+          <>
             <div className="grid gap-2">
-              <Label className="font-semibold">Name</Label>
+              <Label className="font-semibold">Arguments</Label>
               <Input
                 autoCapitalize="none"
                 autoComplete="off"
                 autoCorrect="off"
-                className="border border-border"
-                onChange={(event) => updateRule({ name: event.target.value })}
+                className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+                onChange={(event) => updateRule({ arguments: event.target.value })}
                 spellCheck={false}
-                value={rule.name}
+                value={rule.arguments ?? ''}
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label className="font-semibold">Topic</Label>
-                <Input
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  className="border border-border"
-                  onChange={(event) => updateRule({ topic: event.target.value })}
-                  spellCheck={false}
-                  value={rule.topic}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label className="font-semibold">Match</Label>
-                <Select
-                  onValueChange={(value) => updateRule({ matchType: value as MatchType })}
-                  value={rule.matchType}
-                >
-                  <SelectTrigger className="w-full border border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent
-                    className="border bg-foreground text-primary-foreground"
-                    position="popper"
-                  >
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="equals"
-                    >
-                      Equals
-                    </SelectItem>
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="contains"
-                    >
-                      Contains
-                    </SelectItem>
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="startsWith"
-                    >
-                      Starts with
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="grid gap-2">
-              <Label className="font-semibold">Value</Label>
-              <Textarea
+              <Label className="font-semibold">Directory</Label>
+              <Input
                 autoCapitalize="none"
                 autoComplete="off"
                 autoCorrect="off"
-                className="scrollbar h-24 resize-none overflow-y-auto border border-border"
-                onChange={(event) => updateRule({ matchValue: event.target.value })}
-                rows={4}
+                className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+                onChange={(event) => updateRule({ workingDirectory: event.target.value })}
                 spellCheck={false}
-                value={rule.matchValue}
+                value={rule.workingDirectory ?? ''}
               />
             </div>
+          </>
+        )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label className="font-semibold">Action</Label>
-                <Select
-                  onValueChange={(value) => updateAction(value as ActionType)}
-                  value={rule.actionType}
-                >
-                  <SelectTrigger className="w-full border border-border">
-                    <SelectValue />
-                  </SelectTrigger>
+        {rule.actionType === 'module' && moduleMap[rule.moduleId]?.fields?.length ? (
+          <div className="grid gap-3 rounded-lg border border-border p-4">
+            <div className="grid gap-2 pb-4">
+              <Label className="font-semibold">Configurations</Label>
 
-                  <SelectContent
-                    className="border bg-foreground text-primary-foreground"
-                    position="popper"
-                  >
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="runProgram"
-                    >
-                      Run program
-                    </SelectItem>
+              {moduleMap[rule.moduleId]?.description && (
+                <p className="text-[11px] text-muted-foreground">
+                  {moduleMap[rule.moduleId].description}
+                </p>
+              )}
+            </div>
 
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="openUrl"
-                    >
-                      Open URL
-                    </SelectItem>
+            {moduleMap[rule.moduleId].fields?.map((field) => {
+              const value = rule.actionConfig?.[field.key]
 
-                    <SelectItem
-                      className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                      value="module"
-                    >
-                      Module
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              if (field.type === 'number') {
+                return (
+                  <div className="grid grid-cols-3 gap-2" key={field.key}>
+                    <Label className="font-semibold">{field.label}</Label>
 
-              <div className="grid gap-2">
-                <Label className="font-semibold">{actionLabels[rule.actionType]}</Label>
+                    <Input
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground col-span-2"
+                      inputMode={field.type === 'number' ? 'numeric' : undefined}
+                      max={field.allowVariables ? undefined : field.max}
+                      min={field.allowVariables ? undefined : field.min}
+                      onChange={(event) =>
+                        updateRule({
+                          actionConfig: {
+                            ...(rule.actionConfig ?? {}),
+                            [field.key]: parseConfig(field, event.target.value),
+                          },
+                        } as Partial<RulesType>)
+                      }
+                      placeholder={field.placeholder}
+                      spellCheck={false}
+                      type={field.type === 'number' && !field.allowVariables ? 'number' : 'text'}
+                      value={getConfig(value)}
+                    />
+                  </div>
+                )
+              }
 
-                {rule.actionType === 'module' ? (
-                  <Select
-                    onValueChange={(value) =>
+              return (
+                <div className="grid gap-2" key={field.key}>
+                  <Label className="font-semibold">{field.label}</Label>
+
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+                    onChange={(event) =>
                       updateRule({
-                        moduleId: value,
-                        actionConfig: getDefault(value),
+                        actionConfig: {
+                          ...(rule.actionConfig ?? {}),
+                          [field.key]: event.target.value,
+                        },
                       } as Partial<RulesType>)
                     }
-                    value={rule.moduleId}
-                  >
-                    <SelectTrigger className="w-full border border-border">
-                      <SelectValue placeholder="Select module" />
-                    </SelectTrigger>
-
-                    <SelectContent
-                      className="border bg-foreground text-primary-foreground"
-                      position="popper"
-                    >
-                      {moduleOptions.map((module) => (
-                        <SelectItem
-                          className="cursor-pointer focus:bg-primary focus:text-primary-foreground"
-                          key={module.id}
-                          value={module.id}
-                        >
-                          {module.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input
-                    className="border border-border"
-                    onChange={(event) => updateRule({ actionValue: event.target.value })}
-                    value={rule.actionValue}
-                  />
-                )}
-              </div>
-            </div>
-
-            {runAction && (
-              <>
-                <div className="grid gap-2">
-                  <Label className="font-semibold">Arguments</Label>
-                  <Input
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    className="border border-border"
-                    onChange={(event) => updateRule({ arguments: event.target.value })}
+                    placeholder={field.placeholder}
                     spellCheck={false}
-                    value={rule.arguments ?? ''}
+                    value={typeof value === 'string' ? value : ''}
                   />
                 </div>
-
-                <div className="grid gap-2">
-                  <Label className="font-semibold">Directory</Label>
-                  <Input
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    className="border border-border"
-                    onChange={(event) => updateRule({ workingDirectory: event.target.value })}
-                    spellCheck={false}
-                    value={rule.workingDirectory ?? ''}
-                  />
-                </div>
-              </>
-            )}
-
-            {rule.actionType === 'module' && moduleMap[rule.moduleId]?.fields?.length ? (
-              <div className="grid gap-3 rounded-lg border border-border p-3">
-                <div className="grid gap-2">
-                  <Label className="font-semibold">Configurations</Label>
-
-                  {moduleMap[rule.moduleId]?.description && (
-                    <p className="text-xs text-muted-foreground">
-                      {moduleMap[rule.moduleId].description}
-                    </p>
-                  )}
-                </div>
-
-                {moduleMap[rule.moduleId].fields?.map((field) => {
-                  const value = rule.actionConfig?.[field.key]
-
-                  if (field.type === 'number') {
-                    return (
-                      <div className="grid grid-cols-3 gap-2" key={field.key}>
-                        <Label className="font-semibold">{field.label}</Label>
-
-                        <Input
-                          autoCapitalize="none"
-                          autoComplete="off"
-                          autoCorrect="off"
-                          className="border border-border col-span-2"
-                          inputMode={field.type === 'number' ? 'numeric' : undefined}
-                          max={field.allowVariables ? undefined : field.max}
-                          min={field.allowVariables ? undefined : field.min}
-                          onChange={(event) =>
-                            updateRule({
-                              actionConfig: {
-                                ...(rule.actionConfig ?? {}),
-                                [field.key]: parseConfig(field, event.target.value),
-                              },
-                            } as Partial<RulesType>)
-                          }
-                          placeholder={field.placeholder}
-                          spellCheck={false}
-                          type={
-                            field.type === 'number' && !field.allowVariables ? 'number' : 'text'
-                          }
-                          value={getConfig(value)}
-                        />
-                      </div>
-                    )
-                  }
-
-                  return (
-                    <div className="grid gap-2" key={field.key}>
-                      <Label className="font-semibold">{field.label}</Label>
-
-                      <Input
-                        autoCapitalize="none"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        className="border border-border"
-                        onChange={(event) =>
-                          updateRule({
-                            actionConfig: {
-                              ...(rule.actionConfig ?? {}),
-                              [field.key]: event.target.value,
-                            },
-                          } as Partial<RulesType>)
-                        }
-                        placeholder={field.placeholder}
-                        spellCheck={false}
-                        value={typeof value === 'string' ? value : ''}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : null}
+              )
+            })}
           </div>
+        ) : null}
+      </div>
 
-          <DialogFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex gap-2">
-              <input
-                accept="application/json,.json"
-                className="hidden"
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-2">
+          <input
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
 
-                  if (file) {
-                    void importRule(file)
-                  }
-                }}
-                ref={importInput}
-                type="file"
-              />
+              if (file) {
+                void importRule(file)
+              }
+            }}
+            ref={importInput}
+            type="file"
+          />
 
-              <Button
-                className="cursor-pointer transition-all duration-500"
-                onClick={() => importInput.current?.click()}
-                variant="outline"
-              >
-                <SquareArrowUp className="size-4" />
-              </Button>
+          <Button
+            className="cursor-pointer transition-all duration-500"
+            onClick={() => importInput.current?.click()}
+            variant="outline"
+          >
+            <SquareArrowUp className="size-4" />
+          </Button>
 
-              <Button
-                className="cursor-pointer transition-all duration-500"
-                onClick={exportRule}
-                variant="outline"
-              >
-                <SquareArrowDown className="size-4" />
-              </Button>
-            </div>
+          <Button
+            className="cursor-pointer transition-all duration-500"
+            onClick={exportRule}
+            variant="outline"
+          >
+            <SquareArrowDown className="size-4" />
+          </Button>
+        </div>
 
-            <div className="flex gap-2">
-              <Button
-                className="cursor-pointer transition-all duration-500"
-                onClick={() => setRule(null)}
-                variant="outline"
-              >
-                Cancel
-              </Button>
+        <div className="flex gap-2">
+          <Button
+            className="cursor-pointer transition-all duration-500"
+            onClick={() => setRule(null)}
+            variant="outline"
+          >
+            Cancel
+          </Button>
 
-              <Button
-                className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
-                onClick={onSave}
-              >
-                Save
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      )}
-    </Dialog>
+          <Button
+            className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
+            onClick={onSave}
+          >
+            Save
+          </Button>
+        </div>
+      </div>
+    </SharedModal>
   )
 }

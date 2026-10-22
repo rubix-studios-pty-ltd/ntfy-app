@@ -3,9 +3,11 @@ use tauri::{AppHandle, Manager};
 use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
 use crate::db::{DbState, repo, run};
-use crate::listener::Payload;
 
-pub async fn handle_notification(app: &AppHandle, notification: Payload) -> Result<(), String> {
+pub async fn handle_notification(
+    app: &AppHandle,
+    notification: AutomationEvent,
+) -> Result<(), String> {
     let topic = notification.topic.trim().to_string();
 
     if topic.is_empty() || notification.message.trim().is_empty() {

@@ -88,3 +88,7 @@ docker-compose.override.yml
 # custom
 debug/
 scripts/
+src-tauri/target/
+src-tauri/gen/
+.env*
+*.sqlite*

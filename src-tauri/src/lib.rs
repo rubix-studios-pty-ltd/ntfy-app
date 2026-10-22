@@ -1,77 +1,59 @@
-use overrides::handle_page_load;
 use tauri::Manager;
-use tray::system::setup_tray;
-use windows::main::setup_window_events;
 
 mod automation;
 mod autostart;
-mod background;
 mod commands;
-mod config;
 mod db;
-mod listener;
 mod modules;
-mod overrides;
+mod ntfy;
+mod storage;
 mod tray;
 mod windows;
 
-const LOG_RETENTION_DAYS: u32 = 30;
-const LOG_MAX_ROWS: u32 = 1000;
-
 pub fn run() {
-    #[cfg(target_os = "linux")]
-    unsafe {
-        std::env::set_var("GDK_BACKEND", "x11");
-    }
-
     let app = tauri::Builder::default()
-        .plugin(
-            tauri_plugin_autostart::Builder::new()
-                .app_name("Ntfy")
-                .build(),
-        )
+        .plugin(tauri::plugin::Builder::<tauri::Wry>::new("local-navigation")
+            .on_navigation(|_webview,url| {
+                (url.scheme() == "tauri" && url.host_str() == Some("localhost")) ||
+                (matches!(url.scheme(),"http"|"https") && url.host_str() == Some("tauri.localhost") && url.port().is_none()) ||
+                (cfg!(debug_assertions) && url.scheme() == "http" && url.host_str() == Some("localhost") && url.port() == Some(5173))
+            }).build())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            windows::main::show_main_window(app);
+        }))
+        .plugin(tauri_plugin_autostart::Builder::new().app_name("Ntfy").build())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(commands::handler())
-        .on_window_event(|window, event| {
-            setup_window_events(window, event);
-        })
+        .on_window_event(windows::main::setup_window_events)
         .setup(|app| {
-            app.manage(background::ListenerState::default());
-            app.manage(listener::NotificationState::default());
+            app.manage(db::init(app.handle())?);
+            app.manage(ntfy::service::ServiceState::new()?);
 
-            let db_state = db::init(app.handle())?;
-            app.manage(db_state);
+            storage::legacy::clear_browser_profile(app.handle())?;
+            tray::system::setup_tray(app)?;
 
-            let handle = app.handle().clone();
+            let handle=app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
-                if let Err(error) = db::run(handle.state::<db::DbState>(), |conn| {
-                    db::repo::cleanup_logs(conn, LOG_RETENTION_DAYS, LOG_MAX_ROWS)
-                })
-                .await
-                {
-                    eprintln!("Failed to clean automation logs: {error}");
+                let state=handle.state::<ntfy::service::ServiceState>();
+
+                let _gate=state.gate.lock().await;
+
+                if ntfy::service::start(&handle).await.is_err() {
+                    eprintln!("Cannot start the native notification service");
+                }
+
+                if db::run(handle.state::<db::DbState>(), |connection| db::repo::cleanup_logs(connection,30,1000)).await.is_err() {
+                    eprintln!("Cannot apply automation log retention");
                 }
             });
-
-            listener::listener(app.handle());
-            setup_tray(app)?;
-
             Ok(())
         })
-        .on_page_load(|window, _payload| {
-            handle_page_load(window);
-        })
         .build(tauri::generate_context!())
-        .expect("Error while building application");
-
-    app.run(|app_handle, event| {
-        if matches!(event, tauri::RunEvent::Ready) {
-            background::request_webview_unload(app_handle);
-        }
-    });
+        .expect("Cannot start Ntfy. Check the operating system credential store and encrypted database.");
+    app.run(|_, _| {});
 }

@@ -136,3 +136,11 @@ pub struct ScheduleInput {
     pub schedule_enabled: bool,
     pub days: BTreeMap<DayKey, ScheduleConfig>,
 }
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TestRuleInput {
+    pub rule_id: String,
+    pub message: String,
+    pub title: Option<String>,
+}

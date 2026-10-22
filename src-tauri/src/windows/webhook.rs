@@ -10,6 +10,7 @@ pub fn open_webhook_window(app: &AppHandle) {
     }
 
     match WebviewWindowBuilder::new(app, "webhook", WebviewUrl::App("/webhook".into()))
+        .incognito(true)
         .title("Ntfy")
         .inner_size(400.0, 530.0)
         .min_inner_size(400.0, 530.0)
