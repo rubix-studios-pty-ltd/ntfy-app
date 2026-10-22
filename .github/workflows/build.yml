@@ -17,18 +17,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
-            assetNamePattern: 'Ntfy-macOS-Apple-Silicon[ext]'
-          - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin'
-            assetNamePattern: 'Ntfy-macOS-Intel[ext]'
-          - platform: 'ubuntu-24.04'
-            args: ''
-            assetNamePattern: 'Ntfy-Linux-x64[ext]'
-          - platform: 'windows-latest'
-            args: ''
-            assetNamePattern: 'Ntfy-Windows-x64-Setup[ext]'
+          - platform: "macos-latest"
+            args: "--target aarch64-apple-darwin"
+            assetNamePattern: "Ntfy-macOS-Apple-Silicon[ext]"
+          - platform: "macos-latest"
+            args: "--target x86_64-apple-darwin"
+            assetNamePattern: "Ntfy-macOS-Intel[ext]"
+          - platform: "ubuntu-24.04"
+            args: ""
+            assetNamePattern: "Ntfy-Linux-x64[ext]"
+          - platform: "windows-latest"
+            args: ""
+            assetNamePattern: "Ntfy-Windows-x64-Setup[ext]"
     runs-on: ${{ matrix.platform }}
 
     steps:

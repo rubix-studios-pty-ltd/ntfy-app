@@ -9,7 +9,6 @@
 ## Reporting a Vulnerability
 
 We take the security of Ntfy App seriously. If you believe you have found a security vulnerability, please report it to us following these steps:
-
 1. **DO NOT** create a public GitHub issue for the vulnerability.
 2. Contact us directly at one of the following:
    - X: [@rubixstory](https://x.com/rubixstory)
@@ -17,7 +16,6 @@ We take the security of Ntfy App seriously. If you believe you have found a secu
    - Facebook: [rubixstudios](https://www.facebook.com/rubixstudios)
 
 Please include the following details in your report:
-
 - Description of the vulnerability
 - Steps to reproduce the issue
 - Potential impact of the vulnerability
@@ -40,7 +38,6 @@ Please include the following details in your report:
 ## Security Monitoring
 
 We continuously monitor our codebase for security issues through:
-
 - Automated dependency scanning
 - Regular code reviews
 - Third-party security audits

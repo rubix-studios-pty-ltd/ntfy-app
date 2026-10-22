@@ -99,7 +99,6 @@ pnpm dev
 ```
 
 This will:
-
 - Start the Next.js dev server on `http://localhost:5173`
 - Launch the Tauri development window with hot-reload
 
@@ -149,7 +148,6 @@ ntfy-app/
 ## Contributing
 
 We welcome contributions! Please follow these guidelines:
-
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
@@ -179,7 +177,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For support or inquiries:
-
 - LinkedIn: [rubixvi](https://www.linkedin.com/in/rubixvi/)
 - Website: [Rubix Studios](https://rubixstudios.com.au)
 

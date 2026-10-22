@@ -1,5 +1,3 @@
-
-
 ## [0.3.4] - 2026-10-11
 
 Maintenance release.
