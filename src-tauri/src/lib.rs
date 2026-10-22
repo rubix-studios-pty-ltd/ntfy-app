@@ -10,6 +10,8 @@ mod storage;
 mod tray;
 mod windows;
 
+use windows::main::{setup_window_events, show_main_window};
+
 pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri::plugin::Builder::<tauri::Wry>::new("local-navigation")
@@ -18,8 +20,8 @@ pub fn run() {
                 (matches!(url.scheme(),"http"|"https") && url.host_str() == Some("tauri.localhost") && url.port().is_none()) ||
                 (cfg!(debug_assertions) && url.scheme() == "http" && url.host_str() == Some("localhost") && url.port() == Some(5173))
             }).build())
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            windows::main::show_main_window(app);
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            show_main_window(app);
         }))
         .plugin(tauri_plugin_autostart::Builder::new().app_name("Ntfy").build())
         .plugin(tauri_plugin_notification::init())
@@ -28,7 +30,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(commands::handler())
-        .on_window_event(windows::main::setup_window_events)
+        .on_window_event(setup_window_events)
         .setup(|app| {
             app.manage(db::init(app.handle())?);
             app.manage(ntfy::service::ServiceState::new()?);
