@@ -36,7 +36,7 @@ pub fn run() {
             storage::legacy::clear_browser_profile(app.handle())?;
             tray::system::setup_tray(app)?;
 
-            let handle=app.handle().clone();
+            let handle = app.handle().clone();
 
             tauri::async_runtime::spawn(async move {
                 let state=handle.state::<ntfy::service::ServiceState>();
