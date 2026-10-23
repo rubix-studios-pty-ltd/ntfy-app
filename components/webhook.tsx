@@ -1,17 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { CheckIcon, CopyIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { readUrl } from '@/lib/tauri/settings'
+import { getSnapshot } from '@/lib/tauri/ntfy'
+import { type Server } from '@/types/ntfy'
 import { buildUrl } from '@/utils/buildUrl'
 
 export function Webhook() {
-  const [instance, setInstance] = useState<string | null>(null)
+  const id = useId()
+  const [servers, setServers] = useState<Server[]>([])
+  const [serverId, setServerId] = useState('')
+
+  const instance = servers.find((server) => server.id === serverId)?.url ?? null
 
   const [token, setToken] = useState('')
   const [topic, setTopic] = useState('')
@@ -19,14 +31,33 @@ export function Webhook() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    void (async () => {
-      try {
-        setInstance(await readUrl())
-      } catch {
-        setInstance(null)
-      }
-    })()
+    let active = true
+
+    void getSnapshot()
+      .then((snapshot) => {
+        if (!active) return
+
+        setServers(snapshot.servers)
+        setServerId(snapshot.servers[0]?.id ?? '')
+      })
+      .catch(() => {
+        if (!active) return
+
+        setServers([])
+        setServerId('')
+      })
+
+    return () => {
+      active = false
+    }
   }, [])
+
+  const handleInstanceChange = (value: string) => {
+    setServerId(value)
+    setToken('')
+    setResult('')
+    setCopied(false)
+  }
 
   const handleBuildUrl = () => {
     const webhook = buildUrl({
@@ -70,18 +101,40 @@ export function Webhook() {
   return (
     <div className="border-border bg-card relative rounded-[9px] border shadow-xs p-6 gap-4 flex flex-col">
       <div className="flex flex-col gap-2">
-        <Label className="text-[11px]">Instance</Label>
+        <Label className="text-[11px]" htmlFor={`${id}-instance`}>
+          Instance
+        </Label>
 
-        <Input
-          autoCapitalize="none"
-          autoComplete="off"
-          autoCorrect="off"
-          className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
-          placeholder="No instance configured"
-          readOnly
-          spellCheck={false}
-          value={instance ?? ''}
-        />
+        {servers.length > 1 ? (
+          <Select onValueChange={handleInstanceChange} value={serverId}>
+            <SelectTrigger
+              className="w-full min-w-0 cursor-pointer border-border bg-card text-xs text-foreground"
+              id={`${id}-instance`}
+            >
+              <SelectValue placeholder="Select an instance" />
+            </SelectTrigger>
+
+            <SelectContent position="popper">
+              {servers.map((server) => (
+                <SelectItem className="cursor-pointer" key={server.id} value={server.id}>
+                  {server.name} · {server.url}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground"
+            id={`${id}-instance`}
+            placeholder="No instance configured"
+            readOnly
+            spellCheck={false}
+            value={instance ?? ''}
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
