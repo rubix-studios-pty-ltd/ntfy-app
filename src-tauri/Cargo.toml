@@ -35,7 +35,7 @@ tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2.5.0"
 tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
 url = "2.5.8"
-uuid = { version = "1.28.0", features = ["v4"] }
+uuid = { version = "1.29.0", features = ["v4"] }
 xcap = "0.9.8"
 zeroize = { version = "1.9", features = ["derive"] }
 
