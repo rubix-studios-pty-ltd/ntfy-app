@@ -23,15 +23,16 @@ import { getBase } from '@/utils/getBase'
 import { getConfig, parseConfig } from '@/utils/getConfig'
 import { stripRule } from '@/utils/stripRule'
 
-interface ModalProps {
+type Props = {
   onSave: () => void | Promise<void>
   rule: RulesType | null
   setRule: (rule: RulesType | null) => void
 }
 
-export function Modal({ rule, setRule, onSave }: ModalProps) {
-  const runAction = rule?.actionType === 'runProgram'
+export function Modal({ rule, setRule, onSave }: Props) {
   const importInput = useRef<HTMLInputElement>(null)
+
+  const runAction = rule?.actionType === 'runProgram'
 
   const updateRule = (updates: Partial<RulesType>) => {
     if (!rule) {

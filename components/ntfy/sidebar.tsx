@@ -40,8 +40,7 @@ export function Sidebar({
   preferences,
 }: Props) {
   const unread = snapshot.topics.reduce((total, topic) => total + topic.unread, 0)
-  const topicStatus = (topic: Topic) =>
-    snapshot.statuses.find((status) => status.topicId === topic.id)
+  const status = (topic: Topic) => snapshot.statuses.find((status) => status.topicId === topic.id)
 
   return (
     <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col gap-2.25 border-r border-border bg-card p-4">
@@ -94,7 +93,7 @@ export function Sidebar({
             {snapshot.topics
               .filter((topic) => topic.serverId === server.id)
               .map((topic) => {
-                const status = topicStatus(topic)
+                const current = status(topic)
                 return (
                   <Button
                     aria-pressed={selected === topic.id}
@@ -112,13 +111,16 @@ export function Sidebar({
                     <span
                       className={cn(
                         'flex w-4.5 shrink-0 justify-center',
-                        status?.state === 'connected' ? 'text-success' : 'text-muted-foreground'
+                        current?.state === 'connected' ? 'text-success' : 'text-muted-foreground'
                       )}
                     >
                       <Circle className="size-1.75" fill="currentColor" />
                     </span>
+
                     <span className="min-w-0 flex-1 truncate">{topic.topic}</span>
+
                     {topic.muted && <BellOff className="size-3.25" />}
+
                     {topic.unread > 0 && (
                       <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
                         {topic.unread}

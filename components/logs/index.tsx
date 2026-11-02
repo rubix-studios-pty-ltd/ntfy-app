@@ -117,36 +117,35 @@ export function Logs() {
                   <div className="h-15 truncate">
                     {log.topic && (
                       <div>
-                        <span className="text-[11px] font-semibold">Topic:</span>
+                        <span className="text-[11px] font-semibold">Topic: </span>
                         <span className="truncate text-muted-foreground text-[11px]">
-                          {' '}
                           {log.topic}
                         </span>
                       </div>
                     )}
+
                     {log.title && (
                       <div>
-                        <span className="text-[11px] font-semibold">Title:</span>
+                        <span className="text-[11px] font-semibold">Title: </span>
                         <span className="truncate text-muted-foreground text-[11px]">
-                          {' '}
                           {log.title}
                         </span>
                       </div>
                     )}
+
                     {log.message && (
                       <div>
-                        <span className="text-[11px] font-semibold">Message:</span>
+                        <span className="text-[11px] font-semibold">Message: </span>
                         <span className="truncate text-muted-foreground text-[11px]">
-                          {' '}
                           {log.message}
                         </span>
                       </div>
                     )}
+
                     {log.error && (
                       <div className="text-red-500">
-                        <span className="text-[11px] font-semibold">Error:</span>
+                        <span className="text-[11px] font-semibold">Error: </span>
                         <span className="truncate text-muted-foreground text-[11px]">
-                          {' '}
                           {log.error}
                         </span>
                       </div>
@@ -158,11 +157,13 @@ export function Logs() {
                   <span className="truncate font-semibold text-xs">
                     {actionType(log.actionType)}
                   </span>
+
                   {log.actionValue && (
                     <span className="truncate text-muted-foreground text-[11px]">
                       {log.actionValue}
                     </span>
                   )}
+
                   {log.moduleId && (
                     <span className="truncate text-muted-foreground text-[11px]">
                       {formatId(log.moduleId)}

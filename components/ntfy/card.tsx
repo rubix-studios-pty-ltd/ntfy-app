@@ -16,7 +16,7 @@ type Props = {
   remove: () => void
 }
 
-export function MessageCard({ item, serverName, refresh, remove }: Props) {
+export function Card({ item, serverName, refresh, remove }: Props) {
   const message = item.message
 
   const open = async (url: string) => {

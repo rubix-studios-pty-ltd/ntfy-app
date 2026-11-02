@@ -41,9 +41,11 @@ export function ThemeSelect() {
           <SelectItem className="cursor-pointer transition-all duration-500" value="system">
             System
           </SelectItem>
+
           <SelectItem className="cursor-pointer transition-all duration-500" value="light">
             Light
           </SelectItem>
+
           <SelectItem className="cursor-pointer transition-all duration-500" value="dark">
             Dark
           </SelectItem>

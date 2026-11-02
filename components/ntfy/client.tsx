@@ -14,8 +14,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Card } from '@/components/ntfy/card'
 import { Confirm } from '@/components/ntfy/confirm'
-import { MessageCard } from '@/components/ntfy/message-card'
 import { Preferences } from '@/components/ntfy/preferences'
 import { PublishForm } from '@/components/ntfy/publish-form'
 import { ServerForm } from '@/components/ntfy/server-form'
@@ -195,7 +195,7 @@ export function Client() {
                 className="flex items-center justify-between gap-3.5 rounded-[7px] border py-2 px-3 text-[11px] leading-xs [&_button]:shrink-0 border-warning-border bg-warning-soft text-warning-foreground"
                 role="status"
               >
-                Some subscriptions are reconnecting. Select a topic to view its connection details.
+                Subscriptions reconnecting. Select a topic to view connection details.
                 <Button
                   className="cursor-pointer duration-500 transition-all h-6 p-0 text-[11px] font-normal hover:bg-transparent dark:hover:bg-warning-soft dark:hover:text-warning-foreground"
                   disabled={busy}
@@ -291,7 +291,7 @@ export function Client() {
                   'ntfy'
 
                 return (
-                  <MessageCard
+                  <Card
                     item={item}
                     key={item.rowId}
                     refresh={data.refresh}

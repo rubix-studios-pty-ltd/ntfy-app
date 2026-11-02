@@ -22,13 +22,12 @@ export function Webhook() {
   const id = useId()
   const [servers, setServers] = useState<Server[]>([])
   const [serverId, setServerId] = useState('')
-
-  const instance = servers.find((server) => server.id === serverId)?.url ?? null
-
   const [token, setToken] = useState('')
   const [topic, setTopic] = useState('')
   const [result, setResult] = useState('')
   const [copied, setCopied] = useState(false)
+
+  const instance = servers.find((server) => server.id === serverId)?.url ?? null
 
   useEffect(() => {
     let active = true
