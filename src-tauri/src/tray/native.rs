@@ -3,11 +3,11 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Manager, Wry};
 
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
-use crate::tray::{check_updates, exit_app, reset_instance};
+use crate::tray::{check_updates, exit_app};
 use crate::windows::automation::open_automation_window;
-use crate::windows::config::open_config_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
+use crate::windows::schedule::open_schedule_window;
 use crate::windows::webhook::open_webhook_window;
 
 pub struct TrayMenuState {
@@ -44,9 +44,8 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         None::<&str>,
     )?;
 
-    let config = MenuItem::with_id(app, "config", "Config", true, None::<&str>)?;
-    let reset_instance_item =
-        MenuItem::with_id(app, "reset_instance", "Reset", true, None::<&str>)?;
+    let schedule = MenuItem::with_id(app, "schedule", "Schedule", true, None::<&str>)?;
+
     let updates = MenuItem::with_id(app, "check_updates", "Update", true, None::<&str>)?;
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
 
@@ -60,7 +59,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         "settings",
         "Settings",
         true,
-        &[&autostart, &config, &logs, &separator, &reset_instance_item],
+        &[&autostart, &schedule, &logs, &separator],
     )?;
 
     let menu = Menu::with_items(
@@ -90,15 +89,12 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                 toggle_main_window(app);
                 sync_tray_label(app);
             }
-
             "automation" => {
                 open_automation_window(app);
             }
-
             "webhook" => {
                 open_webhook_window(app);
             }
-
             "autostart" => {
                 if let Err(error) = toggle_autostart(app) {
                     eprintln!("Failed to toggle autostart: {error}");
@@ -109,23 +105,15 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                     let _ = check_item.set_checked(enabled);
                 }
             }
-
             "config" => {
-                open_config_window(app);
+                open_schedule_window(app);
             }
-
             "logs" => {
                 open_logs_window(app);
             }
-
             "check_updates" => {
                 check_updates(app);
             }
-
-            "reset_instance" => {
-                reset_instance(app);
-            }
-
             "exit" => {
                 exit_app(app);
             }

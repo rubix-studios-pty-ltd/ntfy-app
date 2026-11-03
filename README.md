@@ -9,9 +9,11 @@ Automatic updates are disabled by default to reduce background activity, externa
 [![GitHub Repo Size](https://img.shields.io/github/repo-size/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app/commits/main)
 
-![Ntfy App](docs/screenshots/notifications.webp)
-![Ntfy Main](docs/screenshots/main.webp)
-![Ntfy Automation](docs/screenshots/automation.webp)
+<img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/6d928dab-5ff7-449d-a4da-fd5b28d27689" />
+<img width="1918" height="1079" alt="image" src="https://github.com/user-attachments/assets/e024a569-b301-455a-b78b-08deb7dfa1ca" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/7382bf8d-90e1-4c65-9639-7126d6aafc12" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c84ba8cc-e082-4d60-a860-d9628b7b07da" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/927e06ad-680e-4f56-b43b-9dc159d0c27c" />
 
 ## Features
 

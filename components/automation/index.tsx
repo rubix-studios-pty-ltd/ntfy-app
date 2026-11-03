@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { PencilIcon, PlayIcon, SearchIcon, TrashIcon } from 'lucide-react'
+import { Pencil, Play, Plus, Search, Trash } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Modal } from '@/components/automation/modal'
@@ -184,25 +184,26 @@ export function Automation() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
 
           <Input
-            className="pl-9 border-border text-sm xs:text-sm"
+            className="w-full bg-transparent pl-9 text-[11px] md:text-[11px] text-foreground"
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search..."
+            placeholder="Search…"
+            type="search"
             value={search}
           />
         </div>
 
-        <Button
-          className="cursor-pointer bg-emerald-700 hover:bg-emerald-600 transition-all duration-500"
-          onClick={handleAddRule}
-        >
-          Add
+        <Button className="cursor-pointer duration-500 transition-all" onClick={handleAddRule}>
+          <Plus />
         </Button>
       </div>
 
-      <div>
+      <div className="border-border bg-card relative rounded-[9px] border shadow-xs">
         <div className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b p-3 text-sm font-bold">
           <span>Active</span>
           <span>Name</span>
@@ -220,12 +221,12 @@ export function Automation() {
         >
           {searchFilter.map((rule) => (
             <div
-              className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b border-border/10 p-3 last:border-b-0"
+              className="grid grid-cols-[60px_0.8fr_minmax(0,1.2fr)_minmax(0,1.2fr)_100px_80px] gap-2 border-b border-border/40 p-3 last:border-b-0"
               key={rule.id}
             >
               <Switch
                 checked={rule.active}
-                className="cursor-pointer border border-white/10 bg-white/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
+                className="cursor-pointer border border-white/10 bg-card/5 data-[state=checked]:border-emerald-700 data-[state=checked]:bg-emerald-700 data-[state=unchecked]:border-foreground/50 data-[state=unchecked]:bg-accent/50 [&>span]:bg-foreground/50 data-[state=checked]:[&>span]:bg-emerald-600"
                 onCheckedChange={() => handleToggleRule(rule.id)}
               />
 
@@ -233,7 +234,7 @@ export function Automation() {
 
               <div className="flex flex-col gap-0.5 text-sm">
                 <span>Topic: {rule.topic}</span>
-                <div className="scrollbar h-6 overflow-hidden overflow-y-auto truncate">
+                <div className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-6 overflow-hidden overflow-y-auto truncate">
                   {rule.matchValue
                     .split(/\r?\n/)
                     .map((value) => value.trim())
@@ -262,28 +263,28 @@ export function Automation() {
                 <Button
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => handleTestRule(rule)}
-                  size="xs"
+                  size="icon-xs"
                   variant="ghost"
                 >
-                  <PlayIcon className="size-3.5" />
+                  <Play className="size-3.5" />
                 </Button>
 
                 <Button
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => handleEditRule(rule)}
-                  size="xs"
+                  size="icon-xs"
                   variant="ghost"
                 >
-                  <PencilIcon className="size-3.5" />
+                  <Pencil className="size-3.5" />
                 </Button>
 
                 <Button
                   className="cursor-pointer text-muted-foreground transition-all duration-500"
                   onClick={() => setRemove(rule)}
-                  size="xs"
+                  size="icon-xs"
                   variant="ghost"
                 >
-                  <TrashIcon className="size-3.5" />
+                  <Trash className="size-3.5" />
                 </Button>
               </div>
             </div>
@@ -298,7 +299,7 @@ export function Automation() {
       <AlertDialog onOpenChange={(open) => !open && setRemove(null)} open={remove !== null}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete?</AlertDialogTitle>
+            <AlertDialogTitle>Delete</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete automation "{remove?.name}" and all associated data. This
               action cannot be undone.
@@ -306,14 +307,20 @@ export function Automation() {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              className="cursor-pointer duration-500 transition-all"
+              variant="outline"
+            >
+              Cancel
+            </AlertDialogCancel>
 
             <AlertDialogAction
-              className="cursor-pointer text-destructive-foreground hover:bg-destructive/90"
+              className="cursor-pointer duration-500 transition-all"
               onClick={(event) => {
                 event.preventDefault()
                 void handleDelete()
               }}
+              variant="destructive"
             >
               Delete
             </AlertDialogAction>

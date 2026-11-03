@@ -2,21 +2,44 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
+  --color-background-main: var(--background-main);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-border: var(--danger-border);
+  --color-danger-foreground: var(--danger-foreground);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-inter);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -28,56 +51,100 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(94.333% 0.01693 76.023);
-  --foreground: oklch(0% 0 0);
-  --primary: oklch(28.094% 0.00003 271.152);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(32.897% 0.00004 271.152);
-  --muted-foreground: oklch(46.76% 0.00005 271.152);
-  --accent: oklch(89.003% 0.02348 75.785);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(20.841% 0.04169 266.371);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --background: #ffffff;
+  --background-main: #f5f5f5;
+  --foreground: #192b31;
+  --primary: #15745d;
+  --primary-hover: #0f604b;
+  --primary-foreground: #ffffff;
+  --secondary: #ecf3f0;
+  --secondary-foreground: #175d4d;
+  --card: #ffffff;
+  --card-foreground: #192b31;
+  --popover: #ffffff;
+  --popover-foreground: #192b31;
+  --border: #dde4e5;
+  --input: #dde4e5;
+  --ring: #218268;
+  --destructive: #b94343;
+  --destructive-foreground: #ffffff;
+  --accent: #ecf3f0;
+  --accent-foreground: #175d4d;
+  --muted: #eef1f2;
+  --muted-foreground: #68797d;
+  --surface-subtle: #fbfcfb;
+  --brand: #17795f;
+  --brand-foreground: #ffffff;
+  --success: #428664;
+  --success-soft: #eef4ed;
+  --success-foreground: #4e705b;
+  --warning-soft: #fff9ec;
+  --warning-border: #eadbb8;
+  --warning-foreground: #80622e;
+  --danger-soft: #fff2f1;
+  --danger-border: #edccca;
+  --danger-foreground: #9b4e49;
+}
+
+.dark {
+  --background: #162124;
+  --background-main: #0e1719;
+  --foreground: #e6eeeb;
+  --primary: #74d9b6;
+  --primary-hover: #95e4c8;
+  --primary-foreground: #09291f;
+  --secondary: #243a33;
+  --secondary-foreground: #b5e9d2;
+  --card: #182628;
+  --card-foreground: #e6eeeb;
+  --popover: #1c2b2c;
+  --popover-foreground: #e6eeeb;
+  --border: #344943;
+  --input: #3b514a;
+  --ring: #74d9b6;
+  --destructive: #b94343;
+  --destructive-foreground: #ffffff;
+  --accent: #243a33;
+  --accent-foreground: #b5e9d2;
+  --muted: #253432;
+  --muted-foreground: #a6bcb3;
+  --surface-subtle: #142123;
+  --brand: #17795f;
+  --brand-foreground: #ffffff;
+  --success: #83cda1;
+  --success-soft: #20392d;
+  --success-foreground: #b7dec3;
+  --warning-soft: #382e1d;
+  --warning-border: #6b5734;
+  --warning-foreground: #edcf99;
+  --danger-soft: #3c2425;
+  --danger-border: #704145;
+  --danger-foreground: #f0b1ad;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
+  *,
+  *::before,
+  *::after,
+  html,
   body {
-    @apply bg-background text-foreground;
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 35%, transparent) transparent;
   }
-}
 
-* {
-  scrollbar-width: thin;
-}
+  html,
+  body {
+    min-height: 100%;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
 
-.scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 1) transparent;
-}
+  body {
+    margin: 0;
+  }
 
-.scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 1);
-  border-radius: 999px;
-}
-
-.scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 1);
-}
-
-.scrollbar::-webkit-scrollbar-corner {
-  background: transparent;
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 28%, transparent);
+  }
 }

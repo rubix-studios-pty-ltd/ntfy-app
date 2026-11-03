@@ -10,6 +10,7 @@ pub fn open_logs_window(app: &AppHandle) {
     }
 
     match WebviewWindowBuilder::new(app, "logs", WebviewUrl::App("/logs".into()))
+        .incognito(true)
         .title("Ntfy")
         .inner_size(800.0, 800.0)
         .min_inner_size(800.0, 800.0)

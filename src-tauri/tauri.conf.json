@@ -10,26 +10,28 @@
     "beforeBuildCommand": "pnpm run build:ui"
   },
   "app": {
-    "withGlobalTauri": true,
+    "withGlobalTauri": false,
     "windows": [
       {
         "title": "Ntfy",
         "label": "main",
-        "width": 1000,
-        "height": 600,
-        "minWidth": 400,
-        "minHeight": 530,
+        "width": 1180,
+        "height": 760,
+        "minWidth": 700,
+        "minHeight": 540,
         "skipTaskbar": false,
         "resizable": true,
         "fullscreen": false,
         "decorations": true,
-        "visible": false,
+        "visible": true,
         "center": true,
-        "backgroundColor": "#f3ebe0"
+        "backgroundColor": "#f7f8fa",
+        "incognito": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'",
+      "devCsp": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:5173 ws://localhost:5173; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'"
     }
   },
   "bundle": {

@@ -1,10 +1,9 @@
-use serde::Deserialize;
 use tauri::{AppHandle, State};
 
 use crate::automation::executor::execute_rule;
 use crate::automation::matcher::{AutomationEvent, match_rule};
 use crate::automation::validation::validate_rule;
-use crate::db::models::{AutomationInput, AutomationRule};
+use crate::db::models::{AutomationInput, AutomationRule, TestRuleInput};
 use crate::db::{DbState, repo, run};
 
 fn build_test(rule: &AutomationRule, input_message: &str) -> String {
@@ -20,14 +19,6 @@ fn build_test(rule: &AutomationRule, input_message: &str) -> String {
         .find(|line| !line.is_empty())
         .unwrap_or(input_message)
         .replace("$value", "50")
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TestRuleInput {
-    pub rule_id: String,
-    pub message: String,
-    pub title: Option<String>,
 }
 
 #[tauri::command]

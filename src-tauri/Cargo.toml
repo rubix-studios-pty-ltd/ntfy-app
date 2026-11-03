@@ -16,23 +16,28 @@ name = "ntfy_core"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [dependencies]
+base64 = "0.23.1"
+chrono = "0.4.45"
+futures-util = "0.3.34"
+getrandom = "0.4.3"
+keyring = "4.2.0"
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "stream", "rustls"] }
+rusqlite = { version = "0.41.1", features = ["bundled-sqlcipher-vendored-openssl"] }
+sanitize-filename = "0.6"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
-url = "2.5.8"
-futures-util = "0.3.34"
+system_shutdown = "4.1.0"
 tauri = { version = "2.12.5", features = ["tray-icon"] }
-tauri-plugin-notification = "2.7.0"
+tauri-plugin-notification = "2.8.0"
 tauri-plugin-opener = "2.7.2"
 tauri-plugin-process = "2.4.0"
+tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2.5.0"
-tokio = { version = "1.54.1", features = ["sync", "time"] }
-chrono = "0.4.45"
-rusqlite = { version = "0.40.2", features = ["bundled"] }
-sanitize-filename = "0.6"
-system_shutdown = "4.1.0"
-tokio-tungstenite = { version = "0.30.0", features = ["rustls-tls-native-roots"] }
-uuid = { version = "1.28.0", features = ["v4"] }
+tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread", "sync", "time"] }
+url = "2.5.8"
+uuid = { version = "1.29.0", features = ["v4"] }
 xcap = "0.9.8"
+zeroize = { version = "1.9", features = ["derive"] }
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = [
@@ -53,7 +58,7 @@ volumecontrol = "0.1.4"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-autostart = "2.7.0"
-tauri-plugin-updater = "2.14.0"
+tauri-plugin-updater = "2.14.1"
 
 [profile.dev]
 incremental = true

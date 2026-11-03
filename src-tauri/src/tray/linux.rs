@@ -1,11 +1,11 @@
 use ksni::TrayMethods;
 
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
-use crate::tray::{check_updates, exit_app, reset_instance};
+use crate::tray::{check_updates, exit_app};
 use crate::windows::automation::open_automation_window;
-use crate::windows::config::open_config_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
+use crate::windows::schedule::open_schedule_window;
 use crate::windows::webhook::open_webhook_window;
 
 pub struct NtfyTray {
@@ -85,9 +85,9 @@ impl ksni::Tray for NtfyTray {
                     }
                     .into(),
                     StandardItem::<Self> {
-                        label: "Config".into(),
+                        label: "Schedule".into(),
                         activate: Box::new(|tray: &mut Self| {
-                            open_config_window(&tray.app);
+                            open_schedule_window(&tray.app);
                         }),
                         ..Default::default()
                     }
@@ -96,14 +96,6 @@ impl ksni::Tray for NtfyTray {
                         label: "Logs".into(),
                         activate: Box::new(|tray: &mut Self| {
                             open_logs_window(&tray.app);
-                        }),
-                        ..Default::default()
-                    }
-                    .into(),
-                    StandardItem::<Self> {
-                        label: "Reset".into(),
-                        activate: Box::new(|tray: &mut Self| {
-                            reset_instance(&tray.app);
                         }),
                         ..Default::default()
                     }
