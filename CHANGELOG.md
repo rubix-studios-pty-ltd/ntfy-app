@@ -4,6 +4,34 @@
 
 - **sec**: update security dep - add biome
 
+## [1.0.0] - 2026-11-03
+
+### Added
+
+- removal of webshell
+- **ntfy**: add topic button to sidebar and client
+- **webhook**: implement server selection for webhook instance
+- **build**: add support for MSVC linker argument
+
+### Fixed
+
+- **ntfy**: adjust gap spacing in sidebar layout
+- **ntfy**: conditionally render topic button in sidebar
+- **logs**: change date format size in logs component
+- **automation**: add button types and improve error handling
+- **ntfy**: adjust padding and spacing in message card
+- **ntfy**: enhance unread message indicator in message card
+- **ntfy**: update button text in message card
+- **ntfy**: update message snapshot handling in useNtfy hook
+
+### Changed
+
+- **lib**: format code and remove unused overrides
+- **ntfy**: simplify notification processing call
+- **lib**: simplify window event handling
+- **lib**: streamline application run process
+- **startInstance**: remove unused startInstance function
+
 ## [0.3.4] - 2026-10-11
 
 Maintenance release.
