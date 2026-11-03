@@ -45,9 +45,9 @@ xattr -cr "/Applications/Ntfy App.app"
 
 ## Prerequisites
 
-- **Node.js** 24.x or 25.x
+- **Node.js** 24.22.1 or later (24.x), or 26.12.1 or later
 - **pnpm** 10.x or later
-- **Rust** 1.93.1 or later (for building)
+- **Rust** 1.99.1 or later (for building)
 
 ### From Releases
 
