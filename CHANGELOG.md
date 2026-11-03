@@ -1,8 +1,3 @@
-## [0.4.0] - 2026-10-22
-
-### Fixed
-
-- **sec**: update security dep - add biome
 
 ## [1.0.0] - 2026-11-03
 
@@ -31,6 +26,12 @@
 - **lib**: simplify window event handling
 - **lib**: streamline application run process
 - **startInstance**: remove unused startInstance function
+
+## [0.4.0] - 2026-10-22
+
+### Fixed
+
+- **sec**: update security dep - add biome
 
 ## [0.3.4] - 2026-10-11
 
