@@ -1,3 +1,17 @@
+
+## [1.0.1] - 2026-11-04
+
+### Added
+
+- add topic icons and display name adjustments
+- add sidebar toggle
+- add topic icons to sidebar - adjust online indicators
+
+### Changed
+
+- **ntfy**: improve sidebar structure and styling
+- **ntfy**: simplify TopicIcon component props
+
 ## [1.0.0] - 2026-11-03
 
 ### Added
