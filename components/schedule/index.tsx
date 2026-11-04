@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { DaysOfWeek, defaultSchedule } from '@/constant/schedule'
+import { DaysOfWeek, defaultSchedule } from '@/lib/constant/schedule'
 import { getSchedule, updateSchedule } from '@/lib/tauri/schedule'
 import { type DayKey, type ScheduleConfig, type Schedule as ScheduleType } from '@/types/schedule'
 
