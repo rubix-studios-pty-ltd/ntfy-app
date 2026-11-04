@@ -1,4 +1,5 @@
 
+
 ## [1.0.1] - 2026-11-04
 
 ### Added
@@ -6,6 +7,10 @@
 - add topic icons and display name adjustments
 - add sidebar toggle
 - add topic icons to sidebar - adjust online indicators
+
+### Fixed
+
+- imports from structure adjustments
 
 ### Changed
 
