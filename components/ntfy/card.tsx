@@ -3,20 +3,22 @@
 import { Check, ExternalLink, File, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { messageAction, openExternal } from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
-import { type StoredMessage } from '@/types/ntfy'
+import { type StoredMessage, type Topic } from '@/types/ntfy'
 import { safeLink } from '@/utils/safeLink'
 
 type Props = {
   item: StoredMessage
+  topic?: Topic
   serverName: string
   refresh: () => void
   remove: () => void
 }
 
-export function Card({ item, serverName, refresh, remove }: Props) {
+export function Card({ item, topic, serverName, refresh, remove }: Props) {
   const message = item.message
 
   const open = async (url: string) => {
@@ -44,7 +46,7 @@ export function Card({ item, serverName, refresh, remove }: Props) {
               : 'bg-success-soft text-success'
         )}
       >
-        <span>{message.topic.slice(0, 1).toUpperCase()}</span>
+        <TopicIcon aria-hidden="true" className="size-4" name={topic?.icon ?? 'bell'} />
 
         {!item.isRead && (
           <span className="absolute right-0 bottom-0 size-1.25 animate-pulse rounded-full bg-success motion-reduce:animate-none">
@@ -56,8 +58,10 @@ export function Card({ item, serverName, refresh, remove }: Props) {
       <div className="min-w-0 flex-1">
         <div className="flex justify-between gap-2.5 pr-13 text-[9px] leading-normal text-muted-foreground max-[700px]:flex-col max-[700px]:gap-0.5">
           <span>
-            {serverName} <span className="px-1 text-muted-foreground">/</span>{' '}
-            <b className="font-[550] text-success-foreground">{message.topic}</b>
+            {serverName} <span className="px-1 text-muted-foreground">/ </span>
+            <b className="font-[550] text-success-foreground">
+              {topic?.displayName || message.topic}
+            </b>
           </span>
 
           <time
@@ -78,7 +82,7 @@ export function Card({ item, serverName, refresh, remove }: Props) {
           )}
 
           <h2 className="text-xs font-semibold truncate text-foreground">
-            {message.title || message.topic}
+            {message.title || topic?.displayName || message.topic}
           </h2>
         </div>
 

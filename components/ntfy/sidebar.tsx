@@ -64,6 +64,7 @@ export function Sidebar({
           <Inbox className="size-4.5" />
           <span className="text-xs">Notifications</span>
         </div>
+
         {unread > 0 && (
           <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
             {unread}
@@ -117,7 +118,9 @@ export function Sidebar({
                       <Circle className="size-1.75" fill="currentColor" />
                     </span>
 
-                    <span className="min-w-0 flex-1 truncate">{topic.topic}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {topic.displayName || topic.topic}
+                    </span>
 
                     {topic.muted && <BellOff className="size-3.25" />}
 
