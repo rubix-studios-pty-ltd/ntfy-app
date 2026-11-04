@@ -6,6 +6,8 @@ import {
   BellOff,
   CheckCheck,
   Inbox,
+  PanelLeftClose,
+  PanelLeftOpen,
   Pencil,
   Plus,
   RefreshCw,
@@ -34,6 +36,7 @@ const empty: Snapshot = { servers: [], topics: [], statuses: [], encrypted: fals
 
 export function Client() {
   const [selected, setSelected] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState(false)
   const [editing, setEditing] = useState<Topic | null>(null)
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [search, setSearch] = useState('')
@@ -77,23 +80,52 @@ export function Client() {
 
   return (
     <main className="flex min-h-dvh text-sm">
-      <Sidebar
-        addServer={() => setDialog({ kind: 'server' })}
-        addTopic={() => {
-          setEditing(null)
-          setDialog({ kind: 'topic' })
-        }}
-        editServer={(id) =>
-          setDialog({ kind: 'server', server: snapshot.servers.find((item) => item.id === id) })
-        }
-        preferences={() => setDialog({ kind: 'preferences' })}
-        select={setSelected}
-        selected={selected}
-        snapshot={snapshot}
-      />
+      <div
+        aria-hidden={collapsed}
+        className={cn(
+          'sticky top-0 h-dvh shrink-0 overflow-hidden transition-[width] duration-300',
+          collapsed ? 'w-0' : 'w-60'
+        )}
+        id="ntfy-sidebar"
+        inert={collapsed}
+      >
+        <Sidebar
+          addServer={() => setDialog({ kind: 'server' })}
+          addTopic={() => {
+            setEditing(null)
+            setDialog({ kind: 'topic' })
+          }}
+          editServer={(id) =>
+            setDialog({ kind: 'server', server: snapshot.servers.find((item) => item.id === id) })
+          }
+          preferences={() => setDialog({ kind: 'preferences' })}
+          select={setSelected}
+          selected={selected}
+          snapshot={snapshot}
+        />
+      </div>
 
-      <section className="flex min-w-0 flex-1 flex-col p-6">
-        <header className="flex items-center justify-between gap-3 pb-2">
+      <section className="relative flex min-w-0 flex-1 flex-col p-6">
+        <Button
+          aria-controls="ntfy-sidebar"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Expand' : 'Collapse'}
+          className={cn(
+            'absolute top-3 z-10 cursor-pointer transition-all duration-500 border border-border bg-card',
+            collapsed ? 'left-4.5' : 'left-0 -translate-x-1/2'
+          )}
+          onClick={() => setCollapsed((value) => !value)}
+          size="icon-xs"
+          variant="secondary"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-3.5" />
+          ) : (
+            <PanelLeftClose className="size-3.5" />
+          )}
+        </Button>
+
+        <header className={cn('flex items-center justify-between gap-3 pb-2', collapsed && 'pl-8')}>
           {topic ? (
             <div className="flex min-w-0 items-center gap-2 text-foreground">
               <TopicIcon aria-hidden="true" className="size-4 shrink-0" name={topic.icon} />
