@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import {
   BellOff,
-  Circle,
   Clock,
   Inbox,
   Plus,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react'
 
 import ntfy from '@/assets/ntfy.png'
+import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { type Snapshot, type Topic } from '@/types/ntfy'
@@ -64,6 +64,7 @@ export function Sidebar({
           <Inbox className="size-4.5" />
           <span className="text-xs">Notifications</span>
         </div>
+
         {unread > 0 && (
           <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
             {unread}
@@ -98,7 +99,7 @@ export function Sidebar({
                   <Button
                     aria-pressed={selected === topic.id}
                     className={cn(
-                      'cursor-pointer duration-500 transition-all justify-start px-2.5 gap-1 text-left text-xs text-muted-foreground',
+                      'cursor-pointer duration-500 transition-all justify-start px-2.5 gap-2.5 text-left text-xs text-muted-foreground',
                       selected === topic.id &&
                         'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
                     )}
@@ -108,16 +109,23 @@ export function Sidebar({
                     type="button"
                     variant="ghost"
                   >
-                    <span
-                      className={cn(
-                        'flex w-4.5 shrink-0 justify-center',
-                        current?.state === 'connected' ? 'text-success' : 'text-muted-foreground'
-                      )}
-                    >
-                      <Circle className="size-1.75" fill="currentColor" />
+                    <span className="relative flex size-5 shrink-0 items-center justify-center border border-border rounded-md p-3">
+                      <TopicIcon aria-hidden="true" className="size-3.5" name={topic.icon} />
+
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'absolute -bottom-0.5 -right-0.5 size-1 rounded-full ring-2 ring-card',
+                          current?.state === 'connected'
+                            ? 'animate-pulse bg-success'
+                            : 'bg-muted-foreground'
+                        )}
+                      />
                     </span>
 
-                    <span className="min-w-0 flex-1 truncate">{topic.topic}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {topic.displayName || topic.topic}
+                    </span>
 
                     {topic.muted && <BellOff className="size-3.25" />}
 

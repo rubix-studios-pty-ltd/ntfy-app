@@ -1,3 +1,5 @@
+import { type Icon } from '@/components/ntfy/topic-icon'
+
 export type AuthKind = 'none' | 'basic' | 'token'
 
 export type Server = {
@@ -22,10 +24,33 @@ export type Topic = {
   id: string
   serverId: string
   topic: string
+  displayName: string
+  icon: Icon
   muted: boolean
   unread: number
   subscribedAt: number
   cursorTime: number | null
+}
+
+export type TopicDisplay = Pick<Topic, 'displayName' | 'icon'> & {
+  topicId: string
+}
+
+export type ConnectionStatus = {
+  topicId: string
+  state: 'connecting' | 'connected' | 'reconnecting' | 'stopped'
+  detail: string | null
+}
+
+export type Snapshot = {
+  servers: Server[]
+  topics: Topic[]
+  statuses: ConnectionStatus[]
+  encrypted: boolean
+}
+
+export type TopicSnapshot = Omit<Snapshot, 'topics'> & {
+  topics: Omit<Topic, 'displayName' | 'icon'>[]
 }
 
 export type Attachment = {
@@ -64,19 +89,6 @@ export type StoredMessage = {
   topicId: string
   isRead: boolean
   message: NtfyMessage
-}
-
-export type ConnectionStatus = {
-  topicId: string
-  state: 'connecting' | 'connected' | 'reconnecting' | 'stopped'
-  detail: string | null
-}
-
-export type Snapshot = {
-  servers: Server[]
-  topics: Topic[]
-  statuses: ConnectionStatus[]
-  encrypted: boolean
 }
 
 export type MessageQuery = {

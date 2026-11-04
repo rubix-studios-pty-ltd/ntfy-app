@@ -42,6 +42,14 @@ pub struct Topic {
     pub cursor_time: Option<i64>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TopicDisplay {
+    pub topic_id: String,
+    pub display_name: String,
+    pub icon: String,
+}
+
 #[derive(Clone, Deserialize, Serialize)]
 pub struct Message {
     pub id: String,

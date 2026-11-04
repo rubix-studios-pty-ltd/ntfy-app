@@ -6,6 +6,9 @@ import {
   BellOff,
   CheckCheck,
   Inbox,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pencil,
   Plus,
   RefreshCw,
   Search,
@@ -21,17 +24,20 @@ import { PublishForm } from '@/components/ntfy/publish-form'
 import { ServerForm } from '@/components/ntfy/server-form'
 import { Sidebar } from '@/components/ntfy/sidebar'
 import { TopicForm } from '@/components/ntfy/topic-form'
+import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNtfy } from '@/hooks/use-ntfy'
 import { messageAction, reconnect, removeServer, updateTopic } from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
-import { type DialogState, type Snapshot } from '@/types/ntfy'
+import { type DialogState, type Snapshot, type Topic } from '@/types/ntfy'
 
 const empty: Snapshot = { servers: [], topics: [], statuses: [], encrypted: false }
 
 export function Client() {
   const [selected, setSelected] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState(false)
+  const [editing, setEditing] = useState<Topic | null>(null)
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
@@ -74,20 +80,65 @@ export function Client() {
 
   return (
     <main className="flex min-h-dvh text-sm">
-      <Sidebar
-        addServer={() => setDialog({ kind: 'server' })}
-        addTopic={() => setDialog({ kind: 'topic' })}
-        editServer={(id) =>
-          setDialog({ kind: 'server', server: snapshot.servers.find((item) => item.id === id) })
-        }
-        preferences={() => setDialog({ kind: 'preferences' })}
-        select={setSelected}
-        selected={selected}
-        snapshot={snapshot}
-      />
+      <div
+        className={cn(
+          'sticky top-0 z-20 h-dvh shrink-0 transition-[width] duration-300',
+          collapsed ? 'w-0' : 'w-60'
+        )}
+      >
+        <div
+          aria-hidden={collapsed}
+          className="h-full overflow-hidden"
+          id="ntfy-sidebar"
+          inert={collapsed}
+        >
+          <Sidebar
+            addServer={() => setDialog({ kind: 'server' })}
+            addTopic={() => {
+              setEditing(null)
+              setDialog({ kind: 'topic' })
+            }}
+            editServer={(id) =>
+              setDialog({
+                kind: 'server',
+                server: snapshot.servers.find((item) => item.id === id),
+              })
+            }
+            preferences={() => setDialog({ kind: 'preferences' })}
+            select={setSelected}
+            selected={selected}
+            snapshot={snapshot}
+          />
+        </div>
 
-      <section className="flex min-w-0 flex-1 flex-col p-6">
-        <header className="flex items-center justify-end pb-2">
+        <Button
+          aria-controls="ntfy-sidebar"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Expand' : 'Collapse'}
+          className="absolute top-6 right-0 z-10 translate-x-1/2 cursor-pointer border border-border bg-card transition-colors duration-300"
+          onClick={() => setCollapsed((value) => !value)}
+          size="icon-xs"
+          variant="secondary"
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-3.5" />
+          ) : (
+            <PanelLeftClose className="size-3.5" />
+          )}
+        </Button>
+      </div>
+
+      <section className="relative flex min-w-0 flex-1 flex-col p-6">
+        <header className="flex items-center justify-between gap-3 pb-2">
+          {topic ? (
+            <div className="flex min-w-0 items-center gap-2 text-foreground">
+              <TopicIcon aria-hidden="true" className="size-4 shrink-0" name={topic.icon} />
+
+              <span className="truncate font-medium">{topic.displayName || topic.topic}</span>
+            </div>
+          ) : (
+            <span />
+          )}
           <div className="flex items-center gap-2.25">
             {topic && (
               <>
@@ -95,10 +146,23 @@ export function Client() {
                   className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
                   disabled={busy}
                   onClick={() => void perform(() => updateTopic(topic.id, !topic.muted))}
-                  size="icon-sm"
+                  size="icon-xs"
                   variant="outline"
                 >
-                  {topic.muted ? <Bell className="size-3.5" /> : <BellOff className="size-3.5" />}
+                  {topic.muted ? <Bell className="size-2.5" /> : <BellOff className="size-2.5" />}
+                </Button>
+
+                <Button
+                  aria-label="Edit topic"
+                  className="cursor-pointer border-border bg-card transition-all duration-500 enabled:hover:bg-accent"
+                  onClick={() => {
+                    setEditing(topic)
+                    setDialog({ kind: 'topic' })
+                  }}
+                  size="icon-xs"
+                  variant="outline"
+                >
+                  <Pencil className="size-2.5" />
                 </Button>
 
                 <Button
@@ -116,10 +180,10 @@ export function Client() {
                       },
                     })
                   }
-                  size="icon-sm"
+                  size="icon-xs"
                   variant="outline"
                 >
-                  <Unplug className="size-3.5" />
+                  <Unplug className="size-2.5" />
                 </Button>
               </>
             )}
@@ -129,10 +193,10 @@ export function Client() {
               className="cursor-pointer duration-500 transition-all rounded-md border border-primary enabled:hover:bg-primary-hover"
               disabled={snapshot.topics.length === 0}
               onClick={() => setDialog({ kind: 'publish' })}
-              size="icon-sm"
+              size="icon-xs"
               variant="default"
             >
-              <Send className="size-3.5" />
+              <Send className="size-2.5" />
             </Button>
           </div>
         </header>
@@ -143,6 +207,7 @@ export function Client() {
             role="alert"
           >
             <span>{data.error}</span>
+
             <Button
               className="cursor-pointer duration-500 transition-all h-auto p-0 text-[11px] font-normal text-current underline"
               onClick={data.refresh}
@@ -308,6 +373,7 @@ export function Client() {
                       })
                     }
                     serverName={name}
+                    topic={source}
                   />
                 )
               })}
@@ -326,7 +392,10 @@ export function Client() {
                   {snapshot.topics.length === 0 && (
                     <Button
                       className="cursor-pointer duration-500 transition-all gap-1.75 rounded border-border bg-card text-[11px] font-semibold text-accent-foreground enabled:hover:bg-accent"
-                      onClick={() => setDialog({ kind: 'topic' })}
+                      onClick={() => {
+                        setEditing(null)
+                        setDialog({ kind: 'topic' })
+                      }}
                       size="sm"
                       variant="outline"
                     >
@@ -380,7 +449,12 @@ export function Client() {
       )}
 
       {dialog?.kind === 'topic' && (
-        <TopicForm close={close} saved={data.refresh} servers={snapshot.servers} />
+        <TopicForm
+          close={close}
+          editing={editing}
+          saved={data.refresh}
+          servers={snapshot.servers}
+        />
       )}
 
       {dialog?.kind === 'publish' && (

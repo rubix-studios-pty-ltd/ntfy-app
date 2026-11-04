@@ -2,6 +2,7 @@ use crate::db::{DbState, repo::ntfy as repository, run};
 use crate::ntfy::http;
 use crate::ntfy::models::*;
 use crate::ntfy::service::{self, ServiceState};
+use crate::ntfy::validation::validate_display;
 
 use rusqlite::params;
 use tauri::{AppHandle, Emitter, Manager};
@@ -138,12 +139,79 @@ pub async fn ntfy_remove_server(app: AppHandle, id: String) -> Result<(), String
 }
 
 #[tauri::command]
+pub async fn ntfy_topic_display(app: AppHandle) -> Result<Vec<TopicDisplay>, String> {
+    run(app.state::<DbState>(), |connection| {
+        let mut statement = connection
+            .prepare(
+                "SELECT t.id, COALESCE(d.display_name, ''), COALESCE(d.icon, 'bell')
+                 FROM ntfy_topics t
+                 LEFT JOIN ntfy_topic_display d ON d.topic_id = t.id",
+            )
+            .map_err(|error| error.to_string())?;
+
+        let rows = statement
+            .query_map([], |row| {
+                Ok(TopicDisplay {
+                    topic_id: row.get(0)?,
+                    display_name: row.get(1)?,
+                    icon: row.get(2)?,
+                })
+            })
+            .map_err(|error| error.to_string())?;
+
+        rows.collect::<rusqlite::Result<Vec<_>>>()
+            .map_err(|error| error.to_string())
+    })
+    .await
+}
+
+#[tauri::command]
+pub async fn ntfy_update_display(
+    app: AppHandle,
+    id: String,
+    display_name: String,
+    icon: String,
+) -> Result<(), String> {
+    let (display_name, icon) = validate_display(&display_name, &icon)?;
+
+    run(app.state::<DbState>(), move |connection| {
+        let changed = connection
+            .execute(
+                "INSERT INTO ntfy_topic_display (topic_id, display_name, icon)
+                 SELECT id, ?2, ?3 FROM ntfy_topics WHERE id = ?1
+                 ON CONFLICT(topic_id) DO UPDATE SET
+                   display_name = excluded.display_name,
+                   icon = excluded.icon",
+                params![id, display_name, icon],
+            )
+            .map_err(|error| error.to_string())?;
+
+        if changed == 0 {
+            return Err("Topic not found".to_string());
+        }
+
+        Ok(())
+    })
+    .await?;
+
+    let _ = app.emit("ntfy:changed", ());
+
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn ntfy_subscribe(
     app: AppHandle,
     server_id: String,
     topic: String,
+    display_name: Option<String>,
+    icon: Option<String>,
 ) -> Result<(), String> {
     let topic = http::validate_topic(&topic)?;
+    let (display_name, icon) = validate_display(
+        display_name.as_deref().unwrap_or(""),
+        icon.as_deref().unwrap_or("bell"),
+    )?;
 
     let state = app.state::<ServiceState>();
 
@@ -169,7 +237,17 @@ pub async fn ntfy_subscribe(
     service::stop(&app).await;
 
     let result = run(app.state::<DbState>(), move |connection| {
-        repository::subscribe(connection, &server_id, &topic, subscribed_at)
+        repository::subscribe(connection, &server_id, &topic, subscribed_at)?;
+
+        connection
+            .execute(
+                "INSERT INTO ntfy_topic_display (topic_id, display_name, icon)
+                 SELECT id, ?3, ?4 FROM ntfy_topics WHERE server_id = ?1 AND topic = ?2",
+                params![server_id, topic, display_name, icon],
+            )
+            .map_err(|error| error.to_string())?;
+
+        Ok(())
     })
     .await;
 
@@ -198,6 +276,10 @@ pub async fn ntfy_update_topic(
 
     let result = run(app.state::<DbState>(), move |connection| {
         if remove {
+            connection
+                .execute("DELETE FROM ntfy_topic_display WHERE topic_id = ?1", [&id])
+                .map_err(|error| error.to_string())?;
+
             let sql = "
                 DELETE FROM ntfy_topics
                 WHERE id = ?1

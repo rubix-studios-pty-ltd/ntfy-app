@@ -9,11 +9,11 @@ Automatic updates are disabled by default to reduce background activity, externa
 [![GitHub Repo Size](https://img.shields.io/github/repo-size/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app)
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/rubix-studios-pty-ltd/ntfy-app)](https://github.com/rubix-studios-pty-ltd/ntfy-app/commits/main)
 
-<img width="1918" height="1078" alt="image" src="https://github.com/user-attachments/assets/6d928dab-5ff7-449d-a4da-fd5b28d27689" />
-<img width="1918" height="1079" alt="image" src="https://github.com/user-attachments/assets/e024a569-b301-455a-b78b-08deb7dfa1ca" />
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/7382bf8d-90e1-4c65-9639-7126d6aafc12" />
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/c84ba8cc-e082-4d60-a860-d9628b7b07da" />
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/927e06ad-680e-4f56-b43b-9dc159d0c27c" />
+![Main Dashboard](https://github.com/user-attachments/assets/6d928dab-5ff7-449d-a4da-fd5b28d27689)
+![Automation](https://github.com/user-attachments/assets/e024a569-b301-455a-b78b-08deb7dfa1ca)
+![Logs](https://github.com/user-attachments/assets/7382bf8d-90e1-4c65-9639-7126d6aafc12)
+![Schedule](https://github.com/user-attachments/assets/c84ba8cc-e082-4d60-a860-d9628b7b07da)
+![Light Theme](https://github.com/user-attachments/assets/927e06ad-680e-4f56-b43b-9dc159d0c27c)
 
 ## Features
 
@@ -129,22 +129,30 @@ pnpm update       # Update dependencies interactively
 
 ```text
 ntfy-app/
-├── app/                    # Next.js app directory
-├── components/             # React components
-├── lib/                    # Utility functions
-├── src-tauri/              # Rust/Tauri backend
-│   ├── src/
-│   │   ├── main.rs         # Application entry point
-│   │   ├── window.rs       # Window event handling
-│   │   ├── tray.rs         # System tray setup
-│   │   ├── listener.rs     # ntfy listener logic
-│   │   ├── commands/       # Tauri IPC commands
-│   │   └── ...
-│   └── tauri.conf.json     # Tauri configuration
-├── styles/                 # Global styles
-├── types/                  # TypeScript types
-├── utils/                  # Frontend utilities
-└── scripts/                # Build/release scripts
+├── app/                    # Next.js
+├── assets/                 # Assets
+├── components/             # React UI
+├── hooks/                  # Custom hooks
+├── lib/
+│   ├── constant/           # Constants
+│   └── tauri/              # Tauri IPC
+├── modules/                # Automation
+├── schema/                 # Validation
+├── scripts/                # Scripts
+├── src-tauri/              # Rust/Tauri
+│   ├── capabilities/       # Tauri permissions
+│   └── src/
+│       ├── automation/     # Automation engine
+│       ├── commands/       # Tauri IPC
+│       ├── db/             # Database
+│       ├── modules/        # Automation modules
+│       ├── ntfy/           # Integration
+│       ├── storage/        # Storage
+│       ├── tray/           # System tray
+│       └── windows/        # Window management
+├── styles/                 # Styles
+├── types/                  # Definitions
+└── utils/                  # Helper functions
 ```
 
 ## Contributing

@@ -19,6 +19,12 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
             UNIQUE(server_id, topic)
         );
 
+        CREATE TABLE IF NOT EXISTS ntfy_topic_display (
+            topic_id TEXT PRIMARY KEY REFERENCES ntfy_topics(id) ON DELETE CASCADE,
+            display_name TEXT NOT NULL DEFAULT '',
+            icon TEXT NOT NULL DEFAULT 'bell'
+        );
+
         CREATE TABLE IF NOT EXISTS ntfy_receipts (
             topic_id TEXT NOT NULL REFERENCES ntfy_topics(id) ON DELETE CASCADE,
             message_id TEXT NOT NULL, received_at INTEGER NOT NULL,
