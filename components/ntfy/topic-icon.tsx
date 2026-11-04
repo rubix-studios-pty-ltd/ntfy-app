@@ -39,7 +39,12 @@ export const topicIcons = {
 
 export type Icon = keyof typeof topicIcons
 
-export function TopicIcon({ name, ...props }: { name: Icon } & ComponentProps<typeof Bell>) {
+type Props = ComponentProps<typeof Bell> & {
+  name: Icon
+}
+
+export function TopicIcon({ name, ...props }: Props) {
   const Icon = topicIcons[name] ?? Bell
+
   return <Icon {...props} />
 }
