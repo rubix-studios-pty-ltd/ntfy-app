@@ -25,9 +25,6 @@ Automatic updates are disabled by default to reduce background activity, externa
 - **System Tray**: Runs quietly in the background with tray controls
 - **Lightweight**: Built with Rust and Tauri for minimal resource usage
 - **Modern UI**: Next.js, React, and Tailwind CSS
-
-## In Development (Beta)
-
 - **Automations**: Trigger local programs, scripts, URLs, and system actions
   based on incoming ntfy messages
 
