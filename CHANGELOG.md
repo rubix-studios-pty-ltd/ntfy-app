@@ -1,3 +1,10 @@
+
+## [1.1.0] - 2026-11-11
+
+### Fixed
+
+- **sec**: node security update
+
 ## [1.0.1] - 2026-11-04
 
 ### Added
@@ -14,12 +21,6 @@
 
 - **ntfy**: improve sidebar structure and styling
 - **ntfy**: simplify TopicIcon component props
-
-## [1.1.0] - 2026-11-11
-
-### Fixed
-
-- **sec**: node security update
 
 ## [1.0.0] - 2026-11-03
 
