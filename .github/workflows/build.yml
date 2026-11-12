@@ -19,16 +19,16 @@ jobs:
         include:
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
-            assetNamePattern: "Ntfy-macOS-Apple-Silicon[ext]"
+            releaseAssetNamePattern: "Ntfy-macOS-Apple-Silicon[ext]"
           - platform: "macos-latest"
             args: "--target x86_64-apple-darwin"
-            assetNamePattern: "Ntfy-macOS-Intel[ext]"
+            releaseAssetNamePattern: "Ntfy-macOS-Intel[ext]"
           - platform: "ubuntu-24.04"
             args: ""
-            assetNamePattern: "Ntfy-Linux-x64[ext]"
+            releaseAssetNamePattern: "Ntfy-Linux-x64[ext]"
           - platform: "windows-latest"
             args: ""
-            assetNamePattern: "Ntfy-Windows-x64-Setup[ext]"
+            releaseAssetNamePattern: "Ntfy-Windows-x64-Setup[ext]"
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -41,7 +41,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7.1.0
         with:
-          node-version: 24
+          node-version: 24.22.3
+          check-latest: true
+          cache: pnpm
 
       - name: Install Rust Stable
         uses: dtolnay/rust-toolchain@stable
@@ -85,4 +87,4 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-          assetNamePattern: ${{ matrix.assetNamePattern }}
+          releaseAssetNamePattern: ${{ matrix.releaseAssetNamePattern }}
