@@ -58,6 +58,7 @@
     "pnpm": ">=10"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-notification": "^2.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -74,7 +75,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.6.7",
     "@tailwindcss/postcss": "^4.3.5",
-    "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/cli": "^2.12.4",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
