@@ -107,7 +107,7 @@ dependencies = [
  "pipewire",
  "serde",
  "serde_repr",
- "zbus 6.2.1",
+ "zbus 6.3.0",
 ]
 
 [[package]]
@@ -470,9 +470,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.20.3"
+version = "3.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
+checksum = "87a0cf66fd1eb2fb7b822cb78370d82303750809bc6ba855f3f58e517d3238db"
 
 [[package]]
 name = "bytemuck"
@@ -594,9 +594,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.11.1"
+version = "1.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ff2a8126fff0f8c839080d619675a585e61720bb12d2baceae45769fd66f155"
+checksum = "33ef9e3e8154a45c7a95cff4c1299702106ad94062d7bb85fdc5d3a5afd91d45"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -642,9 +642,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-expr"
-version = "0.20.10"
+version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ba9e9ec16c447027685b1f897b720e18e9a8afd00bd7332c483537e38086c9f"
+checksum = "edd44d82755fb9210fb10d9daf8dd7e522da0efe1d5f263cffc5db07725663ff"
 dependencies = [
  "smallvec",
  "target-lexicon 0.13.5",
@@ -937,9 +937,12 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "1.0.13"
+version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "914a755b7c2d4af2bdcff7ce1739e2db9a1b81a9b07123d8015786ae03c0980d"
+checksum = "ea691ed9f36489d087419b8b2ba3ef27d89621380b4178c73e2445a379e4e0f4"
+dependencies = [
+ "link-section",
+]
 
 [[package]]
 name = "ctutils"
@@ -1331,9 +1334,9 @@ dependencies = [
 
 [[package]]
 name = "errno"
-version = "0.3.14"
+version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+checksum = "e35d6e78f4cebb90e51d543db8fe41528851d6deeef6ef21ebd4bfdc1e784776"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
@@ -2746,6 +2749,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "link-section"
+version = "0.19.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d9aae57673c1a235149777a74d152f3210ebd3e3b13346d2cdb6809e566bd3c"
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.4.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2890,9 +2899,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.2.4"
+version = "1.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee"
+checksum = "20521a903f02b0a573cd6840e9d0a5a0cc043d361fe924092cd70f8556cc9c4a"
 dependencies = [
  "libc",
  "wasi",
@@ -3008,7 +3017,7 @@ dependencies = [
  "mac-notification-sys",
  "serde",
  "tauri-winrt-notification",
- "zbus 6.2.1",
+ "zbus 6.3.0",
 ]
 
 [[package]]
@@ -4293,9 +4302,9 @@ checksum = "eec689c0bc40ff2458a5977b6619cb718087084a18e02a131c599b62d05e1a5f"
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.16"
+version = "0.103.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281"
+checksum = "e3a0760a887c14823fca5a1c970b01d47c328c696c0c64829d1df50e8f853fd5"
 dependencies = [
  "aws-lc-rs",
  "ring",
@@ -5000,7 +5009,7 @@ version = "7.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "396a35feb67335377e0251fcbc1092fc85c484bd4e3a7a54319399da127796e7"
 dependencies = [
- "cfg-expr 0.20.10",
+ "cfg-expr 0.20.11",
  "heck 0.5.0",
  "pkg-config",
  "toml 1.2.1+spec-1.1.0",
@@ -6916,9 +6925,9 @@ dependencies = [
 
 [[package]]
 name = "zbus"
-version = "6.2.1"
+version = "6.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ddb2961d9587ef9f24ad14cde1c3bc4c5edc9f1525932a8cffdd5bd98886eb9"
+checksum = "6b4aae740b23927ceabed962431abab2cdefb9f7f885e5bbab062da09bf580e4"
 dependencies = [
  "async-trait",
  "bitflags 2.13.2",
@@ -6935,7 +6944,7 @@ dependencies = [
  "uuid",
  "windows-sys 0.61.2",
  "winnow 1.0.5",
- "zbus_macros 6.2.1",
+ "zbus_macros 6.3.0",
  "zbus_utils",
  "zcheapstr",
  "zruntime",
@@ -6969,9 +6978,9 @@ dependencies = [
 
 [[package]]
 name = "zbus_macros"
-version = "6.2.1"
+version = "6.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "083b38add47c340fc12ec560124fb1d9c23acb584f7021099f85ec6587a03c54"
+checksum = "37c9dd4beaf145c16fcb2902862f50da86e54aed13dd368ddf64a1d17e6b8529"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7118,9 +7127,9 @@ checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 
 [[package]]
 name = "zruntime"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23ef5ed7d628cdf0af82f93dfe03330a8e37383bf7422a1d3d6eb72326680be5"
+checksum = "ce6a55d4f521760475a30f7b96779508fe8c40dc834478709454dd1d5f0ebc72"
 dependencies = [
  "futures-core",
  "futures-io",
