@@ -73,7 +73,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.7",
+    "@biomejs/biome": "^2.6.8",
     "@tailwindcss/postcss": "^4.3.5",
     "@tauri-apps/cli": "^2.12.4",
     "@types/node": "^26.6.6",
