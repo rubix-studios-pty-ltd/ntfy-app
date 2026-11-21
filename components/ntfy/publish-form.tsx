@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { Modal } from '@/components/ntfy/modal'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -33,6 +34,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
   const [message, setMessage] = useState('')
   const [priority, setPriority] = useState(3)
   const [tags, setTags] = useState('')
+  const [markdown, setMarkdown] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -52,6 +54,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               topicId,
               title,
               message,
+              markdown,
               priority,
               tags: tags
                 .split(',')
@@ -124,6 +127,17 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               rows={3}
               value={message}
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={markdown}
+              id={`${id}-markdown`}
+              onCheckedChange={(checked) => setMarkdown(checked === true)}
+            />
+            <Label className="cursor-pointer text-[11px]" htmlFor={`${id}-markdown`}>
+              Send as Markdown
+            </Label>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

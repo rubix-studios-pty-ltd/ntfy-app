@@ -104,6 +104,7 @@ export type PublishInput = {
   topicId: string
   title: string
   message: string
+  markdown: boolean
   priority: number
   tags: string[]
 }

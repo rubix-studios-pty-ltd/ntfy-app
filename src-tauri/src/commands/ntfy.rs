@@ -402,6 +402,7 @@ pub async fn ntfy_publish(app: AppHandle, input: PublishInput) -> Result<(), Str
             "topic": topic.topic,
             "title": input.title,
             "message": input.message,
+            "markdown": input.markdown,
             "priority": input.priority,
             "tags": input.tags,
         }));
