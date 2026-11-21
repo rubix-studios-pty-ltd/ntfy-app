@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { nameToEmoji } from 'gemoji'
 import { Check, ChevronDown, ChevronUp, ExternalLink, File, Maximize2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -17,6 +18,7 @@ type Props = {
   expanded: boolean
   item: StoredMessage
   onToggleExpand: () => void
+  showTags: boolean
   refresh: () => void
   remove: () => void
   serverName: string
@@ -31,6 +33,7 @@ export function Card({
   remove,
   expanded,
   onToggleExpand,
+  showTags,
 }: Props) {
   const [canExpand, setCanExpand] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -119,11 +122,25 @@ export function Card({
         </div>
 
         <div className="mt-2.5 flex items-center gap-2">
-          {(message.priority ?? 3) >= 4 && (
-            <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
-              {message.priority === 5 ? 'Urgent' : 'High'}
-            </span>
-          )}
+          {showTags &&
+            message.tags.map((tag, index) => {
+              const normalized = tag.trim().toLowerCase().replace(/^:|:$/g, '')
+              const emoji = Object.hasOwn(nameToEmoji, normalized)
+                ? nameToEmoji[normalized]
+                : undefined
+
+              return emoji ? (
+                <span
+                  aria-label={tag}
+                  className="ml-1 inline-block text-[11px]"
+                  key={`${tag}-${index}`}
+                  role="img"
+                  title={tag}
+                >
+                  {emoji}
+                </span>
+              ) : null
+            })}
 
           {safeLink(message.click) ? (
             <button
@@ -137,6 +154,12 @@ export function Card({
             <h2 className="truncate text-xs font-semibold text-foreground">
               {message.title || topic?.displayName || message.topic}
             </h2>
+          )}
+
+          {(message.priority ?? 3) >= 4 && (
+            <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
+              {message.priority === 5 ? 'Urgent' : 'High'}
+            </span>
           )}
         </div>
 
@@ -169,12 +192,12 @@ export function Card({
             {expanded ? (
               <>
                 <ChevronUp className="size-3.5" />
-                Show less
+                Reduce
               </>
             ) : (
               <>
                 <ChevronDown className="size-3.5" />
-                Show more
+                Expand
               </>
             )}
           </Button>

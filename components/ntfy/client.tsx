@@ -34,6 +34,7 @@ import { useNtfy } from '@/hooks/use-ntfy'
 import {
   messageAction,
   notificationClick,
+  preference,
   reconnect,
   removeServer,
   updateTopic,
@@ -53,6 +54,7 @@ export function Client() {
   const [dialog, setDialog] = useState<DialogState>(null)
   const [busy, setBusy] = useState(false)
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [showTags, setShowTags] = useState(true)
 
   const data = useNtfy(selected, unreadOnly, query)
   const loading = data.pending || search !== query
@@ -61,6 +63,24 @@ export function Client() {
   const topic = snapshot.topics.find((item) => item.id === selected)
   const status = snapshot.statuses.find((item) => item.topicId === selected)
   const unread = snapshot.topics.reduce((total, item) => total + item.unread, 0)
+
+  useEffect(() => {
+    if (!isTauri()) return
+
+    let active = true
+
+    void preference()
+      .then((saved) => {
+        if (active) setShowTags(saved.showTags)
+      })
+      .catch((failure) => {
+        console.error('Cannot load tag emoji preference', failure)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!isTauri()) return
@@ -439,6 +459,7 @@ export function Client() {
                       })
                     }
                     serverName={name}
+                    showTags={showTags}
                     topic={source}
                   />
                 )
@@ -532,7 +553,9 @@ export function Client() {
         />
       )}
 
-      {dialog?.kind === 'preferences' && <Preferences close={close} />}
+      {dialog?.kind === 'preferences' && (
+        <Preferences close={close} saved={(value) => setShowTags(value.showTags)} />
+      )}
 
       {dialog?.kind === 'confirm' && <Confirm {...dialog} close={close} />}
     </main>

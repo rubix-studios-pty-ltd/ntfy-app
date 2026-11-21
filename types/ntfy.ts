@@ -116,3 +116,8 @@ export type DialogState =
   | { kind: 'preferences' }
   | { kind: 'confirm'; title: string; description: string; action: () => Promise<void> }
   | null
+
+export type Preferences = {
+  preview: boolean
+  showTags: boolean
+}
