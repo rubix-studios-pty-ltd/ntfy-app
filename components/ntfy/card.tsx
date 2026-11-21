@@ -60,7 +60,7 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
         <TopicIcon aria-hidden="true" className="size-4" name={topic?.icon ?? 'bell'} />
 
         {!item.isRead && (
-          <span className="absolute right-0 bottom-0 size-1.25 animate-pulse rounded-full bg-success motion-reduce:animate-none">
+          <span className="absolute right-0 bottom-0 size-1.25 rounded-full bg-success">
             <span className="sr-only">Unread</span>
           </span>
         )}
@@ -107,7 +107,8 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
           )}
         </div>
 
-        {message.markdown ? (
+        {message.markdown ||
+        message.content_type?.split(';')[0].trim().toLowerCase() === 'text/markdown' ? (
           <Markdown content={message.message} />
         ) : (
           <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">

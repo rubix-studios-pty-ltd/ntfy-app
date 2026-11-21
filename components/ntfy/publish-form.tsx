@@ -116,7 +116,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
             </Label>
 
             <Textarea
-              className="w-full min-w-0 rounded-md border border-border bg-card p-2.5 text-xs md:text-xs text-foreground resize-none"
+              className="w-full min-w-0 field-sizing-fixed resize-none overflow-y-auto rounded-md border border-border bg-card p-2.5 text-xs text-foreground md:text-xs"
               id={`${id}-message`}
               maxLength={4096}
               onChange={(event) => setMessage(event.target.value)}

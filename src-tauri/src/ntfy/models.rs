@@ -64,8 +64,10 @@ pub struct Message {
     #[serde(default)]
     pub tags: Vec<String>,
     pub click: Option<String>,
-    #[serde(default)]
-    pub markdown: bool,
+#[serde(default)]
+pub markdown: bool,
+#[serde(default)]
+pub content_type: Option<String>,
     pub attachment: Option<Attachment>,
     #[serde(default)]
     pub actions: Vec<serde_json::Value>,

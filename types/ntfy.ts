@@ -79,6 +79,7 @@ export type NtfyMessage = {
   tags: string[]
   click: string | null
   markdown: boolean
+  content_type?: string | null
   attachment: Attachment | null
   actions: NtfyAction[]
   expires: number | null
