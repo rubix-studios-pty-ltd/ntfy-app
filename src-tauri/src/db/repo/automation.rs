@@ -16,6 +16,7 @@ pub fn get_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String>
               active,
               name,
               topic,
+              server_id,
               match_type,
               match_value,
               action_type,
@@ -43,6 +44,7 @@ pub fn get_rules(connection: &Connection) -> Result<Vec<AutomationRule>, String>
 
 pub fn get_active_rules(
     connection: &Connection,
+    server_id: &str,
     topic: &str,
 ) -> Result<Vec<AutomationRule>, String> {
     let mut statement = connection
@@ -53,6 +55,7 @@ pub fn get_active_rules(
               active,
               name,
               topic,
+              server_id,
               match_type,
               match_value,
               action_type,
@@ -66,15 +69,16 @@ pub fn get_active_rules(
               last_run_at,
               status
             FROM automation_rules
-            WHERE topic = ?1
-              AND active = 1
+            WHERE server_id = ?1
+                AND topic = ?2 COLLATE NOCASE
+                AND active = 1
             ORDER BY created_at DESC
             "#,
         )
         .map_err(|error| error.to_string())?;
 
     statement
-        .query_map(params![topic], rule_row)
+        .query_map(params![server_id, topic], rule_row)
         .map_err(|error| error.to_string())?
         .collect::<Result<Vec<_>, _>>()
         .map_err(|error| error.to_string())
@@ -88,6 +92,8 @@ pub fn create_rule(
     let status = rule.status.clone().or_else(|| Some("never".to_string()));
     let action_config = config_json(rule.action_config)?;
 
+    verify_server(connection, &rule.server_id)?;
+
     connection
         .execute(
             r#"
@@ -96,6 +102,7 @@ pub fn create_rule(
               active,
               name,
               topic,
+              server_id,
               match_type,
               match_value,
               action_type,
@@ -108,13 +115,14 @@ pub fn create_rule(
               updated_at,
               last_run_at,
               status
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)
             "#,
             params![
                 rule.id,
                 i64::from(rule.active),
                 rule.name,
                 rule.topic,
+                rule.server_id,
                 rule.match_type,
                 rule.match_value,
                 rule.action_type,
@@ -141,6 +149,7 @@ pub fn update_rule(
     let now = super::now_ms();
     let existing = rule_id(connection, &rule.id)?;
     let action_config = config_json(rule.action_config)?;
+    verify_server(connection, &rule.server_id)?;
 
     connection
         .execute(
@@ -149,17 +158,18 @@ pub fn update_rule(
             SET active = ?2,
                 name = ?3,
                 topic = ?4,
-                match_type = ?5,
-                match_value = ?6,
-                action_type = ?7,
-                action_value = ?8,
-                module_id = ?9,
-                action_config = ?10,
-                arguments = ?11,
-                working_directory = ?12,
-                updated_at = ?13,
-                last_run_at = ?14,
-                status = ?15
+                server_id = ?5,
+                match_type = ?6,
+                match_value = ?7,
+                action_type = ?8,
+                action_value = ?9,
+                module_id = ?10,
+                action_config = ?11,
+                arguments = ?12,
+                working_directory = ?13,
+                updated_at = ?14,
+                last_run_at = ?15,
+                status = ?16
             WHERE id = ?1
             "#,
             params![
@@ -167,6 +177,7 @@ pub fn update_rule(
                 i64::from(rule.active),
                 rule.name,
                 rule.topic,
+                rule.server_id,
                 rule.match_type,
                 rule.match_value,
                 rule.action_type,
@@ -205,6 +216,7 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
         active: !current.active,
         name: current.name,
         topic: current.topic,
+        server_id: current.server_id,
         match_type: current.match_type,
         match_value: current.match_value,
         action_type: current.action_type,
@@ -218,4 +230,24 @@ pub fn toggle_rule(connection: &Connection, id: &str) -> Result<AutomationRule, 
     };
 
     update_rule(connection, updated)
+}
+
+fn verify_server(connection: &Connection, server_id: &str) -> Result<(), String> {
+    if server_id.is_empty() {
+        return Err("Choose a server for this automation".to_string());
+    }
+
+    let found: i64 = connection
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM ntfy_servers WHERE id=?1 AND enabled=1)",
+            [server_id],
+            |row| row.get(0),
+        )
+        .map_err(|error| error.to_string())?;
+
+    if found == 0 {
+        return Err("The selected server is unavailable".to_string());
+    }
+
+    Ok(())
 }

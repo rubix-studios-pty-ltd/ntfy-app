@@ -51,6 +51,10 @@ export function updateTopic(id: string, muted: boolean, remove = false) {
   return invoke<void>('ntfy_update_topic', { id, muted, remove })
 }
 
+export function notificationClick(rowId: number | null) {
+  return invoke<string | null>('ntfy_notification_click', { rowId })
+}
+
 export function getMessages(query: MessageQuery) {
   return invoke<StoredMessage[]>('ntfy_messages', { query })
 }

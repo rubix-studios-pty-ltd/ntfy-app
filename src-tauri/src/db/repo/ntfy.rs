@@ -137,6 +137,8 @@ pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Re
         )
         .map_err(|error| error.to_string())?;
 
+    let receipt_row_id = transaction.last_insert_rowid();
+
     transaction.execute("UPDATE ntfy_topics SET cursor_time=max(coalesce(cursor_time,subscribed_at),?2) WHERE id=?1", params![topic_id,message.time]).map_err(|error| error.to_string())?;
 
     if inserted == 0 {
@@ -173,15 +175,17 @@ pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Re
         }
     }
 
+    let mut fresh = true;
+
     if message.event == "message" {
         let payload = serde_json::to_string(message).map_err(|error| error.to_string())?;
 
-        transaction
+        fresh = transaction
             .execute(
-                "INSERT INTO ntfy_messages(topic_id,message_id,time,payload) VALUES(?1,?2,?3,?4)",
+                "INSERT OR IGNORE INTO ntfy_messages(topic_id,message_id,time,payload) VALUES(?1,?2,?3,?4)",
                 params![topic_id, message.id, message.time, payload],
             )
-            .map_err(|error| error.to_string())?;
+            .map_err(|error| error.to_string())? > 0;
     }
 
     let row_id = transaction.last_insert_rowid();
@@ -190,16 +194,20 @@ pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Re
         transaction.execute("DELETE FROM ntfy_messages WHERE row_id NOT IN (SELECT row_id FROM ntfy_messages ORDER BY row_id DESC LIMIT 10000)",[]).map_err(|error|error.to_string())?;
     }
 
+    if receipt_row_id > 0 && receipt_row_id % 250 == 0 {
+        cleanup_receipts(&transaction)?;
+    }
+
     transaction.commit().map_err(|error| error.to_string())?;
 
-    Ok(true)
+    Ok(fresh)
 }
 
 pub fn messages(
     connection: &Connection,
     query: &MessageQuery,
 ) -> Result<Vec<StoredMessage>, String> {
-    let mut statement = connection.prepare("SELECT row_id,topic_id,is_read,payload FROM ntfy_messages WHERE (?1 IS NULL OR topic_id=?1) AND (?2 IS NULL OR row_id<?2) AND (?3=0 OR is_read=0) AND (?4='' OR instr(lower(coalesce(json_extract(payload,'$.title'),'')),lower(?4))>0 OR instr(lower(coalesce(json_extract(payload,'$.message'),'')),lower(?4))>0 OR instr(lower(coalesce(json_extract(payload,'$.topic'),'')),lower(?4))>0) ORDER BY row_id DESC LIMIT 100").map_err(|error| error.to_string())?;
+    let mut statement = connection.prepare("SELECT row_id,topic_id,is_read,payload FROM ntfy_messages WHERE (?1 IS NULL OR topic_id=?1) AND (?2 IS NULL OR row_id<?2) AND (?3=0 OR is_read=0) AND (?4='' OR instr(lower(coalesce(json_extract(payload,'$.title'),'')),lower(?4))>0 OR instr(lower(coalesce(json_extract(payload,'$.message'),'')),lower(?4))>0 OR instr(lower(coalesce(json_extract(payload,'$.topic'),'')),lower(?4))>0) ORDER BY row_id DESC LIMIT 20").map_err(|error| error.to_string())?;
 
     let rows = statement
         .query_map(
@@ -232,6 +240,35 @@ pub fn messages(
     .collect()
 }
 
+pub fn message_row_id(
+    connection: &Connection,
+    topic_id: &str,
+    message_id: &str,
+) -> Result<Option<i64>, String> {
+    connection
+        .query_row(
+            "SELECT row_id FROM ntfy_messages WHERE topic_id=?1 AND message_id=?2",
+            params![topic_id, message_id],
+            |row| row.get(0),
+        )
+        .optional()
+        .map_err(|error| error.to_string())
+}
+
+pub fn notification_target(
+    connection: &Connection,
+    row_id: i64,
+) -> Result<Option<(String, Option<String>)>, String> {
+    let mut stmt = connection
+        .prepare(
+            "SELECT topic_id, json_extract(payload, '$.click') FROM ntfy_messages WHERE row_id=?1",
+        )
+        .map_err(|error| error.to_string())?;
+    stmt.query_row([row_id], |row| Ok((row.get(0)?, row.get(1)?)))
+        .optional()
+        .map_err(|error| error.to_string())
+}
+
 pub fn meta(connection: &Connection, key: &str) -> Result<Option<String>, String> {
     connection
         .query_row("SELECT value FROM app_meta WHERE key=?1", [key], |row| {
@@ -243,5 +280,18 @@ pub fn meta(connection: &Connection, key: &str) -> Result<Option<String>, String
 
 pub fn cleanup(connection: &Connection) -> Result<(), String> {
     connection.execute_batch("DELETE FROM ntfy_messages WHERE row_id NOT IN (SELECT row_id FROM ntfy_messages ORDER BY row_id DESC LIMIT 10000);")
+        .map_err(|error| error.to_string())?;
+    cleanup_receipts(connection)
+}
+
+fn cleanup_receipts(connection: &Connection) -> Result<(), String> {
+    connection
+        .execute(
+            "DELETE FROM ntfy_receipts WHERE received_at < ?1",
+            [chrono::Utc::now().timestamp() - 30 * 24 * 60 * 60],
+        )
+        .map_err(|error| error.to_string())?;
+
+    connection.execute_batch("DELETE FROM ntfy_receipts WHERE rowid NOT IN (SELECT rowid FROM ntfy_receipts ORDER BY rowid DESC LIMIT 20000)")
         .map_err(|error| error.to_string())
 }

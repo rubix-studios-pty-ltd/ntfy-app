@@ -1,8 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { Check, ExternalLink, File, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Markdown } from '@/components/ntfy/markdown'
 import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { messageAction, openExternal } from '@/lib/tauri/ntfy'
@@ -31,6 +33,15 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
 
   const expired =
     message.attachment?.expires != null && message.attachment.expires * 1000 < Date.now()
+
+  const attachmentType = message.attachment?.type?.toLowerCase() ?? ''
+  const attachmentName = message.attachment?.name.toLowerCase() ?? ''
+
+  const isImage =
+    attachmentType.startsWith('image/') || /\.(png|jpe?g|webp|gif|avif)$/.test(attachmentName)
+  const isVideo = attachmentType.startsWith('video/') || /\.(mp4|webm|mov)$/.test(attachmentName)
+  const isAudio =
+    attachmentType.startsWith('audio/') || /\.(mp3|m4a|ogg|wav|flac)$/.test(attachmentName)
 
   const date = new Date(message.time * 1000)
 
@@ -81,14 +92,28 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
             </span>
           )}
 
-          <h2 className="text-xs font-semibold truncate text-foreground">
-            {message.title || topic?.displayName || message.topic}
-          </h2>
+          {safeLink(message.click) ? (
+            <button
+              className="cursor-pointer truncate text-left text-xs font-semibold text-foreground hover:text-primary hover:underline"
+              onClick={() => void open(message.click as string)}
+              type="button"
+            >
+              {message.title || topic?.displayName || message.topic}
+            </button>
+          ) : (
+            <h2 className="truncate text-xs font-semibold text-foreground">
+              {message.title || topic?.displayName || message.topic}
+            </h2>
+          )}
         </div>
 
-        <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">
-          {message.message}
-        </p>
+        {message.markdown ? (
+          <Markdown content={message.message} />
+        ) : (
+          <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">
+            {message.message}
+          </p>
+        )}
 
         {message.tags.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1.25">
@@ -100,6 +125,51 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
                 {tag}
               </span>
             ))}
+          </div>
+        )}
+
+        {message.attachment && safeLink(message.attachment.url) && !expired && (
+          <div className="mt-3 max-w-xl overflow-hidden rounded-md border border-border bg-muted/25 p-2.5">
+            {isImage && (
+              <Image
+                alt={message.attachment.name}
+                className="max-h-72 w-full rounded object-contain"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                src={message.attachment.url}
+              />
+            )}
+
+            {isVideo && (
+              // biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks
+              <video
+                className="max-h-72 w-full rounded"
+                controls
+                preload="none"
+                src={message.attachment.url}
+              >
+                Your browser cannot play this attachment.
+              </video>
+            )}
+
+            {isAudio && (
+              // biome-ignore lint/a11y/useMediaCaption: ntfy audio attachments do not provide caption tracks
+              <audio className="w-full" controls preload="none" src={message.attachment.url}>
+                Your browser cannot play this attachment.
+              </audio>
+            )}
+
+            <div className="mt-1.5 flex items-center justify-between gap-3 text-[10px] text-muted-foreground">
+              <span className="truncate">{message.attachment.name}</span>
+              {message.attachment.size != null && (
+                <span className="shrink-0">
+                  {Math.max(0, message.attachment.size / 1024).toLocaleString(undefined, {
+                    maximumFractionDigits: 1,
+                  })}{' '}
+                  KB
+                </span>
+              )}
+            </div>
           </div>
         )}
 

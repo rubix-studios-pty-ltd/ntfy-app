@@ -18,18 +18,20 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { getDefault, moduleMap, moduleOptions } from '@/modules'
 import { type ActionType, type MatchType, type RulesType } from '@/schema/automation'
+import { type Server } from '@/types/ntfy'
 import { actionLabels } from '@/utils/actionType'
 import { getBase } from '@/utils/getBase'
 import { getConfig, parseConfig } from '@/utils/getConfig'
 import { stripRule } from '@/utils/stripRule'
 
 type Props = {
+  servers: Server[]
   onSave: () => void | Promise<void>
   rule: RulesType | null
   setRule: (rule: RulesType | null) => void
 }
 
-export function Modal({ rule, setRule, onSave }: Props) {
+export function Modal({ rule, setRule, onSave, servers }: Props) {
   const importInput = useRef<HTMLInputElement>(null)
 
   const runAction = rule?.actionType === 'runProgram'
@@ -121,9 +123,18 @@ export function Modal({ rule, setRule, onSave }: Props) {
         throw new Error('Invalid rule file')
       }
 
+      const imported = stripRule(importedRule) as Partial<RulesType>
+
+      const serverId = servers.some((server) => server.id === imported.serverId)
+        ? imported.serverId
+        : servers.length === 1
+          ? servers[0].id
+          : ''
+
       setRule({
         ...rule,
-        ...stripRule(importedRule),
+        ...imported,
+        serverId,
         active: false,
       } as RulesType)
     } catch {
@@ -158,6 +169,24 @@ export function Modal({ rule, setRule, onSave }: Props) {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-2">
+            <Label className="text-[11px]">Server</Label>
+            <Select
+              onValueChange={(value) => updateRule({ serverId: value })}
+              value={rule.serverId}
+            >
+              <SelectTrigger className="w-full border-border bg-card text-xs">
+                <SelectValue placeholder="Select server" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {servers.map((server) => (
+                  <SelectItem key={server.id} value={server.id}>
+                    {server.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid gap-2">
             <Label className="text-[11px]">Topic</Label>
             <Input

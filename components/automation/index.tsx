@@ -27,7 +27,9 @@ import {
   toggleRule,
   updateRule,
 } from '@/lib/tauri/automation'
+import { getSnapshot } from '@/lib/tauri/ntfy'
 import { type RulesType, ruleSchema } from '@/schema/automation'
+import { type Server } from '@/types/ntfy'
 import { actionType } from '@/utils/actionType'
 import { formatDate } from '@/utils/formatDate'
 import { formatAction, getAction } from '@/utils/getAction'
@@ -36,6 +38,7 @@ import { baseStatus, status, statusStyle } from '@/utils/status'
 
 export function Automation() {
   const [rules, setRules] = useState<RulesType[]>([])
+  const [servers, setServers] = useState<Server[]>([])
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<RulesType | null>(null)
   const [remove, setRemove] = useState<RulesType | null>(null)
@@ -43,8 +46,10 @@ export function Automation() {
   useEffect(() => {
     const loadRules = async () => {
       try {
-        const storedRules = await getRules()
+        const [storedRules, snapshot] = await Promise.all([getRules(), getSnapshot()])
+
         setRules(storedRules)
+        setServers(snapshot.servers)
       } catch {
         toast.error('Failed to load rules')
       }
@@ -61,16 +66,26 @@ export function Automation() {
     }
 
     return rules.filter((rule) => {
-      return [rule.name, rule.topic, rule.matchValue, getAction(rule)].some((value) =>
+      return [
+        rule.name,
+        rule.topic,
+        servers.find((server) => server.id === rule.serverId)?.name,
+        rule.matchValue,
+        getAction(rule),
+      ].some((value) =>
         String(value ?? '')
           .toLowerCase()
           .includes(query)
       )
     })
-  }, [rules, search])
+  }, [rules, search, servers])
 
   const handleAddRule = () => {
-    setEditing(baseStatus())
+    const base = baseStatus()
+
+    if (servers.length === 1) base.serverId = servers[0].id
+
+    setEditing(base)
   }
 
   const handleEditRule = (rule: RulesType) => {
@@ -233,6 +248,10 @@ export function Automation() {
               <span className="text-sm truncate">{rule.name}</span>
 
               <div className="flex flex-col gap-0.5 text-sm">
+                <span>
+                  Server:{' '}
+                  {servers.find((server) => server.id === rule.serverId)?.name ?? 'Unassigned'}
+                </span>
                 <span>Topic: {rule.topic}</span>
                 <div className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-6 overflow-hidden overflow-y-auto truncate">
                   {rule.matchValue
@@ -328,7 +347,7 @@ export function Automation() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Modal onSave={saveRule} rule={editing} setRule={setEditing} />
+      <Modal onSave={saveRule} rule={editing} servers={servers} setRule={setEditing} />
     </div>
   )
 }

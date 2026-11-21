@@ -21,6 +21,7 @@ pub struct ServiceState {
     pub gate: tokio::sync::Mutex<()>,
     workers: tokio::sync::Mutex<Vec<Worker>>,
     statuses: Mutex<HashMap<String, ConnectionStatus>>,
+    muted: Mutex<HashMap<String, bool>>,
 }
 
 impl ServiceState {
@@ -30,7 +31,22 @@ impl ServiceState {
             gate: tokio::sync::Mutex::new(()),
             workers: tokio::sync::Mutex::new(Vec::new()),
             statuses: Mutex::new(HashMap::new()),
+            muted: Mutex::new(HashMap::new()),
         })
+    }
+
+    pub fn is_muted(&self, topic_id: &str) -> bool {
+        self.muted
+            .lock()
+            .ok()
+            .and_then(|muted| muted.get(topic_id).copied())
+            .unwrap_or(false)
+    }
+
+    pub fn set_muted(&self, topic_id: &str, muted: bool) {
+        if let Ok(mut topics) = self.muted.lock() {
+            topics.insert(topic_id.to_string(), muted);
+        }
     }
 
     pub fn statuses(&self) -> Vec<ConnectionStatus> {
@@ -65,6 +81,13 @@ pub async fn start(app: &AppHandle) -> Result<(), String> {
         ))
     })
     .await?;
+
+    if let Ok(mut muted) = app.state::<ServiceState>().muted.lock() {
+        *muted = topics
+            .iter()
+            .map(|topic| (topic.id.clone(), topic.muted))
+            .collect();
+    }
 
     for server in servers.into_iter().filter(|server| server.enabled) {
         let topics: Vec<_> = topics
@@ -253,6 +276,9 @@ async fn stream(
 
         return Err(http::status_error(response.status()));
     }
+
+    let live_after = chrono::Utc::now().timestamp();
+
     let truncated = response
         .headers()
         .get("X-Messages-Truncated")
@@ -306,7 +332,13 @@ async fn stream(
                         if message.id.is_empty() || message.time < topic.subscribed_at {
                             continue;
                         }
-                        notifications::process_notification(app, topic, &message).await?;
+                        notifications::process_notification(
+                            app,
+                            topic,
+                            &message,
+                            message.time > live_after,
+                        )
+                        .await?;
                     }
                 }
             } else {

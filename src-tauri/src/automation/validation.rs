@@ -12,6 +12,7 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
     required_field("id", &rule.id)?;
     required_field("name", &rule.name)?;
     required_field("topic", &rule.topic)?;
+    required_field("serverId", &rule.server_id)?;
     required_field("matchValue", &rule.match_value)?;
 
     validate_match(&rule.match_value)?;
