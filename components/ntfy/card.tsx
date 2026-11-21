@@ -203,7 +203,7 @@ export function Card({
           </Button>
         )}
 
-        {message.tags.length > 0 && (
+        {!showTags && message.tags.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1.25 items-center">
             <span className="text-[10px] font-semibold text-muted-foreground leading-0 mb-1">
               Tags:
