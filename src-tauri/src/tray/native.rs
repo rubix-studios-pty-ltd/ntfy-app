@@ -105,7 +105,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                     let _ = check_item.set_checked(enabled);
                 }
             }
-            "config" => {
+            "schedule" => {
                 open_schedule_window(app);
             }
             "logs" => {
