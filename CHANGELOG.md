@@ -1,4 +1,13 @@
 
+
+## [1.1.1] - 2026-11-21
+
+### Fixed
+
+- **build**: asset release pattern
+- **tray**: update menu item action from config to schedule
+- **ntfy**: improve automation and stream reliability
+
 ## [1.1.0] - 2026-11-11
 
 ### Fixed
