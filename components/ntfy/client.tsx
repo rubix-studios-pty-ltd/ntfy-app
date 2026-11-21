@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Search,
   Send,
+  Trash2,
   Unplug,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -51,6 +52,7 @@ export function Client() {
   const [query, setQuery] = useState('')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [busy, setBusy] = useState(false)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
 
   const data = useNtfy(selected, unreadOnly, query)
   const loading = data.pending || search !== query
@@ -356,6 +358,29 @@ export function Client() {
                   <CheckCheck className="size-4" />
                 </Button>
 
+                {selected && (
+                  <Button
+                    className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-destructive"
+                    disabled={busy}
+                    onClick={() =>
+                      setDialog({
+                        kind: 'confirm',
+                        title: 'Delete',
+                        description:
+                          'All locally stored notifications for this topic will be deleted.',
+                        action: async () => {
+                          await messageAction(null, selected, true)
+                          data.refresh()
+                        },
+                      })
+                    }
+                    size="icon-xs"
+                    variant="ghost"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                )}
+
                 <Button
                   aria-label="Reconnect subscriptions"
                   className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-primary"
@@ -394,8 +419,12 @@ export function Client() {
 
                 return (
                   <Card
+                    expanded={expandedId === item.rowId}
                     item={item}
                     key={item.rowId}
+                    onToggleExpand={() =>
+                      setExpandedId((current) => (current === item.rowId ? null : item.rowId))
+                    }
                     refresh={data.refresh}
                     remove={() =>
                       setDialog({

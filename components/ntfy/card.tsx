@@ -1,7 +1,7 @@
 'use client'
 
-import Image from 'next/image'
-import { Check, ExternalLink, File, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronDown, ChevronUp, ExternalLink, File, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Markdown } from '@/components/ntfy/markdown'
@@ -13,15 +13,44 @@ import { type StoredMessage, type Topic } from '@/types/ntfy'
 import { safeLink } from '@/utils/safeLink'
 
 type Props = {
+  expanded: boolean
   item: StoredMessage
-  topic?: Topic
-  serverName: string
+  onToggleExpand: () => void
   refresh: () => void
   remove: () => void
+  serverName: string
+  topic?: Topic
 }
 
-export function Card({ item, topic, serverName, refresh, remove }: Props) {
+export function Card({
+  item,
+  topic,
+  serverName,
+  refresh,
+  remove,
+  expanded,
+  onToggleExpand,
+}: Props) {
+  const [canExpand, setCanExpand] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+
   const message = item.message
+
+  useEffect(() => {
+    const element = contentRef.current
+    if (!element) return
+
+    const measure = () => {
+      setCanExpand(element.scrollHeight > 200)
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [])
 
   const open = async (url: string) => {
     try {
@@ -107,17 +136,51 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
           )}
         </div>
 
-        {message.markdown ||
-        message.content_type?.split(';')[0].trim().toLowerCase() === 'text/markdown' ? (
-          <Markdown content={message.message} />
-        ) : (
-          <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">
-            {message.message}
-          </p>
+        <div
+          className={cn(
+            'min-w-0 mt-2 bg-background p-2 rounded-md',
+            expanded ? 'max-h-none overflow-visible' : 'max-h-50 overflow-y-auto overscroll-contain'
+          )}
+        >
+          <div className="flow-root" ref={contentRef}>
+            {message.markdown ||
+            message.content_type?.split(';')[0].trim().toLowerCase() === 'text/markdown' ? (
+              <Markdown content={message.message} />
+            ) : (
+              <p className="mt-1.5 whitespace-pre-wrap wrap-anywhere text-[11px] leading-[1.8] text-muted-foreground">
+                {message.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {canExpand && (
+          <Button
+            aria-expanded={expanded}
+            className="mt-2 cursor-pointer gap-1 text-[10px] text-muted-foreground hover:text-primary"
+            onClick={onToggleExpand}
+            size="xs"
+            variant="outline"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="size-3.5" />
+                Show less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="size-3.5" />
+                Show more
+              </>
+            )}
+          </Button>
         )}
 
         {message.tags.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1.25">
+          <div className="mt-2.5 flex flex-wrap gap-1.25 items-center">
+            <span className="text-[10px] font-semibold text-muted-foreground leading-0 mb-1">
+              Tags:
+            </span>
             {message.tags.map((tag) => (
               <span
                 className="rounded border border-border bg-success-soft px-1.5 py-0.75 text-[8px] text-muted-foreground"
@@ -132,9 +195,11 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
         {message.attachment && safeLink(message.attachment.url) && !expired && (
           <div className="mt-3 max-w-xl overflow-hidden rounded-md border border-border bg-muted/25 p-2.5">
             {isImage && (
-              <Image
+              // biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type
+              <img
                 alt={message.attachment.name}
-                className="max-h-72 w-full rounded object-contain"
+                className="block h-auto max-h-72 w-auto max-w-full object-contain"
+                decoding="async"
                 loading="lazy"
                 referrerPolicy="no-referrer"
                 src={message.attachment.url}
