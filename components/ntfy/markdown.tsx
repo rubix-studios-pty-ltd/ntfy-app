@@ -1,6 +1,7 @@
 'use client'
 
 import ReactMarkdown from 'react-markdown'
+import remarkBreaks from 'remark-breaks'
 import remarkGfm from 'remark-gfm'
 import { toast } from 'sonner'
 
@@ -29,7 +30,7 @@ export function Markdown({ content }: Props) {
               <span>{children}</span>
             ),
         }}
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         skipHtml
         urlTransform={(url) => (safeLink(url) ? url : '')}
       >
