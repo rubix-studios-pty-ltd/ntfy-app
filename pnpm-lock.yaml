@@ -187,6 +187,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      gemoji:
+        specifier: ^8.1.0
+        version: 8.1.0
       lucide-react:
         specifier: ^1.77.0
         version: 1.77.0(@types/react@19.3.0)(react@19.3.1)
@@ -2067,6 +2070,9 @@ packages:
 
   fuzzysort@3.1.0:
     resolution: {integrity: sha512-sR9BNCjBg6LNgwvxlBd0sBABvQitkLzoVY9MYYROQVX/FvfJ4Mai9LsGhDgd8qYdds0bY77VzYd5iuB+v5rwQQ==}
+
+  gemoji@8.1.0:
+    resolution: {integrity: sha512-HA4Gx59dw2+tn+UAa7XEV4ufUKI4fH1KgcbenVA9YKSj1QJTT0xh5Mwv5HMFNN3l2OtUe3ZIfuRwSyZS5pLIWw==}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -4758,6 +4764,8 @@ snapshots:
       universalify: 2.0.1
 
   fuzzysort@3.1.0: {}
+
+  gemoji@8.1.0: {}
 
   gensync@1.0.0-beta.2: {}
 
