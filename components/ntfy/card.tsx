@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronDown, ChevronUp, ExternalLink, File, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, ExternalLink, File, Maximize2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Markdown } from '@/components/ntfy/markdown'
 import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { messageAction, openExternal } from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
 import { type StoredMessage, type Topic } from '@/types/ntfy'
@@ -32,7 +33,10 @@ export function Card({
   onToggleExpand,
 }: Props) {
   const [canExpand, setCanExpand] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   const contentRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const message = item.message
 
@@ -195,27 +199,85 @@ export function Card({
         {message.attachment && safeLink(message.attachment.url) && !expired && (
           <div className="mt-3 max-w-xl overflow-hidden rounded-md border border-border bg-muted/25 p-2.5">
             {isImage && (
-              // biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type
-              <img
-                alt={message.attachment.name}
-                className="block h-auto max-h-72 w-auto max-w-full object-contain"
-                decoding="async"
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                src={message.attachment.url}
-              />
+              <>
+                <button
+                  aria-label={`Enlarge ${message.attachment.name}`}
+                  className="block max-w-full cursor-zoom-in rounded-md"
+                  onClick={() => setDialogOpen(true)}
+                  type="button"
+                >
+                  {/* biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type */}
+                  <img
+                    alt={message.attachment.name}
+                    className="block h-auto max-h-72 max-w-full rounded-md object-contain"
+                    decoding="async"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    src={message.attachment.url}
+                  />
+                </button>
+
+                <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+                  <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
+                    <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
+                    {/* biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type */}
+                    <img
+                      alt={message.attachment.name}
+                      className="mx-auto block h-auto max-h-[calc(100dvh-8rem)] max-w-full object-contain"
+                      referrerPolicy="no-referrer"
+                      src={message.attachment.url}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {isVideo && (
-              // biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks
-              <video
-                className="max-h-72 w-full rounded"
-                controls
-                preload="none"
-                src={message.attachment.url}
-              >
-                Your browser cannot play this attachment.
-              </video>
+              <>
+                <div className="relative">
+                  {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
+                  <video
+                    className="max-h-72 w-full rounded object-contain"
+                    controls
+                    preload="metadata"
+                    ref={videoRef}
+                    src={message.attachment.url}
+                  >
+                    Your browser cannot play this attachment.
+                  </video>
+
+                  <Button
+                    aria-label="Enlarge video"
+                    className="absolute top-2 right-2 size-8 cursor-pointer bg-background/90 shadow-sm hover:bg-background"
+                    onClick={() => {
+                      videoRef.current?.pause()
+                      setDialogOpen(true)
+                    }}
+                    size="icon"
+                    type="button"
+                    variant="secondary"
+                  >
+                    <Maximize2 className="size-4" />
+                  </Button>
+                </div>
+
+                <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+                  <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
+                    <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
+
+                    {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
+                    <video
+                      className="mx-auto block max-h-[calc(100dvh-8rem)] w-full max-w-full rounded object-contain"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={message.attachment.url}
+                    >
+                      Your browser cannot play this attachment.
+                    </video>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {isAudio && (
