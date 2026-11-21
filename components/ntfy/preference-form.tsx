@@ -15,7 +15,7 @@ type Props = {
   saved: (value: Preferences) => void
 }
 
-export function Preferences({ close, saved }: Props) {
+export function PreferenceForm({ close, saved }: Props) {
   const [preview, setPreview] = useState(false)
   const [showTag, setShowTag] = useState(true)
   const [permission, setPermission] = useState('Checking…')

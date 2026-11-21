@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 
 import { Card } from '@/components/ntfy/card'
 import { Confirm } from '@/components/ntfy/confirm'
-import { Preferences } from '@/components/ntfy/preferences'
+import { PreferenceForm } from '@/components/ntfy/preference-form'
 import { PublishForm } from '@/components/ntfy/publish-form'
 import { ServerForm } from '@/components/ntfy/server-form'
 import { Sidebar } from '@/components/ntfy/sidebar'
@@ -554,7 +554,7 @@ export function Client() {
       )}
 
       {dialog?.kind === 'preferences' && (
-        <Preferences close={close} saved={(value) => setShowTags(value.showTags)} />
+        <PreferenceForm close={close} saved={(value) => setShowTags(value.showTags)} />
       )}
 
       {dialog?.kind === 'confirm' && <Confirm {...dialog} close={close} />}
