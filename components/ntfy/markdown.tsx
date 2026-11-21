@@ -28,7 +28,7 @@ export function Markdown({ content }: Props) {
                 {children}
               </button>
             ) : (
-              <span>{children}</span>
+              <span title={title}>{children}</span>
             ),
         }}
         remarkPlugins={[remarkGfm, remarkBreaks]}
