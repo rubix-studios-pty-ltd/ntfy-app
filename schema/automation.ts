@@ -18,6 +18,7 @@ const baseSchema = z.object({
   active: z.boolean(),
   name: z.string().trim().min(1, 'Name is required'),
   topic: z.string().trim().min(1, 'Topic is required'),
+  serverId: z.string().trim().min(1, 'Choose a server'),
   matchType: matchTypeSchema,
   matchValue: z.string().trim().min(1, 'Match is required'),
   lastRun: optionalText,

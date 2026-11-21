@@ -48,6 +48,7 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
             active INTEGER NOT NULL DEFAULT 1,
             name TEXT NOT NULL,
             topic TEXT NOT NULL,
+            server_id TEXT NOT NULL DEFAULT '',
             match_type TEXT NOT NULL,
             match_value TEXT NOT NULL,
             action_type TEXT NOT NULL,
@@ -137,6 +138,37 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
 
         CREATE INDEX IF NOT EXISTS idx_automation_logs_rule_id
             ON automation_logs(rule_id, created_at DESC);
+        "#,
+    )?;
+
+    let mut columns = connection.prepare("PRAGMA table_info(automation_rules)")?;
+    let existing = columns
+        .query_map([], |row| row.get::<_, String>(1))?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+
+    if !existing.iter().any(|name| name == "server_id") {
+        connection.execute_batch(
+            "ALTER TABLE automation_rules ADD COLUMN server_id TEXT NOT NULL DEFAULT '';",
+        )?;
+
+        connection.execute_batch(
+            r#"
+            UPDATE automation_rules SET server_id = COALESCE((
+                SELECT MIN(t.server_id) FROM ntfy_topics t
+                WHERE t.topic = automation_rules.topic COLLATE NOCASE
+                HAVING COUNT(DISTINCT t.server_id) = 1
+            ), '');
+            UPDATE automation_rules SET active = 0 WHERE server_id = '';
+        "#,
+        )?;
+    }
+
+    connection.execute_batch(
+        r#"
+        DROP INDEX IF EXISTS idx_automation_server_topic;
+
+        CREATE INDEX IF NOT EXISTS idx_automation_server_topic_nocase
+            ON automation_rules(server_id, topic COLLATE NOCASE, active);
         "#,
     )
 }

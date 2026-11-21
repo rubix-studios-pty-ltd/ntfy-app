@@ -2,6 +2,7 @@ use crate::automation::engine::handle_notification;
 use crate::automation::matcher::AutomationEvent;
 use crate::db::{DbState, models::DayKey, repo, run};
 use crate::ntfy::models::{Message, Topic};
+use crate::ntfy::service::ServiceState;
 
 use chrono::{Datelike, Local, Timelike, Weekday};
 use tauri::{AppHandle, Emitter, Manager};
@@ -11,6 +12,7 @@ pub(crate) async fn process_notification(
     app: &AppHandle,
     topic: &Topic,
     message: &Message,
+    is_live: bool,
 ) -> Result<(), String> {
     let id = topic.id.clone();
 
@@ -25,13 +27,20 @@ pub(crate) async fn process_notification(
         return Ok(());
     }
 
-    let _ = app.emit("ntfy:changed", ());
+    let _ = app.emit(
+        "ntfy:changed",
+        if message.event == "message" {
+            "latest"
+        } else {
+            "reset"
+        },
+    );
 
-    if message.event != "message" {
+    if !is_live || message.event != "message" {
         return Ok(());
     }
 
-    if !topic.muted && should_show_notification(app).await? {
+    if !app.state::<ServiceState>().is_muted(&topic.id) && should_show_notification(app).await? {
         let title = message
             .title
             .as_deref()
@@ -54,6 +63,17 @@ pub(crate) async fn process_notification(
             "New notification. Open Ntfy to view it."
         });
 
+        let row_id = run(app.state::<DbState>(), {
+            let topic_id = topic.id.clone();
+            let message_id = message.id.clone();
+            move |connection| repo::ntfy::message_row_id(connection, &topic_id, &message_id)
+        })
+        .await?;
+
+        if let Some(id) = row_id.and_then(|id| i32::try_from(id).ok()) {
+            builder = builder.id(id);
+        }
+
         if builder.show().is_err() {
             let _ = app.emit(
                 "ntfy:delivery-error",
@@ -64,6 +84,7 @@ pub(crate) async fn process_notification(
 
     if let Err(_error) = handle_notification(
         app,
+        &topic.server_id,
         AutomationEvent {
             topic: message.topic.clone(),
             title: message.title.clone(),

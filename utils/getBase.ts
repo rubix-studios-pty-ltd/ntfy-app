@@ -5,6 +5,7 @@ export const getBase = (rule: RulesType) => ({
   active: rule.active,
   name: rule.name,
   topic: rule.topic,
+  serverId: rule.serverId,
   matchType: rule.matchType,
   matchValue: rule.matchValue,
   lastRun: rule.lastRun,

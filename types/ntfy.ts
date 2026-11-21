@@ -78,6 +78,7 @@ export type NtfyMessage = {
   priority: number | null
   tags: string[]
   click: string | null
+  markdown: boolean
   attachment: Attachment | null
   actions: NtfyAction[]
   expires: number | null

@@ -106,7 +106,6 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               id={`${id}-title`}
               maxLength={256}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Optional title"
               value={title}
             />
           </div>
@@ -121,7 +120,6 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               id={`${id}-message`}
               maxLength={4096}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="Write your notification…"
               required
               rows={3}
               value={message}

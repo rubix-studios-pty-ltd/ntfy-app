@@ -101,7 +101,7 @@ pub async fn ntfy_save_server(app: AppHandle, mut input: ServerInput) -> Result<
     result?;
     restart?;
 
-    let _ = app.emit("ntfy:changed", ());
+    let _ = app.emit("ntfy:changed", "reset");
 
     Ok(())
 }
@@ -133,7 +133,7 @@ pub async fn ntfy_remove_server(app: AppHandle, id: String) -> Result<(), String
     result?;
     restart?;
 
-    let _ = app.emit("ntfy:changed", ());
+    let _ = app.emit("ntfy:changed", "reset");
 
     Ok(())
 }
@@ -256,7 +256,7 @@ pub async fn ntfy_subscribe(
     result?;
     restart?;
 
-    let _ = app.emit("ntfy:changed", ());
+    let _ = app.emit("ntfy:changed", "reset");
 
     Ok(())
 }
@@ -269,48 +269,42 @@ pub async fn ntfy_update_topic(
     remove: bool,
 ) -> Result<(), String> {
     let state = app.state::<ServiceState>();
-
     let _gate = state.gate.lock().await;
 
-    service::stop(&app).await;
-
-    let result = run(app.state::<DbState>(), move |connection| {
-        if remove {
-            connection
-                .execute("DELETE FROM ntfy_topic_display WHERE topic_id = ?1", [&id])
+    if !remove {
+        let topic_id = id.clone();
+        run(app.state::<DbState>(), move |connection| {
+            let affected = connection
+                .execute(
+                    "UPDATE ntfy_topics SET muted=?2 WHERE id=?1",
+                    params![topic_id, muted],
+                )
                 .map_err(|error| error.to_string())?;
-
-            let sql = "
-                DELETE FROM ntfy_topics
-                WHERE id = ?1
-            ";
-
-            connection
-                .execute(sql, [id])
+            if affected == 0 {
+                return Err("Topic not found".to_string());
+            }
+            Ok(())
+        })
+        .await?;
+        state.set_muted(&id, muted);
+    } else {
+        service::stop(&app).await;
+        let result = run(app.state::<DbState>(), move |connection| {
+            let affected = connection
+                .execute("DELETE FROM ntfy_topics WHERE id=?1", [&id])
                 .map_err(|error| error.to_string())?;
-        } else {
-            let sql = "
-                UPDATE ntfy_topics
-                SET muted = ?2
-                WHERE id = ?1
-            ";
+            if affected == 0 {
+                return Err("Topic not found".to_string());
+            }
+            Ok(())
+        })
+        .await;
+        let restart = service::start(&app).await;
+        result?;
+        restart?;
+    }
 
-            connection
-                .execute(sql, params![id, muted])
-                .map_err(|error| error.to_string())?;
-        }
-
-        Ok(())
-    })
-    .await;
-
-    let restart = service::start(&app).await;
-
-    result?;
-    restart?;
-
-    let _ = app.emit("ntfy:changed", ());
-
+    let _ = app.emit("ntfy:changed", "reset");
     Ok(())
 }
 
@@ -364,7 +358,7 @@ pub async fn ntfy_message_action(
     })
     .await?;
 
-    let _ = app.emit("ntfy:changed", ());
+    let _ = app.emit("ntfy:changed", "reset");
 
     Ok(())
 }
@@ -475,4 +469,33 @@ pub async fn get_url(app: AppHandle) -> Result<Option<String>, String> {
         Ok(url)
     })
     .await
+}
+
+#[tauri::command]
+pub async fn ntfy_notification_click(
+    app: AppHandle,
+    row_id: Option<i64>,
+) -> Result<Option<String>, String> {
+    let target = if let Some(row_id) = row_id {
+        run(app.state::<DbState>(), move |connection| {
+            repository::notification_target(connection, row_id)
+        })
+        .await?
+    } else {
+        None
+    };
+
+    if let Some((_, Some(click))) = target.as_ref() {
+        if let Ok(parsed) = url::Url::parse(click)
+            && parsed.scheme() == "https"
+            && parsed.username().is_empty()
+            && parsed.password().is_none()
+        {
+            ntfy_open_url(app, click.clone())?;
+            return Ok(None);
+        }
+    }
+
+    crate::windows::main::show_main_window(&app);
+    Ok(target.map(|(topic_id, _)| topic_id))
 }

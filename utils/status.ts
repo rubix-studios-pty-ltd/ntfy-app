@@ -6,6 +6,7 @@ export const baseStatus = (): RulesType => {
     active: true,
     name: '',
     topic: '',
+    serverId: '',
     matchType: 'equals',
     matchValue: '',
     actionType: 'runProgram',

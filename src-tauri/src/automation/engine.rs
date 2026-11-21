@@ -6,6 +6,7 @@ use crate::db::{DbState, repo, run};
 
 pub async fn handle_notification(
     app: &AppHandle,
+    server_id: &str,
     notification: AutomationEvent,
 ) -> Result<(), String> {
     let topic = notification.topic.trim().to_string();
@@ -20,8 +21,10 @@ pub async fn handle_notification(
         message: notification.message,
     };
 
+    let server_id = server_id.to_string();
+
     let rules = run(app.state::<DbState>(), move |conn| {
-        repo::get_active_rules(conn, &topic)
+        repo::get_active_rules(conn, &server_id, &topic)
     })
     .await?;
 

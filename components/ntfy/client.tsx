@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { isTauri } from '@tauri-apps/api/core'
+import { onAction } from '@tauri-apps/plugin-notification'
 import {
   Bell,
   BellOff,
@@ -28,7 +30,13 @@ import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNtfy } from '@/hooks/use-ntfy'
-import { messageAction, reconnect, removeServer, updateTopic } from '@/lib/tauri/ntfy'
+import {
+  messageAction,
+  notificationClick,
+  reconnect,
+  removeServer,
+  updateTopic,
+} from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
 import { type DialogState, type Snapshot, type Topic } from '@/types/ntfy'
 
@@ -51,6 +59,35 @@ export function Client() {
   const topic = snapshot.topics.find((item) => item.id === selected)
   const status = snapshot.statuses.find((item) => item.topicId === selected)
   const unread = snapshot.topics.reduce((total, item) => total + item.unread, 0)
+
+  useEffect(() => {
+    if (!isTauri()) return
+
+    let disposed = false
+    let unlisten: (() => void) | undefined
+
+    void onAction(({ actionId, notification }) => {
+      if (disposed || (actionId !== 'tap' && actionId !== 'default')) return
+
+      void notificationClick(notification?.id ?? null)
+        .then((topicId) => {
+          if (!disposed && topicId) setSelected(topicId)
+        })
+        .catch((failure) => toast.error(String(failure)))
+    })
+      .then((listener) => {
+        if (disposed) listener.unregister()
+        else unlisten = () => listener.unregister()
+      })
+      .catch((failure) => {
+        if (!disposed) console.error('Cannot listen to notification clicks', failure)
+      })
+
+    return () => {
+      disposed = true
+      unlisten?.()
+    }
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => setQuery(search), 250)
@@ -210,7 +247,7 @@ export function Client() {
 
             <Button
               className="cursor-pointer duration-500 transition-all h-auto p-0 text-[11px] font-normal text-current underline"
-              onClick={data.refresh}
+              onClick={() => data.refresh()}
               variant="link"
             >
               Retry
@@ -415,7 +452,7 @@ export function Client() {
                   onClick={data.loadMore}
                   variant="outline"
                 >
-                  {data.loadingMore ? 'Loading…' : 'Load older messages'}
+                  {data.loadingMore ? 'Loading…' : 'Load more'}
                 </Button>
               </div>
             )}

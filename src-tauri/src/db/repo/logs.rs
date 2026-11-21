@@ -214,6 +214,13 @@ pub fn record_execution(
         )
         .map_err(|error| error.to_string())?;
 
+    let total: i64 = connection
+        .query_row("SELECT COUNT(*) FROM automation_logs", [], |row| row.get(0))
+        .map_err(|error| error.to_string())?;
+    if total >= 1000 {
+        cleanup_logs(connection, 30, 1000)?;
+    }
+
     connection
         .execute(
             r#"

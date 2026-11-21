@@ -20,6 +20,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         ntfy::ntfy_update_display,
         ntfy::ntfy_update_topic,
         ntfy::ntfy_messages,
+        ntfy::ntfy_notification_click,
         ntfy::ntfy_message_action,
         ntfy::ntfy_publish,
         ntfy::ntfy_reconnect,

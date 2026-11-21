@@ -70,6 +70,26 @@ pub fn run() {
                     eprintln!("Cannot apply automation log retention");
                 }
             });
+
+            let maintenance = app.handle().clone();
+
+            tauri::async_runtime::spawn(async move {
+                let mut interval = tokio::time::interval(std::time::Duration::from_secs(15 * 60));
+
+                interval.tick().await;
+
+                loop {
+                    interval.tick().await;
+                    if let Err(error) = db::run(maintenance.state::<db::DbState>(), |connection| {
+                        db::repo::cleanup_logs(connection, 30, 1000)?;
+                        db::repo::ntfy::cleanup(connection)
+                    })
+                    .await
+                    {
+                        eprintln!("Database retention failed: {error}");
+                    }
+                }
+            });
             Ok(())
         })
         .run(tauri::generate_context!())
