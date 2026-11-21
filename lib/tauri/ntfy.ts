@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { type Icon } from '@/components/ntfy/topic-icon'
 import {
   type MessageQuery,
+  type Preferences,
   type PublishInput,
   type ServerInput,
   type Snapshot,
@@ -75,8 +76,8 @@ export function reconnect() {
   return invoke<void>('ntfy_reconnect')
 }
 
-export function preferences(preview: boolean | null = null) {
-  return invoke<boolean>('ntfy_preferences', { preview })
+export function preference(preview: boolean | null = null, showTags: boolean | null = null) {
+  return invoke<Preferences>('ntfy_preferences', { preview, showTags })
 }
 
 export function openExternal(url: string) {

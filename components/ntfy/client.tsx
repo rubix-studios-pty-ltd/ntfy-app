@@ -15,13 +15,14 @@ import {
   RefreshCw,
   Search,
   Send,
+  Trash2,
   Unplug,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Card } from '@/components/ntfy/card'
 import { Confirm } from '@/components/ntfy/confirm'
-import { Preferences } from '@/components/ntfy/preferences'
+import { PreferenceForm } from '@/components/ntfy/preference-form'
 import { PublishForm } from '@/components/ntfy/publish-form'
 import { ServerForm } from '@/components/ntfy/server-form'
 import { Sidebar } from '@/components/ntfy/sidebar'
@@ -33,6 +34,7 @@ import { useNtfy } from '@/hooks/use-ntfy'
 import {
   messageAction,
   notificationClick,
+  preference,
   reconnect,
   removeServer,
   updateTopic,
@@ -51,6 +53,8 @@ export function Client() {
   const [query, setQuery] = useState('')
   const [dialog, setDialog] = useState<DialogState>(null)
   const [busy, setBusy] = useState(false)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
+  const [showTags, setShowTags] = useState(true)
 
   const data = useNtfy(selected, unreadOnly, query)
   const loading = data.pending || search !== query
@@ -59,6 +63,24 @@ export function Client() {
   const topic = snapshot.topics.find((item) => item.id === selected)
   const status = snapshot.statuses.find((item) => item.topicId === selected)
   const unread = snapshot.topics.reduce((total, item) => total + item.unread, 0)
+
+  useEffect(() => {
+    if (!isTauri()) return
+
+    let active = true
+
+    void preference()
+      .then((saved) => {
+        if (active) setShowTags(saved.showTags)
+      })
+      .catch((failure) => {
+        console.error('Cannot load tag emoji preference', failure)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   useEffect(() => {
     if (!isTauri()) return
@@ -356,6 +378,29 @@ export function Client() {
                   <CheckCheck className="size-4" />
                 </Button>
 
+                {selected && (
+                  <Button
+                    className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-destructive"
+                    disabled={busy}
+                    onClick={() =>
+                      setDialog({
+                        kind: 'confirm',
+                        title: 'Delete',
+                        description:
+                          'All locally stored notifications for this topic will be deleted.',
+                        action: async () => {
+                          await messageAction(null, selected, true)
+                          data.refresh()
+                        },
+                      })
+                    }
+                    size="icon-xs"
+                    variant="ghost"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                )}
+
                 <Button
                   aria-label="Reconnect subscriptions"
                   className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-primary"
@@ -394,8 +439,12 @@ export function Client() {
 
                 return (
                   <Card
+                    expanded={expandedId === item.rowId}
                     item={item}
                     key={item.rowId}
+                    onToggleExpand={() =>
+                      setExpandedId((current) => (current === item.rowId ? null : item.rowId))
+                    }
                     refresh={data.refresh}
                     remove={() =>
                       setDialog({
@@ -410,6 +459,7 @@ export function Client() {
                       })
                     }
                     serverName={name}
+                    showTags={showTags}
                     topic={source}
                   />
                 )
@@ -503,7 +553,9 @@ export function Client() {
         />
       )}
 
-      {dialog?.kind === 'preferences' && <Preferences close={close} />}
+      {dialog?.kind === 'preferences' && (
+        <PreferenceForm close={close} saved={(value) => setShowTags(value.showTags)} />
+      )}
 
       {dialog?.kind === 'confirm' && <Confirm {...dialog} close={close} />}
     </main>

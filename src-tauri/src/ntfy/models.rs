@@ -66,6 +66,8 @@ pub struct Message {
     pub click: Option<String>,
     #[serde(default)]
     pub markdown: bool,
+    #[serde(default)]
+    pub content_type: Option<String>,
     pub attachment: Option<Attachment>,
     #[serde(default)]
     pub actions: Vec<serde_json::Value>,
@@ -125,6 +127,8 @@ pub struct PublishInput {
     pub topic_id: String,
     pub title: String,
     pub message: String,
+    #[serde(default)]
+    pub markdown: bool,
     pub priority: u8,
     pub tags: Vec<String>,
 }

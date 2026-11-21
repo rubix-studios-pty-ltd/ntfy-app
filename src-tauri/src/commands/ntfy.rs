@@ -1,3 +1,4 @@
+use crate::db::models::NtfyPreferences;
 use crate::db::{DbState, repo::ntfy as repository, run};
 use crate::ntfy::http;
 use crate::ntfy::models::*;
@@ -402,6 +403,7 @@ pub async fn ntfy_publish(app: AppHandle, input: PublishInput) -> Result<(), Str
             "topic": topic.topic,
             "title": input.title,
             "message": input.message,
+            "markdown": input.markdown,
             "priority": input.priority,
             "tags": input.tags,
         }));
@@ -421,24 +423,36 @@ pub async fn ntfy_reconnect(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn ntfy_preferences(app: AppHandle, preview: Option<bool>) -> Result<bool, String> {
+pub async fn ntfy_preferences(
+    app: AppHandle,
+    preview: Option<bool>,
+    show_tags: Option<bool>,
+) -> Result<NtfyPreferences, String> {
     run(app.state::<DbState>(), move |connection| {
         if let Some(preview) = preview {
-            let sql = "
-                INSERT OR REPLACE INTO app_meta (key, value)
-                VALUES ('notification_preview', ?1)
-            ";
-
-            let value = if preview { "1" } else { "0" };
-
             connection
-                .execute(sql, [value])
+                .execute(
+                    "INSERT INTO app_meta (key, value) VALUES ('notification_preview', ?1)
+                     ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                    [if preview { "1" } else { "0" }],
+                )
                 .map_err(|error| error.to_string())?;
         }
 
-        let preview = repository::meta(connection, "notification_preview")?;
+        if let Some(show_tags) = show_tags {
+            connection
+                .execute(
+                    "INSERT INTO app_meta (key, value) VALUES ('show_tags', ?1)
+                     ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                    [if show_tags { "1" } else { "0" }],
+                )
+                .map_err(|error| error.to_string())?;
+        }
 
-        Ok(preview.as_deref() == Some("1"))
+        Ok(NtfyPreferences {
+            preview: repository::meta(connection, "notification_preview")?.as_deref() == Some("1"),
+            show_tags: repository::meta(connection, "show_tags")?.as_deref() != Some("0"),
+        })
     })
     .await
 }

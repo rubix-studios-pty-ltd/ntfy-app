@@ -79,6 +79,7 @@ export type NtfyMessage = {
   tags: string[]
   click: string | null
   markdown: boolean
+  content_type?: string | null
   attachment: Attachment | null
   actions: NtfyAction[]
   expires: number | null
@@ -103,6 +104,7 @@ export type PublishInput = {
   topicId: string
   title: string
   message: string
+  markdown: boolean
   priority: number
   tags: string[]
 }
@@ -114,3 +116,8 @@ export type DialogState =
   | { kind: 'preferences' }
   | { kind: 'confirm'; title: string; description: string; action: () => Promise<void> }
   | null
+
+export type Preferences = {
+  preview: boolean
+  showTags: boolean
+}

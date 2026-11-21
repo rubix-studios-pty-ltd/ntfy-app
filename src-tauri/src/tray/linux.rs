@@ -116,7 +116,11 @@ impl ksni::Tray for NtfyTray {
             StandardItem::<Self> {
                 label: "Exit".into(),
                 activate: Box::new(|tray: &mut Self| {
-                    exit_app(&tray.app);
+                    let app = tray.app.clone();
+
+                    std::thread::spawn(move || {
+                        exit_app(&app);
+                    });
                 }),
                 ..Default::default()
             }

@@ -7,10 +7,17 @@ import { Modal } from '@/components/ntfy/modal'
 import { ThemeSelect } from '@/components/theme/select'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { preferences } from '@/lib/tauri/ntfy'
+import { preference } from '@/lib/tauri/ntfy'
+import { type Preferences } from '@/types/ntfy'
 
-export function Preferences({ close }: { close: () => void }) {
+type Props = {
+  close: () => void
+  saved: (value: Preferences) => void
+}
+
+export function PreferenceForm({ close, saved }: Props) {
   const [preview, setPreview] = useState(false)
+  const [showTag, setShowTag] = useState(true)
   const [permission, setPermission] = useState('Checking…')
   const [busy, setBusy] = useState(true)
   const [error, setError] = useState('')
@@ -18,10 +25,11 @@ export function Preferences({ close }: { close: () => void }) {
   useEffect(() => {
     let active = true
 
-    void Promise.all([preferences(), isPermissionGranted()])
-      .then(([saved, allowed]) => {
+    void Promise.all([preference(), isPermissionGranted()])
+      .then(([settings, allowed]) => {
         if (active) {
-          setPreview(saved)
+          setPreview(settings.preview)
+          setShowTag(settings.showTags)
           setPermission(allowed ? 'Granted' : 'Not granted')
         }
       })
@@ -61,6 +69,23 @@ export function Preferences({ close }: { close: () => void }) {
             disabled={busy}
             id="message-preview"
             onCheckedChange={(checked) => setPreview(checked === true)}
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-[11px]">
+          <div>
+            <strong>Tags</strong>
+            <p className="mt-1.25 text-[11px] text-muted-foreground">
+              Display emojis beside topic names
+            </p>
+          </div>
+
+          <Checkbox
+            checked={showTag}
+            className="cursor-pointer"
+            disabled={busy}
+            id="tag-emojis"
+            onCheckedChange={(checked) => setShowTag(checked === true)}
           />
         </div>
 
@@ -112,7 +137,8 @@ export function Preferences({ close }: { close: () => void }) {
               setBusy(true)
 
               try {
-                await preferences(preview)
+                const updated = await preference(preview, showTag)
+                saved(updated)
                 close()
               } catch (failure) {
                 setError(String(failure))

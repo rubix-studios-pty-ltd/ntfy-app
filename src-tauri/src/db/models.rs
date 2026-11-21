@@ -4,6 +4,13 @@ use std::collections::{BTreeMap, HashMap};
 
 pub type ActionConfig = HashMap<String, Value>;
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NtfyPreferences {
+    pub preview: bool,
+    pub show_tags: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AutomationRule {

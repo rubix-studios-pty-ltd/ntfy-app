@@ -1,27 +1,63 @@
 'use client'
 
-import Image from 'next/image'
-import { Check, ExternalLink, File, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { nameToEmoji } from 'gemoji'
+import { Check, ChevronDown, ChevronUp, ExternalLink, File, Maximize2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Markdown } from '@/components/ntfy/markdown'
 import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { messageAction, openExternal } from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
 import { type StoredMessage, type Topic } from '@/types/ntfy'
 import { safeLink } from '@/utils/safeLink'
 
 type Props = {
+  expanded: boolean
   item: StoredMessage
-  topic?: Topic
-  serverName: string
+  onToggleExpand: () => void
+  showTags: boolean
   refresh: () => void
   remove: () => void
+  serverName: string
+  topic?: Topic
 }
 
-export function Card({ item, topic, serverName, refresh, remove }: Props) {
+export function Card({
+  item,
+  topic,
+  serverName,
+  refresh,
+  remove,
+  expanded,
+  onToggleExpand,
+  showTags,
+}: Props) {
+  const [canExpand, setCanExpand] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const contentRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
   const message = item.message
+
+  useEffect(() => {
+    const element = contentRef.current
+    if (!element) return
+
+    const measure = () => {
+      setCanExpand(element.scrollHeight > 200)
+    }
+
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [])
 
   const open = async (url: string) => {
     try {
@@ -60,7 +96,7 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
         <TopicIcon aria-hidden="true" className="size-4" name={topic?.icon ?? 'bell'} />
 
         {!item.isRead && (
-          <span className="absolute right-0 bottom-0 size-1.25 animate-pulse rounded-full bg-success motion-reduce:animate-none">
+          <span className="absolute right-0 bottom-0 size-1.25 rounded-full bg-success">
             <span className="sr-only">Unread</span>
           </span>
         )}
@@ -86,11 +122,25 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
         </div>
 
         <div className="mt-2.5 flex items-center gap-2">
-          {(message.priority ?? 3) >= 4 && (
-            <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
-              {message.priority === 5 ? 'Urgent' : 'High'}
-            </span>
-          )}
+          {showTags &&
+            message.tags.map((tag, index) => {
+              const normalized = tag.trim().toLowerCase().replace(/^:|:$/g, '')
+              const emoji = Object.hasOwn(nameToEmoji, normalized)
+                ? nameToEmoji[normalized]
+                : undefined
+
+              return emoji ? (
+                <span
+                  aria-label={tag}
+                  className="ml-1 inline-block text-[11px]"
+                  key={`${tag}-${index}`}
+                  role="img"
+                  title={tag}
+                >
+                  {emoji}
+                </span>
+              ) : null
+            })}
 
           {safeLink(message.click) ? (
             <button
@@ -105,18 +155,59 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
               {message.title || topic?.displayName || message.topic}
             </h2>
           )}
+
+          {(message.priority ?? 3) >= 4 && (
+            <span className="rounded-sm bg-warning-soft px-1.25 py-0.5 text-[8px] text-warning-foreground">
+              {message.priority === 5 ? 'Urgent' : 'High'}
+            </span>
+          )}
         </div>
 
-        {message.markdown ? (
-          <Markdown content={message.message} />
-        ) : (
-          <p className="mt-1.5 text-[11px] leading-[1.8] whitespace-pre-wrap wrap-anywhere text-muted-foreground">
-            {message.message}
-          </p>
+        <div
+          className={cn(
+            'min-w-0 mt-2 bg-background p-2 rounded-md',
+            expanded ? 'max-h-none overflow-visible' : 'max-h-50 overflow-y-auto overscroll-contain'
+          )}
+        >
+          <div className="flow-root" ref={contentRef}>
+            {message.markdown ||
+            message.content_type?.split(';')[0].trim().toLowerCase() === 'text/markdown' ? (
+              <Markdown content={message.message} />
+            ) : (
+              <p className="mt-1.5 whitespace-pre-wrap wrap-anywhere text-[11px] leading-[1.8] text-muted-foreground">
+                {message.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {canExpand && (
+          <Button
+            aria-expanded={expanded}
+            className="mt-2 cursor-pointer gap-1 text-[10px] text-muted-foreground hover:text-primary"
+            onClick={onToggleExpand}
+            size="xs"
+            variant="outline"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="size-3.5" />
+                Reduce
+              </>
+            ) : (
+              <>
+                <ChevronDown className="size-3.5" />
+                Expand
+              </>
+            )}
+          </Button>
         )}
 
         {message.tags.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap gap-1.25">
+          <div className="mt-2.5 flex flex-wrap gap-1.25 items-center">
+            <span className="text-[10px] font-semibold text-muted-foreground leading-0 mb-1">
+              Tags:
+            </span>
             {message.tags.map((tag) => (
               <span
                 className="rounded border border-border bg-success-soft px-1.5 py-0.75 text-[8px] text-muted-foreground"
@@ -131,25 +222,85 @@ export function Card({ item, topic, serverName, refresh, remove }: Props) {
         {message.attachment && safeLink(message.attachment.url) && !expired && (
           <div className="mt-3 max-w-xl overflow-hidden rounded-md border border-border bg-muted/25 p-2.5">
             {isImage && (
-              <Image
-                alt={message.attachment.name}
-                className="max-h-72 w-full rounded object-contain"
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                src={message.attachment.url}
-              />
+              <>
+                <button
+                  aria-label={`Enlarge ${message.attachment.name}`}
+                  className="block max-w-full cursor-zoom-in rounded-md"
+                  onClick={() => setDialogOpen(true)}
+                  type="button"
+                >
+                  {/* biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type */}
+                  <img
+                    alt={message.attachment.name}
+                    className="block h-auto max-h-72 max-w-full rounded-md object-contain"
+                    decoding="async"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    src={message.attachment.url}
+                  />
+                </button>
+
+                <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+                  <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
+                    <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
+                    {/* biome-ignore lint/performance/noImgElement: ntfy image attachments are dynamic in size and type */}
+                    <img
+                      alt={message.attachment.name}
+                      className="mx-auto block h-auto max-h-[calc(100dvh-8rem)] max-w-full object-contain"
+                      referrerPolicy="no-referrer"
+                      src={message.attachment.url}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {isVideo && (
-              // biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks
-              <video
-                className="max-h-72 w-full rounded"
-                controls
-                preload="none"
-                src={message.attachment.url}
-              >
-                Your browser cannot play this attachment.
-              </video>
+              <>
+                <div className="relative">
+                  {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
+                  <video
+                    className="max-h-72 w-full rounded object-contain"
+                    controls
+                    preload="metadata"
+                    ref={videoRef}
+                    src={message.attachment.url}
+                  >
+                    Your browser cannot play this attachment.
+                  </video>
+
+                  <Button
+                    aria-label="Enlarge video"
+                    className="absolute top-2 right-2 size-8 cursor-pointer bg-background/90 shadow-sm hover:bg-background"
+                    onClick={() => {
+                      videoRef.current?.pause()
+                      setDialogOpen(true)
+                    }}
+                    size="icon"
+                    type="button"
+                    variant="secondary"
+                  >
+                    <Maximize2 className="size-4" />
+                  </Button>
+                </div>
+
+                <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+                  <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
+                    <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
+
+                    {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
+                    <video
+                      className="mx-auto block max-h-[calc(100dvh-8rem)] w-full max-w-full rounded object-contain"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={message.attachment.url}
+                    >
+                      Your browser cannot play this attachment.
+                    </video>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {isAudio && (
