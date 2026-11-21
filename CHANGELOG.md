@@ -6,6 +6,21 @@
 - **tray**: update menu item action from config to schedule
 - **ntfy**: improve automation and stream reliability
 
+## [1.1.2] - 2026-11-21
+
+### Added
+
+- **publish-form**: add markdown option for message formatting
+- **card**: add expandable content
+- **card**: add dialog for enlarging image and video attachments
+- **preferences**: add showTags preference for emoji display
+- **tags**: tag emojis added to message topics
+
+### Fixed
+
+- publish form message input fix: markdown content type
+- **tray**: run exit_app in a separate thread
+
 ## [1.1.0] - 2026-11-11
 
 ### Fixed
