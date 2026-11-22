@@ -13,6 +13,16 @@ pub struct NtfyPreferences {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct HotkeySettings {
+    pub next_topic: String,
+    pub delete_notifications: String,
+    pub publish: String,
+    pub mark_all_read: String,
+    pub reconnect: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AutomationRule {
     pub id: String,
     pub active: bool,

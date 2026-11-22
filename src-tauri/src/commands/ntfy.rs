@@ -332,10 +332,6 @@ pub async fn ntfy_message_action(
     delete: bool,
 ) -> Result<(), String> {
     run(app.state::<DbState>(), move |connection| {
-        if delete && row_id.is_none() && topic_id.is_none() {
-            return Err("Choose a topic or notification to delete".to_string());
-        }
-
         let sql = if delete {
             "
                 DELETE FROM ntfy_messages

@@ -56,9 +56,9 @@ export function PreferenceForm({ close, saved }: Props) {
         <ThemeSelect />
 
         <div className="flex items-center justify-between text-[11px]">
-          <div>
+          <div className="min-w-0 flex-1 space-y-1">
             <strong>Notification</strong>
-            <p className="mt-1.25 text-[11px] text-muted-foreground first-letter:uppercase">
+            <p className="text-[11px] text-muted-foreground first-letter:uppercase">
               Show message content
             </p>
           </div>
@@ -73,11 +73,9 @@ export function PreferenceForm({ close, saved }: Props) {
         </div>
 
         <div className="flex items-center justify-between text-[11px]">
-          <div>
+          <div className="min-w-0 flex-1 space-y-1">
             <strong>Tags</strong>
-            <p className="mt-1.25 text-[11px] text-muted-foreground">
-              Display emojis beside topic names
-            </p>
+            <p className=" text-[11px] text-muted-foreground">Display emojis beside topic names</p>
           </div>
 
           <Checkbox
@@ -91,9 +89,9 @@ export function PreferenceForm({ close, saved }: Props) {
 
         {permission !== 'Granted' && (
           <div className="flex items-center justify-between text-[11px]">
-            <div>
+            <div className="min-w-0 flex-1 space-y-1">
               <strong>Permission</strong>
-              <p className="mt-1.25 text-[11px] text-muted-foreground first-letter:uppercase">
+              <p className="text-[11px] text-muted-foreground first-letter:uppercase">
                 {permission}
               </p>
             </div>
@@ -119,6 +117,23 @@ export function PreferenceForm({ close, saved }: Props) {
             </Button>
           </div>
         )}
+
+        <div className="flex items-center justify-between text-[11px]">
+          <div className="min-w-0 flex-1 space-y-1">
+            <strong>Hotkeys</strong>
+            <p className="text-[11px] text-muted-foreground first-letter:uppercase">
+              Assign custom hotkeys
+            </p>
+          </div>
+
+          <Button
+            className="cursor-pointer duration-500 transition-all"
+            size="sm"
+            variant="outline"
+          >
+            <a href="/hotkeys/">Hotkeys</a>
+          </Button>
+        </div>
 
         {error && (
           <p

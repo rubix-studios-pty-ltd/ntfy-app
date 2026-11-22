@@ -5,6 +5,26 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
         r#"
         CREATE TABLE IF NOT EXISTS app_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 
+        CREATE TABLE IF NOT EXISTS ntfy_hotkeys (
+            action TEXT PRIMARY KEY CHECK (
+                action IN (
+                    'next_topic', 
+                    'delete_notifications', 
+                    'publish', 
+                    'mark_all_read', 
+                    'reconnect'
+                )
+            ),
+            shortcut TEXT NOT NULL
+        );
+
+        INSERT OR IGNORE INTO ntfy_hotkeys(action, shortcut) VALUES
+            ('next_topic', 'Tab'),
+            ('delete_notifications', 'Ctrl+Shift+D'),
+            ('publish', 'Ctrl+Shift+P'),
+            ('mark_all_read', 'Ctrl+Shift+R'),
+            ('reconnect', 'Ctrl+Shift+E');
+
         CREATE TABLE IF NOT EXISTS ntfy_servers (
             id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL UNIQUE,
             auth_kind TEXT NOT NULL CHECK(auth_kind IN ('none','basic','token')),

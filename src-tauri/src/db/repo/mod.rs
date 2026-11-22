@@ -1,3 +1,4 @@
+pub mod hotkeys;
 pub mod ntfy;
 use rusqlite::types::Type;
 use rusqlite::{Connection, OptionalExtension, Row, params};
