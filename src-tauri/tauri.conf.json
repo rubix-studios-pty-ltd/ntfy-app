@@ -23,7 +23,7 @@
         "resizable": true,
         "fullscreen": false,
         "decorations": true,
-        "visible": true,
+        "visible": false,
         "center": true,
         "backgroundColor": "#f7f8fa",
         "incognito": true
