@@ -153,7 +153,7 @@ export function Hotkeys() {
           type="button"
           variant="outline"
         >
-          Reset all
+          Reset
         </Button>
 
         <Button
@@ -163,7 +163,7 @@ export function Hotkeys() {
           size="sm"
           type="button"
         >
-          {saving ? 'Saving…' : 'Save'}
+          Save
         </Button>
       </div>
     </div>
