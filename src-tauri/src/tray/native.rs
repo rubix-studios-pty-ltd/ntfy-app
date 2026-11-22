@@ -7,6 +7,7 @@ use crate::tray::{check_updates, exit_app};
 use crate::windows::automation::open_automation_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
+use crate::windows::hotkeys::open_hotkeys_window;
 use crate::windows::schedule::open_schedule_window;
 use crate::windows::webhook::open_webhook_window;
 
@@ -31,6 +32,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     });
 
     let automation = MenuItem::with_id(app, "automation", "Automation", true, None::<&str>)?;
+    let hotkeys = MenuItem::with_id(app, "hotkeys", "Hotkeys", true, None::<&str>)?;
     let webhook = MenuItem::with_id(app, "webhook", "Webhook", true, None::<&str>)?;
     let logs = MenuItem::with_id(app, "logs", "Logs", true, None::<&str>)?;
 
@@ -52,7 +54,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let separator = PredefinedMenuItem::separator(app)?;
 
     let tools_menu =
-        Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook])?;
+        Submenu::with_id_and_items(app, "tools", "Tools", true, &[&automation, &webhook, &hotkeys])?;
 
     let settings_menu = Submenu::with_id_and_items(
         app,
@@ -94,6 +96,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
             }
             "webhook" => {
                 open_webhook_window(app);
+            }
+            "hotkeys" => {
+                open_hotkeys_window(app);
             }
             "autostart" => {
                 if let Err(error) = toggle_autostart(app) {

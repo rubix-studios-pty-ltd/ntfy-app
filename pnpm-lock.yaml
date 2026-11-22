@@ -178,6 +178,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^2.12.5
         version: 2.12.5
+      '@tauri-apps/plugin-global-shortcut':
+        specifier: ~2.4.1
+        version: 2.4.1
       '@tauri-apps/plugin-notification':
         specifier: ^2.8.1
         version: 2.8.1
@@ -1613,6 +1616,9 @@ packages:
     resolution: {integrity: sha512-/cOeQgqq8PBDPODOjjT0YHs4qxKCHcQMWMiBm4rLM3JNr9mZE+PHNKOK4zAkhIUtYMNL/0fweW48VNvzD1AbqA==}
     engines: {node: '>= 10'}
     hasBin: true
+
+  '@tauri-apps/plugin-global-shortcut@2.4.1':
+    resolution: {integrity: sha512-NVCoQ0ShDFncsj9f8iAzhRBTnsJj5sf60vOjcV6emeQHzmEFd6+RXH+fUHHuJAbEYP4mdT2vGlvVOG7tMr/e8g==}
 
   '@tauri-apps/plugin-notification@2.8.1':
     resolution: {integrity: sha512-B+OCJv17XCFQxAhe2+fn2bHqQ1fz/hGnYHeT++yv8+q0daOH5o1ghX7MmxWgoGFp7POaNn4UMONclHeZn65mJA==}
@@ -4411,6 +4417,10 @@ snapshots:
       '@tauri-apps/cli-win32-arm64-msvc': 2.12.6
       '@tauri-apps/cli-win32-ia32-msvc': 2.12.6
       '@tauri-apps/cli-win32-x64-msvc': 2.12.6
+
+  '@tauri-apps/plugin-global-shortcut@2.4.1':
+    dependencies:
+      '@tauri-apps/api': 2.12.5
 
   '@tauri-apps/plugin-notification@2.8.1':
     dependencies:
