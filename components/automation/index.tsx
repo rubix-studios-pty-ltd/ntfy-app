@@ -51,22 +51,23 @@ export function Automation() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
+        <Button className="cursor-pointer duration-500 transition-all" size="icon-sm" onClick={addRule}>
+          <Plus />
+        </Button>
+
         <div className="relative flex-1">
           <Search
             aria-hidden="true"
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            className="w-full bg-transparent pl-9 text-[11px] md:text-[11px] text-foreground"
+            className="h-8 w-full bg-transparent pl-9 text-[11px] md:text-[11px] text-foreground"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search…"
             type="search"
             value={search}
           />
         </div>
-        <Button className="cursor-pointer duration-500 transition-all" onClick={addRule}>
-          <Plus />
-        </Button>
       </div>
 
       <Table
