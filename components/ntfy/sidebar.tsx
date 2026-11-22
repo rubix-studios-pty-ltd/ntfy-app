@@ -2,14 +2,18 @@
 
 import Image from 'next/image'
 import {
+  Bell,
   BellOff,
+  CheckCheck,
   Clock,
   Inbox,
+  Pencil,
   Plus,
   ScrollText,
   Settings,
   SlidersHorizontal,
   SquareText,
+  Trash2,
   Webhook,
   Workflow,
 } from 'lucide-react'
@@ -17,6 +21,12 @@ import {
 import ntfy from '@/assets/ntfy.png'
 import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
 import { cn } from '@/lib/utils'
 import { type Snapshot, type Topic } from '@/types/ntfy'
 
@@ -28,6 +38,11 @@ type Props = {
   addTopic: () => void
   editServer: (id: string) => void
   preferences: () => void
+  busy: boolean
+  markRead: (topic: Topic | null) => void
+  deleteNotifications: (topic: Topic | null) => void
+  toggleMute: (topic: Topic) => void
+  editTopic: (topic: Topic) => void
 }
 
 export function Sidebar({
@@ -38,6 +53,11 @@ export function Sidebar({
   editServer,
   addTopic,
   preferences,
+  busy,
+  markRead,
+  deleteNotifications,
+  toggleMute,
+  editTopic,
 }: Props) {
   const unread = snapshot.topics.reduce((total, topic) => total + topic.unread, 0)
   const status = (topic: Topic) => snapshot.statuses.find((status) => status.topicId === topic.id)
@@ -49,28 +69,52 @@ export function Sidebar({
         <h1 className="text-base font-semibold">ntfy</h1>
       </div>
 
-      <Button
-        aria-pressed={selected === null}
-        className={cn(
-          'cursor-pointer duration-500 transition-all w-full justify-between font-normal text-muted-foreground',
-          selected === null &&
-            'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
-        )}
-        onClick={() => select(null)}
-        size="sm"
-        variant="ghost"
-      >
-        <div className="flex items-center gap-2">
-          <Inbox className="size-4.5" />
-          <span className="text-xs">Notifications</span>
-        </div>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <Button
+            aria-pressed={selected === null}
+            className={cn(
+              'cursor-pointer duration-500 transition-all w-full justify-between font-normal text-muted-foreground',
+              selected === null &&
+                'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
+            )}
+            onClick={() => select(null)}
+            size="sm"
+            variant="ghost"
+          >
+            <div className="flex items-center gap-2">
+              <Inbox className="size-4.5" />
+              <span className="text-xs">Notifications</span>
+            </div>
 
-        {unread > 0 && (
-          <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
-            {unread}
-          </b>
-        )}
-      </Button>
+            {unread > 0 && (
+              <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
+                {unread}
+              </b>
+            )}
+          </Button>
+        </ContextMenuTrigger>
+
+        <ContextMenuContent className="min-w-32 space-y-1">
+          <ContextMenuItem
+            className="transition-all duration-500 cursor-pointer"
+            disabled={busy}
+            onSelect={() => markRead(null)}
+          >
+            <CheckCheck className="size-3.5" />
+            Read
+          </ContextMenuItem>
+          <ContextMenuItem
+            className="transition-all duration-500 cursor-pointer"
+            disabled={busy}
+            onSelect={() => deleteNotifications(null)}
+            variant="destructive"
+          >
+            <Trash2 className="size-3.5" />
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
 
       <nav aria-label="Subscriptions" className="min-h-22.5 flex-1 overflow-y-auto">
         {snapshot.servers.map((server) => (
@@ -96,45 +140,91 @@ export function Sidebar({
               .map((topic) => {
                 const current = status(topic)
                 return (
-                  <Button
-                    aria-pressed={selected === topic.id}
-                    className={cn(
-                      'cursor-pointer duration-500 transition-all justify-start px-2.5 gap-2.5 text-left text-xs text-muted-foreground',
-                      selected === topic.id &&
-                        'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
-                    )}
-                    key={topic.id}
-                    onClick={() => select(topic.id)}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                  >
-                    <span className="relative flex size-5 shrink-0 items-center justify-center border border-border rounded-md p-3">
-                      <TopicIcon aria-hidden="true" className="size-3.5" name={topic.icon} />
-
-                      <span
-                        aria-hidden="true"
+                  <ContextMenu key={topic.id}>
+                    <ContextMenuTrigger asChild>
+                      <Button
+                        aria-pressed={selected === topic.id}
                         className={cn(
-                          'absolute -bottom-0.5 -right-0.5 size-1 rounded-full ring-2 ring-card',
-                          current?.state === 'connected'
-                            ? 'animate-pulse bg-success'
-                            : 'bg-muted-foreground'
+                          'cursor-pointer duration-500 transition-all justify-start px-2.5 gap-2.5 text-left text-xs text-muted-foreground',
+                          selected === topic.id &&
+                            'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
                         )}
-                      />
-                    </span>
+                        onClick={() => select(topic.id)}
+                        size="sm"
+                        type="button"
+                        variant="ghost"
+                      >
+                        <span className="relative flex size-5 shrink-0 items-center justify-center border border-border rounded-md p-3">
+                          <TopicIcon aria-hidden="true" className="size-3.5" name={topic.icon} />
 
-                    <span className="min-w-0 flex-1 truncate">
-                      {topic.displayName || topic.topic}
-                    </span>
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              'absolute -bottom-0.5 -right-0.5 size-1 rounded-full ring-2 ring-card',
+                              current?.state === 'connected'
+                                ? 'animate-pulse bg-success'
+                                : 'bg-muted-foreground'
+                            )}
+                          />
+                        </span>
 
-                    {topic.muted && <BellOff className="size-3.25" />}
+                        <span className="min-w-0 flex-1 truncate">
+                          {topic.displayName || topic.topic}
+                        </span>
 
-                    {topic.unread > 0 && (
-                      <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
-                        {topic.unread}
-                      </b>
-                    )}
-                  </Button>
+                        {topic.muted && <BellOff className="size-3.25" />}
+
+                        {topic.unread > 0 && (
+                          <b className="bg-accent text-accent-foreground rounded min-w-5.25 py-0.5 px-1.25 text-center text-[10px] inline-block">
+                            {topic.unread}
+                          </b>
+                        )}
+                      </Button>
+                    </ContextMenuTrigger>
+
+                    <ContextMenuContent className="min-w-32 space-y-1">
+                      <ContextMenuItem
+                        className="transition-all duration-500 cursor-pointer"
+                        disabled={busy}
+                        onSelect={() => markRead(topic)}
+                      >
+                        <CheckCheck className="size-3.5" />
+                        Read
+                      </ContextMenuItem>
+
+                      <ContextMenuItem
+                        className="transition-all duration-500 cursor-pointer"
+                        disabled={busy}
+                        onSelect={() => toggleMute(topic)}
+                      >
+                        {topic.muted ? (
+                          <Bell className="size-3.5" />
+                        ) : (
+                          <BellOff className="size-3.5" />
+                        )}
+                        {topic.muted ? 'Unmute' : 'Mute'}
+                      </ContextMenuItem>
+
+                      <ContextMenuItem
+                        className="transition-all duration-500 cursor-pointer"
+                        disabled={busy}
+                        onSelect={() => editTopic(topic)}
+                      >
+                        <Pencil className="size-3.5" />
+                        Edit
+                      </ContextMenuItem>
+
+                      <ContextMenuItem
+                        className="transition-all duration-500 cursor-pointer"
+                        disabled={busy}
+                        onSelect={() => deleteNotifications(topic)}
+                        variant="destructive"
+                      >
+                        <Trash2 className="size-3.5" />
+                        Delete
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 )
               })}
 

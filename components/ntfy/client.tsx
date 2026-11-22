@@ -174,22 +174,42 @@ export function Client() {
     [busy, data.refresh]
   )
 
-  const confirmDelete = useCallback(() => {
-    if (busy) return
+  const confirmDelete = useCallback(
+    (topicId: string | null) => {
+      if (busy) return
 
-    const topicId = selected
-    setDialog({
-      kind: 'confirm',
-      title: topicId ? 'Delete topic notifications' : 'Delete all notifications',
-      description: topicId
-        ? 'All locally stored notifications for this topic will be deleted.'
-        : 'All locally stored notifications for every topic will be deleted.',
-      action: async () => {
-        await messageAction(null, topicId, true)
-        data.refresh()
-      },
-    })
-  }, [busy, selected, data.refresh])
+      setDialog({
+        kind: 'confirm',
+        title: topicId ? 'Delete topic notifications' : 'Delete all notifications',
+        description: topicId
+          ? 'All locally stored notifications for this topic will be deleted.'
+          : 'All locally stored notifications for every topic will be deleted.',
+        action: async () => {
+          await messageAction(null, topicId, true)
+          data.refresh()
+        },
+      })
+    },
+    [busy, data.refresh]
+  )
+
+  const disconnect = useCallback(
+    (topic: Topic) => {
+      if (busy) return
+
+      setDialog({
+        kind: 'confirm',
+        title: 'Unsubscribe',
+        description: 'Local history and saved receipt state for this subscription will be removed.',
+        action: async () => {
+          await updateTopic(topic.id, topic.muted, true)
+          setSelected((current) => (current === topic.id ? null : current))
+          data.refresh()
+        },
+      })
+    },
+    [busy, data.refresh]
+  )
 
   useEffect(() => {
     if (!isTauri()) return
@@ -219,7 +239,7 @@ export function Client() {
         })
       } else if (shortcut === hotkeys.deleteNotifications) {
         event.preventDefault()
-        confirmDelete()
+        confirmDelete(selected)
       } else if (shortcut === hotkeys.publish) {
         if (snapshot.topics.length === 0) return
 
@@ -258,16 +278,24 @@ export function Client() {
               setEditing(null)
               setDialog({ kind: 'topic' })
             }}
+            busy={busy}
+            deleteNotifications={(entry) => confirmDelete(entry?.id ?? null)}
             editServer={(id) =>
               setDialog({
                 kind: 'server',
                 server: snapshot.servers.find((item) => item.id === id),
               })
             }
+            editTopic={(entry) => {
+              setEditing(entry)
+              setDialog({ kind: 'topic' })
+            }}
+            markRead={(entry) => void perform(() => messageAction(null, entry?.id ?? null))}
             preferences={() => setDialog({ kind: 'preferences' })}
             select={setSelected}
             selected={selected}
             snapshot={snapshot}
+            toggleMute={(entry) => void perform(() => updateTopic(entry.id, !entry.muted))}
           />
         </div>
 
@@ -327,19 +355,7 @@ export function Client() {
 
                 <Button
                   className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
-                  onClick={() =>
-                    setDialog({
-                      kind: 'confirm',
-                      title: 'Unsubscribe',
-                      description:
-                        'Local history and saved receipt state for this subscription will be removed.',
-                      action: async () => {
-                        await updateTopic(topic.id, topic.muted, true)
-                        setSelected(null)
-                        data.refresh()
-                      },
-                    })
-                  }
+                  onClick={() => disconnect(topic)}
                   size="icon-xs"
                   variant="outline"
                 >
@@ -485,7 +501,7 @@ export function Client() {
                   }
                   className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-destructive"
                   disabled={busy}
-                  onClick={confirmDelete}
+                  onClick={() => confirmDelete(selected)}
                   size="icon-xs"
                   variant="ghost"
                 >
