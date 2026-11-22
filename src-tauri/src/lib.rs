@@ -13,6 +13,12 @@ mod windows;
 use windows::main::{setup_window_events, show_main_window};
 
 pub fn run() {
+
+    #[cfg(target_os = "linux")]
+    unsafe {
+        std::env::set_var("GDK_BACKEND", "wayland,x11");
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(

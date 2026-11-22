@@ -1,8 +1,12 @@
 use rusqlite::{Connection, params};
+use std::sync::atomic::{AtomicU32, Ordering};
 use uuid::Uuid;
 
 use super::{now_ms, rule_id};
 use crate::db::models::{AutomationRule, LogsAutomation, LogsInput, LogsList};
+
+const LOG_CHECK_INTERVAL: u32 = 32;
+static LOG_INSERTIONS: AtomicU32 = AtomicU32::new(0);
 
 fn log_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<LogsAutomation> {
     Ok(LogsAutomation {
@@ -214,11 +218,20 @@ pub fn record_execution(
         )
         .map_err(|error| error.to_string())?;
 
-    let total: i64 = connection
-        .query_row("SELECT COUNT(*) FROM automation_logs", [], |row| row.get(0))
-        .map_err(|error| error.to_string())?;
-    if total >= 1000 {
-        cleanup_logs(connection, 30, 1000)?;
+    if LOG_INSERTIONS.fetch_add(1, Ordering::Relaxed) % LOG_CHECK_INTERVAL
+        == LOG_CHECK_INTERVAL - 1
+    {
+        let over_limit: bool = connection
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM automation_logs LIMIT 1 OFFSET 1000)",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(|error| error.to_string())?;
+
+        if over_limit {
+            cleanup_logs(connection, 30, 1000)?;
+        }
     }
 
     connection

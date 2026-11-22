@@ -104,7 +104,7 @@ export function Sidebar({
         <ContextMenuTrigger asChild>
           <Button
             aria-pressed={selected === null}
-            className="group w-full cursor-pointer justify-between px-2 font-normal text-muted-foreground transition-all duration-500 hover:bg-transparent dark:hover:bg-transparent"
+            className="group w-full cursor-pointer justify-between px-1 font-normal text-muted-foreground transition-all duration-500 hover:bg-transparent dark:hover:bg-transparent"
             onClick={() => select(null)}
             size="sm"
             variant="ghost"

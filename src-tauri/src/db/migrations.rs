@@ -159,6 +159,9 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
 
         CREATE INDEX IF NOT EXISTS idx_automation_logs_rule_id
             ON automation_logs(rule_id, created_at DESC);
+
+        CREATE INDEX IF NOT EXISTS idx_automation_logs_created_at_ms
+            ON automation_logs(CAST(created_at AS INTEGER) DESC, id DESC);
         "#,
     )?;
 

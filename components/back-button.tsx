@@ -42,7 +42,7 @@ export function BackButton() {
     <Button
       className="cursor-pointer duration-500 transition-all"
       onClick={() => window.location.assign('/')}
-      size="icon-xs"
+      size="icon-sm"
       type="button"
     >
       <ArrowLeft />

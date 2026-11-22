@@ -17,7 +17,6 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
-
   const [view, setView] = useState<{ query: string | null; ready: boolean }>({
     query: null,
     ready: false,
@@ -63,6 +62,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
 
     const load = async (mode: LoadMode) => {
       if (mode === 'reset') revision++
+
       queued = queued === 'reset' || mode === 'reset' ? 'reset' : 'latest'
 
       if (running) return
@@ -91,6 +91,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
             const merged = [...head, ...tail]
 
             loaded.current = merged
+
             setMessages(merged)
 
             if (nextMode === 'reset' || head.length < 20) {
@@ -173,14 +174,17 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
     let pendingReset = false
 
     const unlisten: (() => void)[] = []
+
     const retain = (dispose: () => void) => (disposed ? dispose() : unlisten.push(dispose))
 
     void Promise.all([
       listen<string>('ntfy:changed', ({ payload }) => {
         if (disposed) return
+
         pendingReset ||= payload === 'reset'
 
         if (!timer) firstChange = Date.now()
+
         clearTimeout(timer)
 
         const delay = Math.max(0, Math.min(200, 1000 - (Date.now() - firstChange)))
@@ -193,6 +197,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
           refresh(reset)
         }, delay)
       }).then(retain),
+
       listen<ConnectionStatus>('ntfy:connection', ({ payload }) => {
         if (!disposed) {
           setSnapshot((current) =>
@@ -208,6 +213,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
           )
         }
       }).then(retain),
+
       listen<string>('ntfy:delivery-error', ({ payload }) => {
         if (!disposed) toast.error(payload, { id: 'native-delivery' })
       }).then(retain),
