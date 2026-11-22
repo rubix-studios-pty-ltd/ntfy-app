@@ -97,7 +97,7 @@ export function Logs() {
         </div>
 
         <ScrollArea
-          className="h-[calc(100vh-12.5em)] overflow-hidden"
+          className="h-[calc(100vh-13.5em)] overflow-hidden"
           onWheelCapture={(event) => {
             event.stopPropagation()
           }}
