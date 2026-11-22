@@ -1,4 +1,4 @@
-export type HotkeySettings = {
+export type Settings = {
   nextTopic: string
   deleteNotifications: string
   publish: string
@@ -6,4 +6,4 @@ export type HotkeySettings = {
   reconnect: string
 }
 
-export type HotkeyAction = keyof HotkeySettings
+export type Action = keyof Settings

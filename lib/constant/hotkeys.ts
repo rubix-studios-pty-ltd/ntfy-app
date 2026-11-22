@@ -1,6 +1,6 @@
-import { type HotkeyAction, type HotkeySettings } from '@/types/hotkeys'
+import { type Action, type Settings } from '@/types/hotkeys'
 
-export const defaultHotkeys: HotkeySettings = {
+export const defaultHotkeys: Settings = {
   nextTopic: 'Tab',
   deleteNotifications: 'Ctrl+Shift+D',
   publish: 'Ctrl+Shift+P',
@@ -8,7 +8,7 @@ export const defaultHotkeys: HotkeySettings = {
   reconnect: 'Ctrl+Shift+E',
 }
 
-export const hotkeyActions: { key: HotkeyAction; name: string; description: string }[] = [
+export const hotkeyActions: { key: Action; name: string; description: string }[] = [
   {
     key: 'nextTopic',
     name: 'Next topic',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { type KeyboardEvent, useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -9,11 +9,11 @@ import { Label } from '@/components/ui/label'
 import { defaultHotkeys, hotkeyActions } from '@/lib/constant/hotkeys'
 import { shortcutEvent } from '@/lib/hotkeys'
 import { getHotkeys, updateHotkeys } from '@/lib/tauri/hotkeys'
-import { type HotkeyAction, type HotkeySettings } from '@/types/hotkeys'
+import { type Action, type Settings } from '@/types/hotkeys'
 
 export function Hotkeys() {
-  const [settings, setSettings] = useState<HotkeySettings>(defaultHotkeys)
-  const [recording, setRecording] = useState<HotkeyAction | null>(null)
+  const [settings, setSettings] = useState<Settings>(defaultHotkeys)
+  const [recording, setRecording] = useState<Action | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -36,7 +36,7 @@ export function Hotkeys() {
     }
   }, [])
 
-  const update = (key: HotkeyAction, shortcut: string) => {
+  const update = (key: Action, shortcut: string) => {
     setSettings((current) => ({ ...current, [key]: shortcut }))
   }
 
@@ -56,6 +56,34 @@ export function Hotkeys() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, key: Action) => {
+    if (recording !== key) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (event.key === 'Escape') {
+      setRecording(null)
+      return
+    }
+
+    const shortcut = shortcutEvent(event.nativeEvent)
+    if (!shortcut) return
+
+    if (shortcut === 'Tab' && key !== 'nextTopic') {
+      toast.error('Unmodified Tab is reserved for Next topic')
+      return
+    }
+
+    if (shortcut !== 'Tab' && !/^(Ctrl|Alt|Meta)\+/.test(shortcut)) {
+      toast.error('Use Ctrl, Alt or Meta with the shortcut')
+      return
+    }
+
+    update(key, shortcut)
+    setRecording(null)
   }
 
   return (
@@ -83,33 +111,7 @@ export function Hotkeys() {
                   id={`hotkey-${key}`}
                   onBlur={() => setRecording((current) => (current === key ? null : current))}
                   onClick={() => setRecording(key)}
-                  onKeyDown={(event) => {
-                    if (recording !== key) return
-
-                    event.preventDefault()
-                    event.stopPropagation()
-
-                    if (event.key === 'Escape') {
-                      setRecording(null)
-                      return
-                    }
-
-                    const shortcut = shortcutEvent(event.nativeEvent)
-                    if (!shortcut) return
-
-                    if (shortcut === 'Tab' && key !== 'nextTopic') {
-                      toast.error('Unmodified Tab is reserved for Next topic')
-                      return
-                    }
-
-                    if (shortcut !== 'Tab' && !/^(Ctrl|Alt|Meta)\+/.test(shortcut)) {
-                      toast.error('Use Ctrl, Alt or Meta with the shortcut')
-                      return
-                    }
-
-                    update(key, shortcut)
-                    setRecording(null)
-                  }}
+                  onKeyDown={(event) => handleKeyDown(event, key)}
                   size="sm"
                   type="button"
                   variant={recording === key ? 'default' : 'outline'}
