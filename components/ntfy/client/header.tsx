@@ -28,9 +28,9 @@ export function Header({
   return (
     <header className="flex items-center justify-between gap-3 pb-2">
       {topic ? (
-        <div className="flex min-w-0 items-center gap-2 text-foreground">
-          <TopicIcon aria-hidden="true" className="size-4 shrink-0" name={topic.icon} />
-          <span className="truncate font-medium">{topic.displayName || topic.topic}</span>
+        <div className="flex min-w-0 items-center gap-2.5 text-foreground">
+          <TopicIcon aria-hidden="true" className="size-4.5 shrink-0" name={topic.icon} />
+          <span className="truncate text-lg font-medium">{topic.displayName || topic.topic}</span>
         </div>
       ) : (
         <span />
@@ -40,45 +40,45 @@ export function Header({
         {topic && (
           <>
             <Button
-              className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
+              className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent size-7"
               disabled={busy}
               onClick={() => void perform(() => updateTopic(topic.id, !topic.muted))}
-              size="icon-xs"
+              size="icon-sm"
               variant="outline"
             >
-              {topic.muted ? <Bell className="size-2.5" /> : <BellOff className="size-2.5" />}
+              {topic.muted ? <Bell className="size-3" /> : <BellOff className="size-3" />}
             </Button>
 
             <Button
               aria-label="Edit topic"
-              className="cursor-pointer border-border bg-card transition-all duration-500 enabled:hover:bg-accent"
+              className="cursor-pointer border-border bg-card transition-all duration-500 enabled:hover:bg-accent size-7"
               onClick={() => onOpenTopic(topic)}
-              size="icon-xs"
+              size="icon-sm"
               variant="outline"
             >
-              <Pencil className="size-2.5" />
+              <Pencil className="size-3" />
             </Button>
 
             <Button
-              className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent"
+              className="cursor-pointer duration-500 transition-all border-border bg-card enabled:hover:bg-accent size-7"
               onClick={() => disconnect(topic)}
-              size="icon-xs"
+              size="icon-sm"
               variant="outline"
             >
-              <Unplug className="size-2.5" />
+              <Unplug className="size-3" />
             </Button>
           </>
         )}
 
         <Button
           aria-label="Publish a notification"
-          className="cursor-pointer duration-500 transition-all rounded-md border border-primary enabled:hover:bg-primary-hover"
+          className="cursor-pointer duration-500 transition-all rounded-md border border-primary enabled:hover:bg-primary-hover size-7"
           disabled={!hasTopics}
           onClick={() => setDialog({ kind: 'publish' })}
-          size="icon-xs"
+          size="icon-sm"
           variant="default"
         >
-          <Send className="size-2.5" />
+          <Send className="size-3" />
         </Button>
       </div>
     </header>
