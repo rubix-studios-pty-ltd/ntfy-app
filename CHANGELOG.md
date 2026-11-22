@@ -8,7 +8,6 @@
 - **automation**: add topic display in automation rules
 - hotkey tauri window
 - **hotkeys**: implement hotkey management and settings
-- add hotkeys section to README and update link text
 - **context-menu**: add context menu component with various items
 - server and topic sort order refractor: client, card and sidebar
 
