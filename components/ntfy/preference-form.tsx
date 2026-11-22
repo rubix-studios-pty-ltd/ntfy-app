@@ -131,7 +131,7 @@ export function PreferenceForm({ close, saved }: Props) {
             size="sm"
             variant="outline"
           >
-            <a href="/hotkeys/">Hotkeys</a>
+            <a href="/hotkeys/">Config</a>
           </Button>
         </div>
 

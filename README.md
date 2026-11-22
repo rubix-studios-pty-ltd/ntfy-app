@@ -22,6 +22,7 @@ Automatic updates are disabled by default to reduce background activity, externa
 - **Schedules**: Schedule working hours for notification alerts and suppression
 - **Self-hosted**: Connect to your own ntfy instance or use ntfy.sh
 - **Cross-platform**: Windows, Linux, and macOS (Intel & Apple Silicon)
+- **Hotkeys**: Hotkey navigation and topic controls
 - **System Tray**: Runs quietly in the background with tray controls
 - **Lightweight**: Built with Rust and Tauri for minimal resource usage
 - **Modern UI**: Next.js, React, and Tailwind CSS
