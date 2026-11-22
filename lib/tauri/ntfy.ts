@@ -32,6 +32,14 @@ export async function getSnapshot(): Promise<Snapshot> {
   }
 }
 
+export function reorderServers(ids: string[]) {
+  return invoke<void>('ntfy_reorder_servers', { ids })
+}
+
+export function reorderTopics(serverId: string, ids: string[]) {
+  return invoke<void>('ntfy_reorder_topics', { serverId, ids })
+}
+
 export function saveServer(input: ServerInput) {
   return invoke<void>('ntfy_save_server', { input })
 }

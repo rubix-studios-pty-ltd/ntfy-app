@@ -11,19 +11,17 @@ import { type ConnectionStatus, type Snapshot, type StoredMessage } from '@/type
 type LoadMode = 'latest' | 'reset'
 
 export function useNtfy(topicId: string | null, unreadOnly: boolean, search: string) {
-  const queryKey = JSON.stringify([topicId, unreadOnly, search])
-
-  const [view, setView] = useState<{ query: string | null; ready: boolean }>({
-    query: null,
-    ready: false,
-  })
-
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
   const [messages, setMessages] = useState<StoredMessage[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
+
+  const [view, setView] = useState<{ query: string | null; ready: boolean }>({
+    query: null,
+    ready: false,
+  })
 
   const loaded = useRef<StoredMessage[]>([])
   const morePending = useRef(false)
@@ -33,6 +31,8 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
 
   const refresh = useCallback((reset = true) => reload.current?.(reset), [])
   const loadMore = useCallback(() => fetchMore.current?.(), [])
+
+  const queryKey = JSON.stringify([topicId, unreadOnly, search])
 
   const pending = view.query !== queryKey
   const ready = !pending && view.ready
@@ -78,6 +78,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
               getSnapshot(),
               getMessages({ topicId, unreadOnly, search, before: null }),
             ])
+
             if (cancelled) return
 
             setSnapshot(nextSnapshot)
@@ -88,8 +89,8 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
                 ? loaded.current.filter((item) => item.rowId < oldestHead)
                 : []
             const merged = [...head, ...tail]
-            loaded.current = merged
 
+            loaded.current = merged
             setMessages(merged)
 
             if (nextMode === 'reset' || head.length < 20) {

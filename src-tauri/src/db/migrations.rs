@@ -29,13 +29,14 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
             id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL UNIQUE,
             auth_kind TEXT NOT NULL CHECK(auth_kind IN ('none','basic','token')),
             username TEXT NOT NULL DEFAULT '', secret TEXT NOT NULL DEFAULT '',
-            enabled INTEGER NOT NULL DEFAULT 1
+            enabled INTEGER NOT NULL DEFAULT 1, sort_order INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS ntfy_topics (
             id TEXT PRIMARY KEY, server_id TEXT NOT NULL REFERENCES ntfy_servers(id) ON DELETE CASCADE,
             topic TEXT NOT NULL, muted INTEGER NOT NULL DEFAULT 0,
             subscribed_at INTEGER NOT NULL, cursor_time INTEGER,
+            sort_order INTEGER NOT NULL DEFAULT 0,
             UNIQUE(server_id, topic)
         );
 
@@ -161,7 +162,49 @@ pub fn run(connection: &Connection) -> rusqlite::Result<()> {
         "#,
     )?;
 
+    let mut columns = connection.prepare("PRAGMA table_info(ntfy_servers)")?;
+
+    let server_columns = columns
+        .query_map([], |row| row.get::<_, String>(1))?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    drop(columns);
+
+    if !server_columns.iter().any(|name| name == "sort_order") {
+        connection.execute_batch(
+            r#"
+            ALTER TABLE ntfy_servers ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;
+            UPDATE ntfy_servers SET sort_order = (
+                SELECT COUNT(*) - 1 FROM ntfy_servers AS other
+                WHERE other.name < ntfy_servers.name
+                   OR (other.name = ntfy_servers.name AND other.id <= ntfy_servers.id)
+            );
+            "#,
+        )?;
+    }
+
+    let mut columns = connection.prepare("PRAGMA table_info(ntfy_topics)")?;
+
+    let topic_columns = columns
+        .query_map([], |row| row.get::<_, String>(1))?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    drop(columns);
+
+    if !topic_columns.iter().any(|name| name == "sort_order") {
+        connection.execute_batch(
+            r#"
+            ALTER TABLE ntfy_topics ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;
+            UPDATE ntfy_topics SET sort_order = (
+                SELECT COUNT(*) - 1 FROM ntfy_topics AS other
+                WHERE other.server_id = ntfy_topics.server_id
+                  AND (other.topic < ntfy_topics.topic
+                    OR (other.topic = ntfy_topics.topic AND other.id <= ntfy_topics.id))
+            );
+            "#,
+        )?;
+    }
+
     let mut columns = connection.prepare("PRAGMA table_info(automation_rules)")?;
+
     let existing = columns
         .query_map([], |row| row.get::<_, String>(1))?
         .collect::<rusqlite::Result<Vec<_>>>()?;

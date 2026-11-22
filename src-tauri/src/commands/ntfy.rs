@@ -28,6 +28,32 @@ pub async fn ntfy_snapshot(app: AppHandle) -> Result<Snapshot, String> {
 }
 
 #[tauri::command]
+pub async fn ntfy_reorder_servers(app: AppHandle, ids: Vec<String>) -> Result<(), String> {
+    run(app.state::<DbState>(), move |connection| {
+        repository::reorder_servers(connection, &ids)
+    })
+    .await?;
+
+    let _ = app.emit("ntfy:changed", "latest");
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn ntfy_reorder_topics(
+    app: AppHandle,
+    server_id: String,
+    ids: Vec<String>,
+) -> Result<(), String> {
+    run(app.state::<DbState>(), move |connection| {
+        repository::reorder_topics(connection, &server_id, &ids)
+    })
+    .await?;
+
+    let _ = app.emit("ntfy:changed", "latest");
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn ntfy_save_server(app: AppHandle, mut input: ServerInput) -> Result<(), String> {
     let state = app.state::<ServiceState>();
 

@@ -16,6 +16,8 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Syn
         automation::test_rule,
         logs::get_logs,
         ntfy::ntfy_snapshot,
+        ntfy::ntfy_reorder_servers,
+        ntfy::ntfy_reorder_topics,
         ntfy::ntfy_save_server,
         ntfy::ntfy_remove_server,
         ntfy::ntfy_subscribe,
