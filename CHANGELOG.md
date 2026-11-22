@@ -15,7 +15,7 @@
 ### Fixed
 
 - **markdown**: add title attribute to fallback span for links
-- hotkey moved to settings system tray. fix: lint
+- hotkey moved to settings system tray.
 - adjust sidebar styling
 - reduce saving flicker
 - remove loading flicker, revert inbox label
