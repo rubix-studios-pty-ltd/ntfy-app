@@ -1,4 +1,30 @@
 
+
+## [1.2.0] - 2026-11-22
+
+### Added
+
+- **card**: conditionally hide tags based on showTags prop
+- **automation**: add topic display in automation rules
+- hotkey tauri window
+- **hotkeys**: implement hotkey management and settings
+- add hotkeys section to README and update link text
+- **context-menu**: add context menu component with various items chore(deps): update cn package to latest version
+- server and topic sort order refractor: client, card and sidebar
+
+### Fixed
+
+- **markdown**: add title attribute to fallback span for links
+- hotkey moved to settings system tray. fix: lint
+- adjust sidebar styling
+- reduce saving flicker
+- remove loading flicker, revert inbox label
+
+### Changed
+
+- **card**: adjust tag label font size and weight
+- **card**: simplify tag label rendering
+
 ## [1.1.2] - 2026-11-21
 
 ### Added
