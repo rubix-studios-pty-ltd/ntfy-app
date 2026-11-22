@@ -17,7 +17,9 @@ pub fn get_hotkeys(connection: &Connection) -> Result<HotkeySettings, String> {
         .map_err(|error| error.to_string())?;
 
     let rows = statement
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })
         .map_err(|error| error.to_string())?;
 
     for row in rows {
@@ -49,14 +51,9 @@ pub fn update_hotkeys(
         return Err("Next topic requires Ctrl, Alt or Meta, unless assigned to Tab".to_string());
     }
 
-    if [
-        &delete_notifications,
-        &publish,
-        &mark_all_read,
-        &reconnect,
-    ]
-    .iter()
-    .any(|shortcut| !has_command_modifier(shortcut))
+    if [&delete_notifications, &publish, &mark_all_read, &reconnect]
+        .iter()
+        .any(|shortcut| !has_command_modifier(shortcut))
     {
         return Err("Actions other than Next topic require Ctrl, Alt or Meta".to_string());
     }
