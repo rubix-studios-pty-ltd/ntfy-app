@@ -5,8 +5,8 @@ import { toast } from 'sonner'
 
 import {
   createRule,
-  deleteRule as removeRule,
   getRules,
+  deleteRule as removeRule,
   testRule as runRule,
   toggleRule as setRuleActive,
   updateRule,

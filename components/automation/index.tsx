@@ -6,9 +6,9 @@ import { Plus, Search } from 'lucide-react'
 import { Dialog } from '@/components/automation/dialog'
 import { Modal } from '@/components/automation/modal'
 import { Table } from '@/components/automation/table'
-import { useRules } from '@/hooks/use-rules'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useRules } from '@/hooks/use-rules'
 import { type RulesType } from '@/schema/automation'
 import { getAction } from '@/utils/getAction'
 import { baseStatus } from '@/utils/status'
@@ -30,7 +30,11 @@ export function Automation() {
         servers.find((server) => server.id === rule.serverId)?.name,
         rule.matchValue,
         getAction(rule),
-      ].some((value) => String(value ?? '').toLowerCase().includes(query))
+      ].some((value) =>
+        String(value ?? '')
+          .toLowerCase()
+          .includes(query)
+      )
     )
   }, [rules, search, servers])
 
@@ -51,7 +55,11 @@ export function Automation() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <Button className="cursor-pointer duration-500 transition-all" size="icon-sm" onClick={addRule}>
+        <Button
+          className="cursor-pointer duration-500 transition-all"
+          onClick={addRule}
+          size="icon-sm"
+        >
           <Plus />
         </Button>
 

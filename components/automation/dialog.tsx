@@ -29,7 +29,10 @@ export function Dialog({ rule, onClose, onDelete }: Props) {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel className="cursor-pointer duration-500 transition-all" variant="outline">
+          <AlertDialogCancel
+            className="cursor-pointer duration-500 transition-all"
+            variant="outline"
+          >
             Cancel
           </AlertDialogCancel>
 
