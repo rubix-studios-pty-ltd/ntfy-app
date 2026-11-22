@@ -73,18 +73,22 @@ export function Sidebar({
         <ContextMenuTrigger asChild>
           <Button
             aria-pressed={selected === null}
-            className={cn(
-              'cursor-pointer duration-500 transition-all w-full justify-between font-normal text-muted-foreground',
-              selected === null &&
-                'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
-            )}
+            className="px-2 group cursor-pointer duration-500 transition-all w-full justify-between font-normal text-muted-foreground hover:bg-transparent dark:hover:bg-transparent"
             onClick={() => select(null)}
             size="sm"
             variant="ghost"
           >
             <div className="flex items-center gap-2">
-              <Inbox className="size-4.5" />
-              <span className="text-xs">Notifications</span>
+              <span
+                className={cn(
+                  'relative flex size-5 shrink-0 items-center justify-center rounded-md border border-border p-3 transition-all duration-500 group-hover:bg-accent group-hover:text-accent-foreground',
+                  selected === null && 'bg-accent text-accent-foreground'
+                )}
+              >
+                <Inbox className="size-3.5" />
+              </span>
+
+              <span className="text-xs">Inbox</span>
             </div>
 
             {unread > 0 && (
@@ -104,6 +108,7 @@ export function Sidebar({
             <CheckCheck className="size-3.5" />
             Read
           </ContextMenuItem>
+
           <ContextMenuItem
             className="transition-all duration-500 cursor-pointer"
             disabled={busy}
@@ -144,17 +149,18 @@ export function Sidebar({
                     <ContextMenuTrigger asChild>
                       <Button
                         aria-pressed={selected === topic.id}
-                        className={cn(
-                          'cursor-pointer duration-500 transition-all justify-start px-2.5 gap-2.5 text-left text-xs text-muted-foreground',
-                          selected === topic.id &&
-                            'bg-accent text-accent-foreground hover:bg-accent dark:hover:bg-accent'
-                        )}
+                        className="group cursor-pointer justify-start gap-2.5 px-2 text-left text-xs font-normal text-muted-foreground transition-all duration-500 hover:bg-transparent dark:hover:bg-transparent"
                         onClick={() => select(topic.id)}
                         size="sm"
                         type="button"
                         variant="ghost"
                       >
-                        <span className="relative flex size-5 shrink-0 items-center justify-center border border-border rounded-md p-3">
+                        <span
+                          className={cn(
+                            'relative flex size-5 shrink-0 items-center justify-center rounded-md border border-border p-3 transition-all duration-500 group-hover:bg-accent group-hover:text-accent-foreground',
+                            selected === topic.id && 'bg-accent text-accent-foreground'
+                          )}
+                        >
                           <TopicIcon aria-hidden="true" className="size-3.5" name={topic.icon} />
 
                           <span
