@@ -298,6 +298,18 @@ pub fn reorder_topics(
 }
 
 pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Result<bool, String> {
+    let seen: bool = connection
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM ntfy_receipts WHERE topic_id = ?1 AND message_id = ?2)",
+            params![topic_id, message.id],
+            |row| row.get(0),
+        )
+        .map_err(|error| error.to_string())?;
+
+    if seen {
+        return Ok(false);
+    }
+
     let transaction = connection
         .unchecked_transaction()
         .map_err(|error| error.to_string())?;
@@ -378,6 +390,7 @@ pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Re
     }
 
     let mut fresh = true;
+    let mut message_row_id = None;
 
     if message.event == "message" {
         let payload = serde_json::to_string(message).map_err(|error| error.to_string())?;
@@ -394,25 +407,14 @@ pub fn receive(connection: &Connection, topic_id: &str, message: &Message) -> Re
             )
             .map_err(|error| error.to_string())?
             > 0;
+
+        if fresh {
+            message_row_id = Some(transaction.last_insert_rowid());
+        }
     }
 
-    let row_id = transaction.last_insert_rowid();
-
-    if row_id > 0 && row_id % 250 == 0 {
-        transaction
-            .execute(
-                r#"
-                DELETE FROM ntfy_messages
-                WHERE row_id NOT IN (
-                    SELECT row_id
-                    FROM ntfy_messages
-                    ORDER BY row_id DESC
-                    LIMIT 10000
-                )
-                "#,
-                [],
-            )
-            .map_err(|error| error.to_string())?;
+    if message_row_id.is_some_and(|row_id| row_id % 250 == 0) {
+        cleanup_messages(&transaction)?;
     }
 
     if receipt_row_id > 0 && receipt_row_id % 250 == 0 {
@@ -543,21 +545,27 @@ pub fn meta(connection: &Connection, key: &str) -> Result<Option<String>, String
 }
 
 pub fn cleanup(connection: &Connection) -> Result<(), String> {
+    cleanup_messages(connection)?;
+    cleanup_receipts(connection)
+}
+
+fn cleanup_messages(connection: &Connection) -> Result<(), String> {
     connection
-        .execute_batch(
+        .execute(
             r#"
             DELETE FROM ntfy_messages
-            WHERE row_id NOT IN (
+            WHERE row_id < (
                 SELECT row_id
                 FROM ntfy_messages
                 ORDER BY row_id DESC
-                LIMIT 10000
-            );
+                LIMIT 1 OFFSET 9999
+            )
             "#,
+            [],
         )
         .map_err(|error| error.to_string())?;
 
-    cleanup_receipts(connection)
+    Ok(())
 }
 
 fn cleanup_receipts(connection: &Connection) -> Result<(), String> {
@@ -575,11 +583,11 @@ fn cleanup_receipts(connection: &Connection) -> Result<(), String> {
         .execute_batch(
             r#"
             DELETE FROM ntfy_receipts
-            WHERE rowid NOT IN (
+            WHERE rowid < (
                 SELECT rowid
                 FROM ntfy_receipts
                 ORDER BY rowid DESC
-                LIMIT 20000
+                LIMIT 1 OFFSET 19999
             )
             "#,
         )

@@ -2,6 +2,8 @@ use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
+use crate::storage;
+
 pub(crate) mod migrations;
 pub mod models;
 pub mod repo;
@@ -32,17 +34,18 @@ pub fn init(app: &tauri::AppHandle) -> Result<DbState, String> {
 
     let legacy = directory.join("automation.sqlite");
 
-    let key = crate::storage::key::database_key(path.exists() || pending.exists())?;
+    let key = storage::key::database_key(path.exists() || pending.exists())?;
 
     if !path.exists() && legacy.exists() {
-        crate::storage::encryption::migrate_plaintext(&legacy, &pending, &path, &key)?;
+        storage::encryption::migrate_plaintext(&legacy, &pending, &path, &key)?;
     }
 
-    let connection = crate::storage::encryption::open(&path, &key)?;
+    let connection = storage::encryption::open(&path, &key)?;
+    storage::encryption::configure_runtime(&connection)?;
 
     migrations::run(&connection).map_err(|error| error.to_string())?;
 
-    crate::storage::legacy::import_settings(app, &connection)?;
+    storage::legacy::import_settings(app, &connection)?;
 
     let migrated: bool = connection
         .query_row(
