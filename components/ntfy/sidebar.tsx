@@ -88,7 +88,7 @@ export function Sidebar({
                 <Inbox className="size-3.5" />
               </span>
 
-              <span className="text-xs">Inbox</span>
+              <span className="text-xs">Notifications</span>
             </div>
 
             {unread > 0 && (

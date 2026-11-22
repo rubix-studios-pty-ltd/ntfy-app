@@ -394,11 +394,7 @@ export function Client() {
           </div>
         )}
 
-        {data.loading ? (
-          <div className="flex grow flex-col items-center justify-center text-muted-foreground">
-            <RefreshCw className="animate-spin" size={28} />
-          </div>
-        ) : snapshot.servers.length === 0 ? (
+        {data.loading ? null : snapshot.servers.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-5 py-12.5 text-center">
             <Button
               className="cursor-pointer duration-500 transition-all gap-1.75 rounded-md border border-primary text-[11px] font-semibold enabled:hover:bg-primary-hover"
