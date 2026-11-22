@@ -33,6 +33,7 @@ export function useNtfy(topicId: string | null, unreadOnly: boolean, search: str
 
   const refresh = useCallback((reset = true) => reload.current?.(reset), [])
   const loadMore = useCallback(() => fetchMore.current?.(), [])
+
   const pending = view.query !== queryKey
   const ready = !pending && view.ready
 

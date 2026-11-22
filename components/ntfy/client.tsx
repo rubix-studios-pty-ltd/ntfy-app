@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { isTauri } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import { onAction } from '@tauri-apps/plugin-notification'
 import {
   Bell,
@@ -31,6 +32,9 @@ import { TopicIcon } from '@/components/ntfy/topic-icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useNtfy } from '@/hooks/use-ntfy'
+import { defaultHotkeys } from '@/lib/constant/hotkeys'
+import { editableTarget, shortcutEvent } from '@/lib/hotkeys'
+import { getHotkeys } from '@/lib/tauri/hotkeys'
 import {
   messageAction,
   notificationClick,
@@ -40,6 +44,7 @@ import {
   updateTopic,
 } from '@/lib/tauri/ntfy'
 import { cn } from '@/lib/utils'
+import { type HotkeySettings } from '@/types/hotkeys'
 import { type DialogState, type Snapshot, type Topic } from '@/types/ntfy'
 
 const empty: Snapshot = { servers: [], topics: [], statuses: [], encrypted: false }
@@ -55,14 +60,43 @@ export function Client() {
   const [busy, setBusy] = useState(false)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [showTags, setShowTags] = useState(true)
+  const [hotkeys, setHotkeys] = useState<HotkeySettings>(defaultHotkeys)
 
   const data = useNtfy(selected, unreadOnly, query)
-  const loading = data.pending || search !== query
 
+  const loading = data.pending || search !== query
   const snapshot = data.snapshot ?? empty
   const topic = snapshot.topics.find((item) => item.id === selected)
   const status = snapshot.statuses.find((item) => item.topicId === selected)
   const unread = snapshot.topics.reduce((total, item) => total + item.unread, 0)
+
+  useEffect(() => {
+    if (!isTauri()) return
+
+    let active = true
+
+    void getHotkeys()
+      .then((value) => {
+        if (active) setHotkeys(value)
+      })
+      .catch((error) => console.error('Cannot load hotkeys', error))
+
+    let unlisten: (() => void) | undefined
+
+    void listen<HotkeySettings>('ntfy:hotkeys-changed', ({ payload }) => {
+      if (active) setHotkeys(payload)
+    })
+      .then((off) => {
+        if (active) unlisten = off
+        else off()
+      })
+      .catch((error) => console.error('Cannot listen for hotkey updates', error))
+
+    return () => {
+      active = false
+      unlisten?.()
+    }
+  }, [])
 
   useEffect(() => {
     if (!isTauri()) return
@@ -123,19 +157,86 @@ export function Client() {
 
   const close = () => setDialog(null)
 
-  const perform = async (action: () => Promise<void>) => {
-    if (busy) return
-    setBusy(true)
+  const perform = useCallback(
+    async (action: () => Promise<void>) => {
+      if (busy) return
+      setBusy(true)
 
-    try {
-      await action()
-      data.refresh()
-    } catch (failure) {
-      toast.error(String(failure))
-    } finally {
-      setBusy(false)
+      try {
+        await action()
+        data.refresh()
+      } catch (failure) {
+        toast.error(String(failure))
+      } finally {
+        setBusy(false)
+      }
+    },
+    [busy, data.refresh]
+  )
+
+  const confirmDelete = useCallback(() => {
+    if (busy) return
+
+    const topicId = selected
+    setDialog({
+      kind: 'confirm',
+      title: topicId ? 'Delete topic notifications' : 'Delete all notifications',
+      description: topicId
+        ? 'All locally stored notifications for this topic will be deleted.'
+        : 'All locally stored notifications for every topic will be deleted.',
+      action: async () => {
+        await messageAction(null, topicId, true)
+        data.refresh()
+      },
+    })
+  }, [busy, selected, data.refresh])
+
+  useEffect(() => {
+    if (!isTauri()) return
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.repeat ||
+        event.isComposing ||
+        event.defaultPrevented ||
+        dialog !== null ||
+        document.querySelector('[role="dialog"]') ||
+        busy
+      )
+        return
+
+      const shortcut = shortcutEvent(event)
+      if (!shortcut) return
+
+      if (shortcut === hotkeys.nextTopic) {
+        if (editableTarget(event.target)) return
+        if (snapshot.topics.length === 0) return
+
+        event.preventDefault()
+        setSelected((current) => {
+          const index = snapshot.topics.findIndex((item) => item.id === current)
+          return index >= snapshot.topics.length - 1 ? null : snapshot.topics[index + 1].id
+        })
+      } else if (shortcut === hotkeys.deleteNotifications) {
+        event.preventDefault()
+        confirmDelete()
+      } else if (shortcut === hotkeys.publish) {
+        if (snapshot.topics.length === 0) return
+
+        event.preventDefault()
+        setDialog({ kind: 'publish' })
+      } else if (shortcut === hotkeys.markAllRead) {
+        event.preventDefault()
+        void perform(() => messageAction(null, selected))
+      } else if (shortcut === hotkeys.reconnect) {
+        event.preventDefault()
+        void perform(reconnect)
+      }
     }
-  }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [hotkeys, snapshot.topics, selected, dialog, busy, perform, confirmDelete])
 
   return (
     <main className="flex min-h-dvh text-sm">
@@ -378,28 +479,18 @@ export function Client() {
                   <CheckCheck className="size-4" />
                 </Button>
 
-                {selected && (
-                  <Button
-                    className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-destructive"
-                    disabled={busy}
-                    onClick={() =>
-                      setDialog({
-                        kind: 'confirm',
-                        title: 'Delete',
-                        description:
-                          'All locally stored notifications for this topic will be deleted.',
-                        action: async () => {
-                          await messageAction(null, selected, true)
-                          data.refresh()
-                        },
-                      })
-                    }
-                    size="icon-xs"
-                    variant="ghost"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                )}
+                <Button
+                  aria-label={
+                    selected ? 'Delete notifications for this topic' : 'Delete all notifications'
+                  }
+                  className="cursor-pointer duration-500 transition-all text-muted-foreground hover:text-destructive"
+                  disabled={busy}
+                  onClick={confirmDelete}
+                  size="icon-xs"
+                  variant="ghost"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
 
                 <Button
                   aria-label="Reconnect subscriptions"

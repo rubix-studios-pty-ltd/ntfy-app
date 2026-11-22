@@ -3,7 +3,7 @@
   "identifier": "default",
   "description": "Local application windows only.",
   "local": true,
-  "windows": ["main", "automation", "config", "logs", "webhook"],
+  "windows": ["main", "automation", "config", "logs", "webhook", "hotkeys", "schedule"],
   "permissions": [
     "core:default",
     "core:window:allow-close",

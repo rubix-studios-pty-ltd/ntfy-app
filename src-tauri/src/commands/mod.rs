@@ -1,10 +1,13 @@
 pub mod automation;
+pub mod hotkeys;
 pub mod logs;
 pub mod ntfy;
 pub mod schedule;
 
 pub fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
     tauri::generate_handler![
+        hotkeys::get_hotkeys,
+        hotkeys::update_hotkeys,
         automation::get_rules,
         automation::create_rule,
         automation::update_rule,

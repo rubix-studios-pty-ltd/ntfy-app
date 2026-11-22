@@ -252,7 +252,9 @@ export function Automation() {
                   Server:{' '}
                   {servers.find((server) => server.id === rule.serverId)?.name ?? 'Unassigned'}
                 </span>
+
                 <span>Topic: {rule.topic}</span>
+
                 <div className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-6 overflow-hidden overflow-y-auto truncate">
                   {rule.matchValue
                     .split(/\r?\n/)

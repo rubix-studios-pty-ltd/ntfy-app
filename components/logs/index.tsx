@@ -114,6 +114,7 @@ export function Logs() {
 
                 <div className="flex flex-col gap-0.5 text-sm">
                   <span className="truncate font-semibold text-xs">{log.ruleName}</span>
+
                   <div className="h-15 truncate">
                     {log.topic && (
                       <div>

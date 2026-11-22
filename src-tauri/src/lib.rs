@@ -14,6 +14,7 @@ use windows::main::{setup_window_events, show_main_window};
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(
             tauri::plugin::Builder::<tauri::Wry>::new("local-navigation")
                 .on_navigation(|_webview, url| {

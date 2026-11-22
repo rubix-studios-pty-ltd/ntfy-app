@@ -5,6 +5,7 @@ use tauri::{AppHandle, Manager, Wry};
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
 use crate::tray::{check_updates, exit_app};
 use crate::windows::automation::open_automation_window;
+use crate::windows::hotkeys::open_hotkeys_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
 use crate::windows::schedule::open_schedule_window;
@@ -45,6 +46,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     )?;
 
     let schedule = MenuItem::with_id(app, "schedule", "Schedule", true, None::<&str>)?;
+    let hotkeys = MenuItem::with_id(app, "hotkeys", "Hotkeys", true, None::<&str>)?;
 
     let updates = MenuItem::with_id(app, "check_updates", "Update", true, None::<&str>)?;
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
@@ -59,7 +61,7 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
         "settings",
         "Settings",
         true,
-        &[&autostart, &schedule, &logs, &separator],
+        &[&autostart, &schedule, &hotkeys, &logs],
     )?;
 
     let menu = Menu::with_items(
@@ -104,6 +106,9 @@ pub fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
                     let enabled = is_autostart_enabled(app);
                     let _ = check_item.set_checked(enabled);
                 }
+            }
+            "hotkeys" => {
+                open_hotkeys_window(app);
             }
             "schedule" => {
                 open_schedule_window(app);

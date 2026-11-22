@@ -3,6 +3,7 @@ use ksni::TrayMethods;
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
 use crate::tray::{check_updates, exit_app};
 use crate::windows::automation::open_automation_window;
+use crate::windows::hotkeys::open_hotkeys_window;
 use crate::windows::logs::open_logs_window;
 use crate::windows::main::{toggle_main_window, window_tray_label};
 use crate::windows::schedule::open_schedule_window;
@@ -88,6 +89,14 @@ impl ksni::Tray for NtfyTray {
                         label: "Schedule".into(),
                         activate: Box::new(|tray: &mut Self| {
                             open_schedule_window(&tray.app);
+                        }),
+                        ..Default::default()
+                    }
+                    .into(),
+                    StandardItem::<Self> {
+                        label: "Hotkeys".into(),
+                        activate: Box::new(|tray: &mut Self| {
+                            open_hotkeys_window(&tray.app);
                         }),
                         ..Default::default()
                     }

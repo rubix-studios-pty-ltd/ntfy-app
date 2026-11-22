@@ -203,11 +203,9 @@ export function Card({
           </Button>
         )}
 
-        {message.tags.length > 0 && (
+        {!showTags && message.tags.length > 0 && (
           <div className="mt-2.5 flex flex-wrap gap-1.25 items-center">
-            <span className="text-[10px] font-semibold text-muted-foreground leading-0 mb-1">
-              Tags:
-            </span>
+            <span className="text-[8px] font-bold text-muted-foreground">Tags:</span>
             {message.tags.map((tag) => (
               <span
                 className="rounded border border-border bg-success-soft px-1.5 py-0.75 text-[8px] text-muted-foreground"
@@ -287,7 +285,6 @@ export function Card({
                 <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
                   <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
                     <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
-
                     {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
                     <video
                       className="mx-auto block max-h-[calc(100dvh-8rem)] w-full max-w-full rounded object-contain"
