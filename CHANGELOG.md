@@ -1,5 +1,19 @@
 
 
+## [1.2.1] - 2026-11-22
+
+### Fixed
+
+- **ui**: adjust back button and automation add button
+- **ui**: log scrollarea height
+- **ui**: main inbox padding
+- WAL and encryption full write overhead
+
+### Changed
+
+- **hotkeys**: simplify hotkey action names and descriptions
+- **hotkeys**: update type references from HotkeySettings to Settings
+
 ## [1.2.0] - 2026-11-22
 
 ### Added
