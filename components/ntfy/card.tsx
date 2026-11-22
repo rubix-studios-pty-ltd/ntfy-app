@@ -285,7 +285,6 @@ export function Card({
                 <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
                   <DialogContent className="left-4 right-4 w-auto max-w-none translate-x-0 max-h-[calc(100dvh-2rem)] overflow-hidden p-4 sm:left-16 sm:right-16 sm:max-w-none">
                     <DialogTitle className="pr-8 text-sm">{message.attachment.name}</DialogTitle>
-
                     {/* biome-ignore lint/a11y/useMediaCaption: ntfy video attachments do not provide caption tracks */}
                     <video
                       className="mx-auto block max-h-[calc(100dvh-8rem)] w-full max-w-full rounded object-contain"

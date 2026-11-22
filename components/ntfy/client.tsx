@@ -57,8 +57,8 @@ export function Client() {
   const [showTags, setShowTags] = useState(true)
 
   const data = useNtfy(selected, unreadOnly, query)
-  const loading = data.pending || search !== query
 
+  const loading = data.pending || search !== query
   const snapshot = data.snapshot ?? empty
   const topic = snapshot.topics.find((item) => item.id === selected)
   const status = snapshot.statuses.find((item) => item.topicId === selected)

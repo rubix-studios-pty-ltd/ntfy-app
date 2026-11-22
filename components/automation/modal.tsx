@@ -187,6 +187,7 @@ export function Modal({ rule, setRule, onSave, servers }: Props) {
               </SelectContent>
             </Select>
           </div>
+          
           <div className="grid gap-2">
             <Label className="text-[11px]">Topic</Label>
             <Input
