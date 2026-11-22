@@ -1,11 +1,11 @@
 import { invoke } from '@tauri-apps/api/core'
 
-import { type HotkeySettings } from '@/types/hotkeys'
+import { type Settings } from '@/types/hotkeys'
 
 export function getHotkeys() {
-  return invoke<HotkeySettings>('get_hotkeys')
+  return invoke<Settings>('get_hotkeys')
 }
 
-export function updateHotkeys(input: HotkeySettings) {
-  return invoke<HotkeySettings>('update_hotkeys', { input })
+export function updateHotkeys(input: Settings) {
+  return invoke<Settings>('update_hotkeys', { input })
 }

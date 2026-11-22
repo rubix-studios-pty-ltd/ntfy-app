@@ -6,7 +6,7 @@ import { defaultHotkeys } from '@/lib/constant/hotkeys'
 import { editableTarget, shortcutEvent } from '@/lib/hotkeys'
 import { getHotkeys } from '@/lib/tauri/hotkeys'
 import { messageAction, reconnect } from '@/lib/tauri/ntfy'
-import { type HotkeySettings } from '@/types/hotkeys'
+import { type Settings } from '@/types/hotkeys'
 import { type DialogState, type Snapshot } from '@/types/ntfy'
 
 type Props = {
@@ -30,7 +30,7 @@ export function useHotkeys({
   setDialog,
   setSelected,
 }: Props) {
-  const [hotkeys, setHotkeys] = useState<HotkeySettings>(defaultHotkeys)
+  const [hotkeys, setHotkeys] = useState<Settings>(defaultHotkeys)
 
   useEffect(() => {
     if (!isTauri()) return
@@ -45,7 +45,7 @@ export function useHotkeys({
 
     let unlisten: (() => void) | undefined
 
-    void listen<HotkeySettings>('ntfy:hotkeys-changed', ({ payload }) => {
+    void listen<Settings>('ntfy:hotkeys-changed', ({ payload }) => {
       if (active) setHotkeys(payload)
     })
       .then((off) => {

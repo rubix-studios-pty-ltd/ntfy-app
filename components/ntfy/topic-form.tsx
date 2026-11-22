@@ -27,6 +27,7 @@ type Props = {
 export function TopicForm({ servers, editing, close, saved }: Props) {
   const id = useId()
   const available = servers.filter((server) => server.enabled)
+
   const [serverId, setServerId] = useState(editing?.serverId ?? available[0]?.id ?? '')
   const [topic, setTopic] = useState(editing?.topic ?? '')
   const [displayName, setDisplayName] = useState(editing?.displayName ?? '')
