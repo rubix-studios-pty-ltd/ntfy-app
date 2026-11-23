@@ -1,9 +1,3 @@
-## [1.2.2] - 2026-11-22
-
-### Fixed
-
-- enable hardware acc and fix x11 bootup, force start minimised
-
 ## [1.2.3] - 2026-11-23
 
 ### Added
@@ -24,6 +18,12 @@
 ### Changed
 
 - **attachment**: add transition effects to remove button
+
+## [1.2.2] - 2026-11-22
+
+### Fixed
+
+- enable hardware acc and fix x11 bootup, force start minimised
 
 ## [1.2.1] - 2026-11-22
 
