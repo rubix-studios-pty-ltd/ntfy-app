@@ -3,6 +3,7 @@
 import { useId, useState } from 'react'
 import { toast } from 'sonner'
 
+import { Attachment } from '@/components/ntfy/attachment'
 import { Modal } from '@/components/ntfy/modal'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -18,6 +19,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { publish } from '@/lib/tauri/ntfy'
 import { type Server, type Topic } from '@/types/ntfy'
+import { readAttachment } from '@/utils/readAttachment'
 
 type Props = {
   topics: Topic[]
@@ -35,6 +37,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
   const [priority, setPriority] = useState(3)
   const [tags, setTags] = useState('')
   const [markdown, setMarkdown] = useState(false)
+  const [attachment, setAttachment] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -60,6 +63,9 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
                 .split(',')
                 .map((tag) => tag.trim())
                 .filter(Boolean),
+              attachment: attachment
+                ? { name: attachment.name, data: await readAttachment(attachment) }
+                : undefined,
             })
 
             toast.success('Published')
@@ -123,11 +129,18 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               id={`${id}-message`}
               maxLength={4096}
               onChange={(event) => setMessage(event.target.value)}
-              required
+              required={!attachment}
               rows={3}
               value={message}
             />
           </div>
+
+          <Attachment
+            disabled={busy}
+            file={attachment}
+            onChange={setAttachment}
+            onError={setError}
+          />
 
           <div className="flex items-center gap-2">
             <Checkbox

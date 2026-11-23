@@ -85,6 +85,14 @@ export function Trigger({ rule, servers, updateRule }: Props) {
               <SelectItem className="cursor-pointer duration-500 transition-all" value="startsWith">
                 Starts with
               </SelectItem>
+
+              <SelectItem className="cursor-pointer duration-500 transition-all" value="regex">
+                Regex
+              </SelectItem>
+
+              <SelectItem className="cursor-pointer duration-500 transition-all" value="priority">
+                Priority
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -92,16 +100,38 @@ export function Trigger({ rule, servers, updateRule }: Props) {
 
       <div className="grid gap-2">
         <Label className="font-semibold">Value</Label>
-        <Textarea
-          autoCapitalize="none"
-          autoComplete="off"
-          autoCorrect="off"
-          className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-24 resize-none overflow-y-auto border border-border"
-          onChange={(event) => updateRule({ matchValue: event.target.value })}
-          rows={4}
-          spellCheck={false}
-          value={rule.matchValue}
-        />
+        {rule.matchType === 'priority' ? (
+          <Input
+            autoComplete="off"
+            className="w-full border-border bg-card text-xs"
+            onChange={(event) => updateRule({ matchValue: event.target.value })}
+            value={rule.matchValue}
+          />
+        ) : (
+          <Textarea
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect="off"
+            className="scrollbar-thin scrollbar-thumb-muted-foreground scrollbar-track-transparent h-24 resize-none overflow-y-auto border border-border"
+            onChange={(event) => updateRule({ matchValue: event.target.value })}
+            placeholder={rule.matchType === 'regex' ? 'e.g. Error\\s+(\\d+)' : undefined}
+            rows={4}
+            spellCheck={false}
+            value={rule.matchValue}
+          />
+        )}
+
+        {rule.matchType === 'regex' && (
+          <p className="text-[11px] text-muted-foreground">
+            One pattern per line. The first capture group becomes $value.
+          </p>
+        )}
+
+        {rule.matchType === 'priority' && (
+          <p className="text-[11px] text-muted-foreground">
+            Supports comparisons such as &gt;=4 and comma-separated.
+          </p>
+        )}
       </div>
     </>
   )

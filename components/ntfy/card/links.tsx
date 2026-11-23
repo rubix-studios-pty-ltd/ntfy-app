@@ -20,26 +20,28 @@ export function Links({ expired, message, onOpen }: Props) {
     <div className="mt-3 flex flex-wrap gap-3.25 text-[10px] text-primary">
       {safeLink(message.click) && (
         <Button
-          className="cursor-pointer duration-500 transition-all h-auto gap-1 p-0 has-[>svg]:px-0 text-[10px] font-normal whitespace-normal"
+          className="cursor-pointer duration-500 transition-all gap-1 has-[>svg]:px-2 py-1 text-[10px] font-normal whitespace-normal"
           onClick={() => void onOpen(message.click as string)}
-          variant="link"
+          size="xs"
+          variant="outline"
         >
-          <ExternalLink className="size-3.25" />
+          <ExternalLink className="size-3" />
           Link
         </Button>
       )}
 
       {message.attachment && safeLink(message.attachment.url) && (
         <Button
-          className="cursor-pointer duration-500 transition-all h-auto gap-1 p-0 has-[>svg]:px-0 text-[10px] font-normal whitespace-normal"
+          className="cursor-pointer duration-500 transition-all gap-1 has-[>svg]:px-2 py-1 text-[10px] font-normal whitespace-normal"
           disabled={expired}
           onClick={() => {
             const url = message.attachment?.url
             if (safeLink(url)) void onOpen(url)
           }}
-          variant="link"
+          size="xs"
+          variant="outline"
         >
-          <File className="size-3.25" />
+          <File className="size-3" />
           {message.attachment.name}
           {expired ? ' (expired)' : ''}
         </Button>
@@ -48,17 +50,18 @@ export function Links({ expired, message, onOpen }: Props) {
       {message.actions.map((action, index) =>
         action && action.action === 'view' && safeLink(action.url) ? (
           <Button
-            className="cursor-pointer duration-500 transition-all h-auto gap-1 p-0 has-[>svg]:px-0 text-[10px] font-normal whitespace-normal"
+            className="cursor-pointer duration-500 transition-all gap-1 has-[>svg]:px-2 py-1 text-[10px] font-normal whitespace-normal"
             key={`${action.label}-${index}`}
             onClick={() => void onOpen(action.url as string)}
-            variant="link"
+            size="xs"
+            variant="outline"
           >
-            <ExternalLink className="size-3.25" />
+            <ExternalLink className="size-3" />
             {action.label || 'Open'}
           </Button>
         ) : action && action.action === 'copy' && typeof action.value === 'string' ? (
           <Button
-            className="cursor-pointer duration-500 transition-all h-auto gap-1 p-0 has-[>svg]:px-0 text-[10px] font-normal whitespace-normal"
+            className="cursor-pointer duration-500 transition-all gap-1 has-[>svg]:px-2 py-1 text-[10px] font-normal whitespace-normal"
             key={`${action.label}-${index}`}
             onClick={async () => {
               try {
@@ -68,7 +71,8 @@ export function Links({ expired, message, onOpen }: Props) {
                 toast.error('Cannot access the clipboard')
               }
             }}
-            variant="link"
+            size="xs"
+            variant="outline"
           >
             {action.label || 'Copy'}
           </Button>

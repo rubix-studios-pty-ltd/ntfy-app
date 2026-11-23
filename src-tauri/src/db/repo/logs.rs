@@ -218,8 +218,7 @@ pub fn record_execution(
         )
         .map_err(|error| error.to_string())?;
 
-    if LOG_INSERTIONS.fetch_add(1, Ordering::Relaxed) % LOG_CHECK_INTERVAL
-        == LOG_CHECK_INTERVAL - 1
+    if LOG_INSERTIONS.fetch_add(1, Ordering::Relaxed) % LOG_CHECK_INTERVAL == LOG_CHECK_INTERVAL - 1
     {
         let over_limit: bool = connection
             .query_row(

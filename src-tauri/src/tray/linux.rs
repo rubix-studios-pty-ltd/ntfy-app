@@ -1,4 +1,5 @@
 use ksni::TrayMethods;
+use std::sync::LazyLock;
 
 use crate::autostart::{is_autostart_enabled, toggle_autostart};
 use crate::tray::{check_updates, exit_app};
@@ -14,6 +15,31 @@ pub struct NtfyTray {
     startup_enabled: bool,
 }
 
+static TRAY_ICONS: LazyLock<Vec<ksni::Icon>> = LazyLock::new(|| {
+    [
+        include_bytes!("../../../assets/ntfy-16x16.png").as_slice(),
+        include_bytes!("../../../assets/ntfy-32x32.png").as_slice(),
+        include_bytes!("../../../assets/ntfy-64x64.png").as_slice(),
+    ]
+    .into_iter()
+    .map(|bytes| {
+        let image = tauri::image::Image::from_bytes(bytes).expect("Valid tray icon PNG");
+
+        let data = image
+            .rgba()
+            .chunks_exact(4)
+            .flat_map(|rgba| [rgba[3], rgba[0], rgba[1], rgba[2]])
+            .collect();
+
+        ksni::Icon {
+            width: image.width() as i32,
+            height: image.height() as i32,
+            data,
+        }
+    })
+    .collect()
+});
+
 pub fn sync_tray_label(_app: &tauri::AppHandle) {}
 
 impl ksni::Tray for NtfyTray {
@@ -26,7 +52,11 @@ impl ksni::Tray for NtfyTray {
     }
 
     fn icon_name(&self) -> String {
-        "ntfy_app".to_string()
+        String::new()
+    }
+
+    fn icon_pixmap(&self) -> Vec<ksni::Icon> {
+        TRAY_ICONS.clone()
     }
 
     fn category(&self) -> ksni::Category {

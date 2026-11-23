@@ -5,7 +5,7 @@ use crate::automation::modules::{Validation, validate_config};
 use crate::db::models::AutomationInput;
 
 const ACTION_TYPES: &[&str] = &["runProgram", "openUrl", "module"];
-const MATCH_TYPES: &[&str] = &["equals", "contains", "startsWith"];
+const MATCH_TYPES: &[&str] = &["equals", "contains", "startsWith", "regex", "priority"];
 const STATUSES: &[&str] = &["success", "failed", "never"];
 
 pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
@@ -19,6 +19,31 @@ pub fn validate_rule(rule: &AutomationInput) -> Result<(), String> {
 
     if !MATCH_TYPES.contains(&rule.match_type.as_str()) {
         return Err("Invalid match type".to_string());
+    }
+
+    if rule.match_type == "regex" {
+        for pattern in rule
+            .match_value
+            .lines()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+        {
+            regex::Regex::new(pattern)
+                .map_err(|error| format!("Invalid regular expression: {error}"))?;
+        }
+    }
+
+    if rule.match_type == "priority" {
+        for value in rule
+            .match_value
+            .split([',', '\n'])
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+        {
+            if !crate::automation::matcher::valid_priority_expression(value) {
+                return Err(format!("Invalid priority condition: {value}"));
+            }
+        }
     }
 
     if !ACTION_TYPES.contains(&rule.action_type.as_str()) {

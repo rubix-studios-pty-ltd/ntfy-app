@@ -60,10 +60,11 @@ export function useRules() {
           ? replaceRule(current, saved)
           : [saved, ...current]
       )
+
       toast.success('Success')
       return true
-    } catch {
-      toast.error('Save failed')
+    } catch (error) {
+      toast.error(String(error))
       return false
     }
   }
@@ -84,25 +85,28 @@ export function useRules() {
     try {
       const saved = await setRuleActive(ruleId)
       setRules((current) => replaceRule(current, saved))
-    } catch (error) {
-      console.error('Failed:', error)
+    } catch {
       toast.error('Update failed')
     }
   }
 
-  const testRule = async (rule: RulesType): Promise<void> => {
+  const testRule = async (rule: RulesType, message = rule.matchValue): Promise<boolean> => {
     try {
       const saved = await runRule({
         ruleId: rule.id,
-        message: rule.matchValue,
+        message,
         title: rule.name,
+        priority:
+          rule.matchType === 'priority' ? Number(rule.matchValue.match(/[1-5]/)?.[0] ?? 3) : 3,
       })
 
       setRules((current) => replaceRule(current, saved))
+
       toast.success('Success')
+      return true
     } catch (error) {
-      console.error('Failed:', error)
-      toast.error('Failed')
+      toast.error(String(error))
+      return false
     }
   }
 

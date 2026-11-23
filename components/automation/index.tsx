@@ -6,6 +6,7 @@ import { Plus, Search } from 'lucide-react'
 import { Dialog } from '@/components/automation/dialog'
 import { Modal } from '@/components/automation/modal'
 import { Table } from '@/components/automation/table'
+import { TestDialog } from '@/components/automation/test'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useRules } from '@/hooks/use-rules'
@@ -18,6 +19,7 @@ export function Automation() {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<RulesType | null>(null)
   const [removing, setRemoving] = useState<RulesType | null>(null)
+  const [testing, setTesting] = useState<RulesType | null>(null)
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -81,13 +83,20 @@ export function Automation() {
       <Table
         onDelete={setRemoving}
         onEdit={setEditing}
-        onTest={testRule}
+        onTest={async (rule) => {
+          if (rule.matchType === 'regex') {
+            setTesting(rule)
+          } else {
+            await testRule(rule)
+          }
+        }}
         onToggle={toggleRule}
         rules={filtered}
         servers={servers}
       />
 
       <Dialog onClose={() => setRemoving(null)} onDelete={remove} rule={removing} />
+      <TestDialog onClose={() => setTesting(null)} onTest={testRule} rule={testing} />
       <Modal onSave={save} rule={editing} servers={servers} setRule={setEditing} />
     </div>
   )

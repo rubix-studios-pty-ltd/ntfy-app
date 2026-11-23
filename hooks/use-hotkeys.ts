@@ -11,7 +11,6 @@ import { type DialogState, type Snapshot } from '@/types/ntfy'
 
 type Props = {
   busy: boolean
-  confirmDelete: (topicId: string | null) => void
   dialog: DialogState
   hotkeyTopics: Snapshot['topics']
   perform: (action: () => Promise<void>) => Promise<void>
@@ -22,7 +21,6 @@ type Props = {
 
 export function useHotkeys({
   busy,
-  confirmDelete,
   dialog,
   hotkeyTopics,
   perform,
@@ -90,7 +88,7 @@ export function useHotkeys({
       } else if (shortcut === hotkeys.deleteNotifications) {
         event.preventDefault()
 
-        confirmDelete(selected)
+        void perform(() => messageAction(null, selected, true))
       } else if (shortcut === hotkeys.publish) {
         if (hotkeyTopics.length === 0) return
 
@@ -110,15 +108,5 @@ export function useHotkeys({
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [
-    hotkeys,
-    hotkeyTopics,
-    selected,
-    dialog,
-    busy,
-    perform,
-    confirmDelete,
-    setDialog,
-    setSelected,
-  ])
+  }, [hotkeys, hotkeyTopics, selected, dialog, busy, perform, setDialog, setSelected])
 }

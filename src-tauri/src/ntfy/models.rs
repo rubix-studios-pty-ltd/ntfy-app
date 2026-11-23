@@ -131,4 +131,12 @@ pub struct PublishInput {
     pub markdown: bool,
     pub priority: u8,
     pub tags: Vec<String>,
+    pub attachment: Option<PublishAttachment>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PublishAttachment {
+    pub name: String,
+    pub data: String,
 }

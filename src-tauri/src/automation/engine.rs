@@ -11,7 +11,7 @@ pub async fn handle_notification(
 ) -> Result<(), String> {
     let topic = notification.topic.trim().to_string();
 
-    if topic.is_empty() || notification.message.trim().is_empty() {
+    if topic.is_empty() {
         return Ok(());
     }
 
@@ -19,6 +19,7 @@ pub async fn handle_notification(
         topic: topic.clone(),
         title: notification.title,
         message: notification.message,
+        priority: notification.priority,
     };
 
     let server_id = server_id.to_string();

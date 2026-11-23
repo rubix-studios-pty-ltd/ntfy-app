@@ -5,6 +5,7 @@ pub struct AutomationEvent {
     pub topic: String,
     pub title: Option<String>,
     pub message: String,
+    pub priority: u8,
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +40,20 @@ pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<Matc
         return None;
     }
 
+    if rule.match_type == "priority" {
+        return rule
+            .match_value
+            .split([',', '\n'])
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .find(|value| priority_matches(value, event.priority))
+            .map(|value| MatchContext {
+                value: event.priority.to_string(),
+                matched_line: value.to_string(),
+                message: event.message.clone(),
+            });
+    }
+
     let incoming = event.message.trim();
 
     if incoming.is_empty() {
@@ -62,6 +77,7 @@ pub fn match_rule(rule: &AutomationRule, event: &AutomationEvent) -> Option<Matc
                 "equals" => match_equals(msg, line),
                 "contains" => match_contains(msg, line),
                 "startsWith" => match_starts_with(msg, line),
+                "regex" => match_regex(msg, line),
                 _ => None,
             };
 
@@ -226,4 +242,47 @@ fn ascii_prefix_end(incoming: &str, needle: &str) -> Option<usize> {
 
 fn same_ascii_char(left: char, right: char) -> bool {
     left.eq_ignore_ascii_case(&right)
+}
+
+fn match_regex(message: &str, pattern: &str) -> Option<String> {
+    let re = regex::Regex::new(pattern).ok()?;
+    let captures = re.captures(message)?;
+    let capture = captures
+        .name("value")
+        .or_else(|| captures.get(1))
+        .or_else(|| captures.get(0))?;
+    Some(capture.as_str().to_string())
+}
+
+pub fn valid_priority_expression(value: &str) -> bool {
+    let (_, number) = priority_parts(value);
+    number
+        .parse::<u8>()
+        .is_ok_and(|number| (1..=5).contains(&number))
+}
+
+fn priority_parts(value: &str) -> (&str, &str) {
+    for operator in [">=", "<=", ">", "<", "="] {
+        if let Some(number) = value.strip_prefix(operator) {
+            return (operator, number.trim());
+        }
+    }
+    ("=", value.trim())
+}
+
+fn priority_matches(expression: &str, priority: u8) -> bool {
+    if !valid_priority_expression(expression) {
+        return false;
+    }
+    let (operator, number) = priority_parts(expression);
+    let Ok(number) = number.parse::<u8>() else {
+        return false;
+    };
+    match operator {
+        ">=" => priority >= number,
+        "<=" => priority <= number,
+        ">" => priority > number,
+        "<" => priority < number,
+        _ => priority == number,
+    }
 }

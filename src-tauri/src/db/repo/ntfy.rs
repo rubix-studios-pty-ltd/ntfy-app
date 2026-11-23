@@ -1,7 +1,7 @@
 use crate::ntfy::models::{
     Credentials, Message, MessageQuery, Server, ServerInput, StoredMessage, Topic,
 };
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{Connection, OptionalExtension, params};
 use std::collections::HashSet;
 
 pub fn servers(connection: &Connection) -> Result<Vec<Server>, String> {
