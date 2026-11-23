@@ -38,7 +38,7 @@ export function Content({ expanded, message, onToggleExpand }: Props) {
     <>
       <div
         className={cn(
-          'min-w-0 mt-2 bg-background p-2 rounded-md',
+          'min-w-0 mt-2 bg-background px-4 py-2 rounded-md',
           expanded ? 'max-h-none overflow-visible' : 'max-h-50 overflow-y-auto overscroll-contain'
         )}
       >
@@ -55,25 +55,27 @@ export function Content({ expanded, message, onToggleExpand }: Props) {
       </div>
 
       {canExpand && (
-        <Button
-          aria-expanded={expanded}
-          className="mt-2 cursor-pointer gap-1 text-[10px] text-muted-foreground hover:text-primary"
-          onClick={onToggleExpand}
-          size="xs"
-          variant="outline"
-        >
-          {expanded ? (
-            <>
-              <ChevronUp className="size-3.5" />
-              Reduce
-            </>
-          ) : (
-            <>
-              <ChevronDown className="size-3.5" />
-              Expand
-            </>
-          )}
-        </Button>
+        <div className="mt-2 flex justify-end">
+          <Button
+            aria-expanded={expanded}
+            className="cursor-pointer gap-1 text-[10px] text-muted-foreground hover:text-primary"
+            onClick={onToggleExpand}
+            size="xs"
+            variant="outline"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="size-3.5" />
+                Reduce
+              </>
+            ) : (
+              <>
+                <ChevronDown className="size-3.5" />
+                Expand
+              </>
+            )}
+          </Button>
+        </div>
       )}
     </>
   )

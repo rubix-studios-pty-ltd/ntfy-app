@@ -89,6 +89,7 @@ pub(crate) async fn process_notification(
             topic: message.topic.clone(),
             title: message.title.clone(),
             message: message.message.clone(),
+            priority: message.priority.unwrap_or(3),
         },
     )
     .await

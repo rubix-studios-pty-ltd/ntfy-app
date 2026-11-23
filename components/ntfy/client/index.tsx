@@ -54,7 +54,6 @@ export function Client() {
 
   useHotkeys({
     busy,
-    confirmDelete,
     dialog,
     hotkeyTopics: snapshot.topics,
     perform,
@@ -105,6 +104,7 @@ export function Client() {
             role="alert"
           >
             <span>{data.error}</span>
+
             <Button
               className="cursor-pointer duration-500 transition-all h-auto p-0 text-[11px] font-normal text-current underline"
               onClick={() => data.refresh()}

@@ -3133,6 +3133,7 @@ dependencies = [
  "getrandom 0.4.3",
  "keyring",
  "ksni",
+ "regex",
  "reqwest",
  "rusqlite",
  "sanitize-filename",

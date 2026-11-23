@@ -8,5 +8,9 @@ export const matchType = (matchType: MatchType) => {
       return 'Contains'
     case 'startsWith':
       return 'Starts with'
+    case 'regex':
+      return 'Regex'
+    case 'priority':
+      return 'Priority'
   }
 }

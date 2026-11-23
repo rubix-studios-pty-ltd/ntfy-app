@@ -73,6 +73,17 @@ pub async fn test_rule(
         topic: rule.topic.clone(),
         title: input.title.clone(),
         message: message.clone(),
+        priority: input.priority.unwrap_or_else(|| {
+            if rule.match_type == "priority" {
+                rule.match_value
+                    .trim_start_matches(|ch: char| !ch.is_ascii_digit())
+                    .parse::<u8>()
+                    .ok()
+                    .unwrap_or(3)
+            } else {
+                3
+            }
+        }),
     };
 
     let result = match match_rule(&rule, &event) {

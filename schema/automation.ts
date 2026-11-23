@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const actionTypeSchema = z.enum(['runProgram', 'openUrl', 'module'])
 
-export const matchTypeSchema = z.enum(['equals', 'contains', 'startsWith'])
+export const matchTypeSchema = z.enum(['equals', 'contains', 'startsWith', 'regex', 'priority'])
 
 export const moduleIdSchema = z.string().trim().min(1, 'Module is required')
 

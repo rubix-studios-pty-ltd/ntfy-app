@@ -162,4 +162,5 @@ pub struct TestRuleInput {
     pub rule_id: String,
     pub message: String,
     pub title: Option<String>,
+    pub priority: Option<u8>,
 }

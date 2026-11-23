@@ -107,6 +107,10 @@ export type PublishInput = {
   markdown: boolean
   priority: number
   tags: string[]
+  attachment?: {
+    name: string
+    data: string
+  }
 }
 
 export type DialogState =

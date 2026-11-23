@@ -5,6 +5,8 @@ use crate::ntfy::models::*;
 use crate::ntfy::service::{self, ServiceState};
 use crate::ntfy::validation::validate_display;
 
+use base64::{Engine, engine::general_purpose::STANDARD};
+use reqwest::header::HeaderValue;
 use rusqlite::params;
 use tauri::{AppHandle, Emitter, Manager};
 use zeroize::Zeroizing;
@@ -386,9 +388,49 @@ pub async fn ntfy_message_action(
     Ok(())
 }
 
+fn ntfy_header(value: &str) -> Result<HeaderValue, String> {
+    if value.is_ascii() && !value.chars().any(char::is_control) {
+        return HeaderValue::from_str(value)
+            .map_err(|_| "Invalid notification metadata".to_string());
+    }
+
+    if value
+        .chars()
+        .any(|ch| ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t')
+    {
+        return Err("Notification text contains invalid control characters".to_string());
+    }
+
+    let mut result = String::new();
+    let mut chunk = String::new();
+    for ch in value.chars() {
+        if chunk.len() + ch.len_utf8() > 42 {
+            if !result.is_empty() {
+                result.push(' ');
+            }
+            result.push_str(&format!(
+                "=?UTF-8?B?{}?=",
+                STANDARD.encode(chunk.as_bytes())
+            ));
+            chunk.clear();
+        }
+        chunk.push(ch);
+    }
+    if !chunk.is_empty() {
+        if !result.is_empty() {
+            result.push(' ');
+        }
+        result.push_str(&format!(
+            "=?UTF-8?B?{}?=",
+            STANDARD.encode(chunk.as_bytes())
+        ));
+    }
+    HeaderValue::from_str(&result).map_err(|_| "Invalid encoded notification metadata".to_string())
+}
+
 #[tauri::command]
 pub async fn ntfy_publish(app: AppHandle, input: PublishInput) -> Result<(), String> {
-    if input.message.trim().is_empty()
+    if (input.message.trim().is_empty() && input.attachment.is_none())
         || input.message.len() > 4096
         || input.title.len() > 256
         || !(1..=5).contains(&input.priority)
@@ -416,19 +458,72 @@ pub async fn ntfy_publish(app: AppHandle, input: PublishInput) -> Result<(), Str
         return Err("Sign in to this server to publish".to_string());
     }
 
-    let request = app
-        .state::<ServiceState>()
-        .client
-        .post(http::endpoint(&server.url, "")?)
-        .timeout(std::time::Duration::from_secs(20))
-        .json(&serde_json::json!({
-            "topic": topic.topic,
-            "title": input.title,
-            "message": input.message,
-            "markdown": input.markdown,
-            "priority": input.priority,
-            "tags": input.tags,
-        }));
+    let service = app.state::<ServiceState>();
+    let client = &service.client;
+
+    let request = if let Some(attachment) = input.attachment {
+        const MAX_ATTACHMENT_BYTES: usize = 15 * 1024 * 1024;
+
+        if attachment.data.len() > ((MAX_ATTACHMENT_BYTES + 2) / 3) * 4 {
+            return Err("Attachment exceeds the 15 MB upload limit".to_string());
+        }
+
+        let bytes = STANDARD
+            .decode(&attachment.data)
+            .map_err(|_| "Invalid attachment data".to_string())?;
+
+        if bytes.is_empty() || bytes.len() > MAX_ATTACHMENT_BYTES {
+            return Err("Choose an attachment between 1 byte and 15 MB".to_string());
+        }
+
+        let filename = sanitize_filename::sanitize(&attachment.name);
+
+        if filename.is_empty() || filename == "." || filename == ".." || filename.len() > 200 {
+            return Err("Invalid attachment file name".to_string());
+        }
+
+        let extension = std::path::Path::new(&filename)
+            .extension()
+            .and_then(|value| value.to_str())
+            .unwrap_or("")
+            .to_ascii_lowercase();
+
+        if ![
+            "png", "jpg", "jpeg", "gif", "webp", "avif", "bmp", "heic", "heif", "tif", "tiff",
+            "mp4", "webm", "mov", "m4v",
+        ]
+        .contains(&extension.as_str())
+        {
+            return Err("Only image and video attachments are supported".to_string());
+        }
+
+        let title = ntfy_header(&input.title)?;
+        let message = ntfy_header(&input.message)?;
+        let tags = HeaderValue::from_bytes(input.tags.join(",").as_bytes())
+            .map_err(|_| "Tags contain characters invalid for HTTP headers".to_string())?;
+        client
+            .post(http::endpoint(&server.url, &topic.topic)?)
+            .timeout(std::time::Duration::from_secs(120))
+            .header("X-Filename", ntfy_header(&filename)?)
+            .header("X-Title", title)
+            .header("X-Message", message)
+            .header("X-Priority", input.priority.to_string())
+            .header("X-Tags", tags)
+            .header("X-Markdown", if input.markdown { "yes" } else { "no" })
+            .body(bytes)
+    } else {
+        client
+            .post(http::endpoint(&server.url, "")?)
+            .timeout(std::time::Duration::from_secs(20))
+            .json(&serde_json::json!({
+                "topic": topic.topic,
+                "title": input.title,
+                "message": input.message,
+                "markdown": input.markdown,
+                "priority": input.priority,
+                "tags": input.tags,
+            }))
+    };
 
     http::checked(http::authenticate(request, &credentials)?).await?;
 

@@ -116,6 +116,7 @@ export function Attachment({ attachment }: Props) {
 
       <div className="mt-1.5 flex items-center justify-between gap-3 text-[10px] text-muted-foreground">
         <span className="truncate">{attachment.name}</span>
+
         {attachment.size != null && (
           <span className="shrink-0">
             {Math.max(0, attachment.size / 1024).toLocaleString(undefined, {
