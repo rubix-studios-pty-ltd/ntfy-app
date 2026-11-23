@@ -117,6 +117,7 @@ export function Attachment({ disabled, file, onChange, onError }: Props) {
 
           <Button
             aria-label="Remove attachment"
+            className="cursor-pointer duration-500 transition-all"
             disabled={disabled}
             onClick={() => onChange(null)}
             size="icon-xs"
