@@ -4,6 +4,27 @@
 
 - enable hardware acc and fix x11 bootup, force start minimised
 
+## [1.2.3] - 2026-11-23
+
+### Added
+
+- **automation**: add regex and priority match types to rules 
+- **ntfy**: support attachments in publish input
+- **deps**: update pnpm to latest version
+- **deps**: add regex crate to Cargo.toml
+- **automation**:  priority matching and regex matching 
+- **ui**: implement attachment upload component
+- **ui**: add test dialog for automation rules
+
+### Fixed
+
+- **app**: make window visible by default
+- **tray**: tray icon fallback
+
+### Changed
+
+- **attachment**: add transition effects to remove button
+
 ## [1.2.1] - 2026-11-22
 
 ### Fixed
