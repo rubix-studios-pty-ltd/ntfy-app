@@ -2,11 +2,11 @@
 
 ### Added
 
-- **automation**: add regex and priority match types to rules 
+- **automation**: add regex and priority match types to rules
 - **ntfy**: support attachments in publish input
 - **deps**: update pnpm to latest version
 - **deps**: add regex crate to Cargo.toml
-- **automation**:  priority matching and regex matching 
+- **automation**: priority matching and regex matching
 - **ui**: implement attachment upload component
 - **ui**: add test dialog for automation rules
 

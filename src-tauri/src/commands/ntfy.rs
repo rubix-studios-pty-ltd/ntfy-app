@@ -11,6 +11,8 @@ use rusqlite::params;
 use tauri::{AppHandle, Emitter, Manager};
 use zeroize::Zeroizing;
 
+const MAX_ATTACHMENT_BYTES: usize = 15 * 1024 * 1024;
+
 #[tauri::command]
 pub async fn ntfy_snapshot(app: AppHandle) -> Result<Snapshot, String> {
     let (servers, topics) = run(app.state::<DbState>(), |connection| {
@@ -462,8 +464,6 @@ pub async fn ntfy_publish(app: AppHandle, input: PublishInput) -> Result<(), Str
     let client = &service.client;
 
     let request = if let Some(attachment) = input.attachment {
-        const MAX_ATTACHMENT_BYTES: usize = 15 * 1024 * 1024;
-
         if attachment.data.len() > ((MAX_ATTACHMENT_BYTES + 2) / 3) * 4 {
             return Err("Attachment exceeds the 15 MB upload limit".to_string());
         }
