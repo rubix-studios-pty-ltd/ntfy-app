@@ -109,7 +109,6 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<tauri::WebviewWindow> {
         .decorations(true)
         .center()
         .skip_taskbar(false)
-        .incognito(true)
         .visible(false)
         .build()
 }

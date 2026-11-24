@@ -6,7 +6,7 @@ description = "Desktop client for ntfy.sh and self-hosted ntfy instances on Wind
 license = "MIT"
 repository = "https://github.com/rubix-studios-pty-ltd/ntfy-app"
 edition = "2024"
-rust-version = "1.99.1"
+rust-version = "1.100.0"
 
 [build-dependencies]
 tauri-build = { version = "2.7.6", features = [] }
