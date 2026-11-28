@@ -1,10 +1,10 @@
 import { type Dispatch, type SetStateAction } from 'react'
 
 import { Confirm } from '@/components/ntfy/confirm'
-import { PreferenceForm } from '@/components/ntfy/preference-form'
-import { PublishForm } from '@/components/ntfy/publish-form'
-import { ServerForm } from '@/components/ntfy/server-form'
-import { TopicForm } from '@/components/ntfy/topic-form'
+import { PreferenceForm } from '@/components/ntfy/forms/preference-form'
+import { PublishForm } from '@/components/ntfy/forms/publish-form'
+import { ServerForm } from '@/components/ntfy/forms/server-form'
+import { TopicForm } from '@/components/ntfy/forms/topic-form'
 import { type useNtfy } from '@/hooks/use-ntfy'
 import { type DialogState, type Snapshot, type Topic } from '@/types/ntfy'
 

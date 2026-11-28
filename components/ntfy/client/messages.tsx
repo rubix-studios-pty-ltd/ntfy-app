@@ -82,12 +82,12 @@ export function Messages({
       {data.hasMore && (
         <div className="mt-5 flex justify-center">
           <Button
-            className="h-auto gap-1.75 rounded-[7px] border-border bg-background px-3.75 py-2.5 text-[11px] font-semibold text-accent-foreground enabled:hover:bg-accent"
+            className="cursor-pointer duration-500 transition-all text-[11px] font-semibold text-accent-foreground enabled:hover:bg-accent"
             disabled={data.loadingMore}
             onClick={data.loadMore}
             variant="outline"
           >
-            {data.loadingMore ? 'Loading…' : 'Load more'}
+            Load more
           </Button>
         </div>
       )}

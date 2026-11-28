@@ -149,7 +149,7 @@ export function PublishForm({ topics, servers, selected, close }: Props) {
               onCheckedChange={(checked) => setMarkdown(checked === true)}
             />
             <Label className="cursor-pointer text-[11px]" htmlFor={`${id}-markdown`}>
-              Send as Markdown
+              Markdown
             </Label>
           </div>
 
