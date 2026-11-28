@@ -1,3 +1,11 @@
+
+## [1.2.4] - 2026-11-28
+
+### Added
+
+- **ntfy**: update libloading and proc-macro-crate
+- **ui**: add tooltip component
+
 ## [1.2.3] - 2026-11-23
 
 ### Added
@@ -18,13 +26,6 @@
 ### Changed
 
 - **attachment**: add transition effects to remove button
-
-## [1.2.4] - 2026-11-28
-
-### Added
-
-- **ntfy**: update libloading and proc-macro-crate
-- **ui**: add tooltip component
 
 ## [1.2.2] - 2026-11-22
 
